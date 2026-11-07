@@ -1,0 +1,50 @@
+{
+  "name": "@mp/catalog",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Каталог врачей и специализаций (db_catalog)",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/app/main.js",
+    "dev": "tsc -p tsconfig.json && node dist/app/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.scripts.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "gen": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "e2e:outbox": "node scripts/outbox-delivery-check.mjs"
+  },
+  "dependencies": {
+    "@mp/contracts": "workspace:*",
+    "@mp/service-kit": "workspace:*",
+    "@mp/storage": "workspace:*",
+    "@nestjs/common": "^12.4.0",
+    "@nestjs/core": "^12.4.0",
+    "@nestjs/platform-express": "^12.4.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@mp/eslint-config-fsd": "workspace:*",
+    "@mp/tsconfig": "workspace:*",
+    "@nestjs/testing": "^12.4.0",
+    "@types/node": "^26.6.6",
+    "@types/supertest": "^7.2.1",
+    "@vitest/coverage-v8": "^5.1.0",
+    "amqplib": "^2.2.1",
+    "dotenv": "^18.0.9",
+    "pg": "^8.23.1",
+    "prisma": "7.10.1",
+    "supertest": "^7.1.3",
+    "tsx": "^4.23.15",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "realm": "medical-portal",
+  "enabled": true,
+  "displayName": "Медицинский портал",
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "resetPasswordAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "verifyEmail": true,
+  "rememberMe": false,
+  "editUsernameAllowed": false,
+  "loginTheme": "keycloak",
+  "accountTheme": "keycloak",
+  "emailTheme": "keycloak",
+  "internationalizationEnabled": true,
+  "defaultLocale": "ru",
+  "supportedLocales": ["ru", "en"],
+  "smtpServer": {
+    "host": "mailpit",
+    "port": "1025",
+    "from": "no-reply@test.mp",
+    "auth": "false",
+    "starttls": "false",
+    "ssl": "false"
+  },
+  "roles": {
+    "realm": [
+      { "name": "ADMIN", "description": "Администратор портала" },
+      { "name": "USER", "description": "Пациент (личный кабинет)" },
+      { "name": "DOCTOR", "description": "Врач (кабинет врача)" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "next-web",
+      "name": "Next.js Web",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:8080/*",
+        "http://localhost:3000/api/auth/*"
+      ],
+      "webOrigins": ["http://localhost:3000", "http://localhost:8080"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+",
+        "frontchannelLogout": "true"
+      }
+    },
+    {
+      "clientId": "svc-gateway",
+      "name": "Service account: gateway",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dev-gateway-secret",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "frontchannelLogout": false,
+      "attributes": {},
+      "webOrigins": []
+    },
+    {
+      "clientId": "svc-identity",
+      "name": "Service account: identity (Admin API — сага регистрации)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dev-identity-secret",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "frontchannelLogout": false,
+      "attributes": {},
+      "webOrigins": []
+    },
+    {
+      "clientId": "svc-backend",
+      "name": "Service account: backend services",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dev-backend-secret",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "frontchannelLogout": false,
+      "attributes": {},
+      "webOrigins": []
+    },
+    {
+      "clientId": "svc-e2e",
+      "name": "E2E-проверки: password-grant тест-пользователей (только dev)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dev-e2e-secret",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": false,
+      "attributes": {},
+      "webOrigins": []
+    }
+  ],
+  "users": [
+    {
+      "username": "svc-identity",
+      "serviceAccountClientId": "svc-identity",
+      "enabled": true,
+      "clientRoles": {
+        "realm-management": ["manage-users", "view-users", "view-realm"]
+      }
+    },
+    {
+      "username": "admin@test.mp",
+      "email": "admin@test.mp",
+      "firstName": "Администратор",
+      "lastName": "Тест",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Password123!", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "patient@test.mp",
+      "email": "patient@test.mp",
+      "firstName": "Пациент",
+      "lastName": "Тест",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Password123!", "temporary": false }],
+      "realmRoles": ["USER"]
+    },
+    {
+      "username": "doctor@test.mp",
+      "email": "doctor@test.mp",
+      "firstName": "Врач",
+      "lastName": "Тест",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Password123!", "temporary": false }],
+      "realmRoles": ["DOCTOR"]
+    }
+  ]
+}

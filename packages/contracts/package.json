@@ -1,0 +1,39 @@
+{
+  "name": "@mp/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Контракты mp-v2: Zod-схемы событий и DTO, routing keys, генерация OpenAPI",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "openapi"
+  ],
+  "scripts": {
+    "gen": "tsc -p tsconfig.json && tsx scripts/gen-openapi.ts",
+    "build": "pnpm gen",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:update-baseline": "tsx scripts/update-events-baseline.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@mp/eslint-config-fsd": "workspace:*",
+    "@mp/tsconfig": "workspace:*",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "tsx": "^4.23.15",
+    "vitest": "^5.1.0"
+  }
+}

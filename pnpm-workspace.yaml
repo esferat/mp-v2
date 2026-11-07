@@ -1,0 +1,31 @@
+packages:
+  - apps/*
+  - services/*
+  - packages/*
+
+minimumReleaseAgeExclude:
+  - '@boundaries/config@1.0.1'
+  - '@boundaries/elements@3.3.2'
+  - '@boundaries/policies@1.0.1'
+  - eslint-plugin-boundaries@7.4.2
+  - '@nestjs/common@12.4.0'
+  - '@nestjs/core@12.4.0'
+  - '@nestjs/platform-express@12.4.0'
+  - '@nestjs/testing@12.4.0'
+  - '@aws-sdk/client-s3@3.1163.0'
+  - '@aws-sdk/s3-request-presigner@3.1163.0'
+  - '@aws-sdk/s3-presigned-post@3.1163.0'
+
+allowBuilds:
+  prisma: true
+  '@prisma/engines': true
+  esbuild: true
+  husky: true
+  core-js: true
+
+onlyBuiltDependencies:
+  - prisma
+  - '@prisma/engines'
+  - esbuild
+  - husky
+  - core-js

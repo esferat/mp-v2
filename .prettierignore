@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+.next/
+coverage/
+pnpm-lock.yaml
+services/*/src/generated/
+packages/contracts/src/generated/
+# Шаблон генератора сервисов: содержит {{токены}} — не настоящие JSON/TS
+scripts/service-template/
+# Генерируемые артефакты (JSON.stringify + prettier расходятся по переносам)
+packages/contracts/openapi/
+packages/contracts/compat/
+docs/
+mp-ui-kit/
+medicalportal/
+medical-portal-admin-frontend/

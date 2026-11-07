@@ -1,0 +1,46 @@
+{
+  "name": "@mp/service-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Общая инфраструктура сервисов mp-v2: pino-логирование, trace-id, health, outbox/inbox, RabbitMQ",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "amqplib": "^2.2.1",
+    "jose": "5.9.6",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^12.0.0",
+    "@nestjs/core": "^12.0.0"
+  },
+  "devDependencies": {
+    "@mp/eslint-config-fsd": "workspace:*",
+    "@mp/tsconfig": "workspace:*",
+    "@nestjs/common": "^12.4.0",
+    "@nestjs/core": "^12.4.0",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "vitest": "^5.1.0"
+  }
+}

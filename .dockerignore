@@ -1,0 +1,23 @@
+# Контекст сборки Docker-образов — корень репо (docker build -f services/<svc>/Dockerfile .)
+.git
+.husky
+.idea
+.vscode
+
+node_modules
+**/node_modules
+**/dist
+**/coverage
+**/.next
+**/*.tsbuildinfo
+
+# Prisma Client генерируется на этапе сборки образа
+services/*/src/generated
+
+.env
+.env.*
+!.env.example
+
+*.log
+docs
+infra/nginx/tls

@@ -1,0 +1,23 @@
+{
+  "name": "@mp/eslint-config-fsd",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Общий ESLint-пресет: границы Feature-Sliced Design + базовые правила TypeScript",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "files": [
+    "index.mjs"
+  ],
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-boundaries": "^7.4.2",
+    "typescript-eslint": "^8.72.1"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  }
+}

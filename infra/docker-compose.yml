@@ -1,0 +1,675 @@
+﻿# ============================================================================
+# mp-v2 — единый compose-стек инфраструктуры (Этап 0: задачи 0.3, 0.4, 0.5,
+# 0.8, 0.9, 0.10, сценарий S7.2).
+#
+# Запуск:  ./up.ps1  (Windows)  или  ./up.sh  (Unix/CI)
+# Креды:   интерполяция ${VAR} только из ../.env (см. ../.env.example).
+#          Хардкод-дефолты — только dev-значения из .env.example.
+#
+# Секции web добавляются в задаче 1.x (Next.js apps/web) — см. закомментированный
+# блок services внизу файла. Бэкенды (gateway + 7 сервисов) и migrate-джобы уже здесь.
+# ============================================================================
+name: mp-v2
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+services:
+  # --------------------------------------------------------------------------
+  # PostgreSQL 17: единый инстанс, БД + пользователь на сервис (0.8).
+  # Пользователи/БД создаёт init-скрипт postgres/init/01-init.sh (идемпотентно).
+  # --------------------------------------------------------------------------
+  postgres:
+    logging: *default-logging
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mp}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      # Пароли сервисных пользователей — для 01-init.sh (права только на свою БД)
+      SVC_IDENTITY_PASSWORD: ${SVC_IDENTITY_PASSWORD:-svc_identity_pw}
+      SVC_CATALOG_PASSWORD: ${SVC_CATALOG_PASSWORD:-svc_catalog_pw}
+      SVC_PATIENTS_PASSWORD: ${SVC_PATIENTS_PASSWORD:-svc_patients_pw}
+      SVC_FILES_PASSWORD: ${SVC_FILES_PASSWORD:-svc_files_pw}
+      SVC_SCHEDULE_PASSWORD: ${SVC_SCHEDULE_PASSWORD:-svc_schedule_pw}
+      SVC_REPORT_PASSWORD: ${SVC_REPORT_PASSWORD:-svc_report_pw}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # MinIO: S3-хранилище (0.5). minio-init идемпотентно создаёт бакеты,
+  # запрещает публичный доступ и вешает lifecycle (удаление через 1 день) на tmp.
+  # --------------------------------------------------------------------------
+  minio:
+    logging: *default-logging
+    # NB: 11.09.2026 MinIO удалил minio/minio с Docker Hub, а quay.io/minio
+    # требует login (401) — используем автосборку официального релиза
+    # (coollabsio/minio, бинарники minio+mc с releases.min.io).
+    image: coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
+    command: server --console-address ":9001" /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio123}
+    ports:
+      - '${MINIO_PORT:-9000}:9000'
+      - '${MINIO_CONSOLE_PORT:-9001}:9001'
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      # в образе нет curl/wget — проверяем /minio/health/live через bash /dev/tcp
+      test:
+        - CMD-SHELL
+        - "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /minio/health/live HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3; IFS= read -r -t 5 line <&3; [[ \"$$line\" == *'200 OK'* ]]"
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 15s
+    restart: unless-stopped
+
+  minio-init:
+    logging: *default-logging
+    # тот же образ — содержит mc (см. комментарий у minio)
+    image: coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio123}
+    # Идемпотентный init: бакеты, private-политики, lifecycle на tmp (1 день)
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
+        for b in patient-photos doctor-photos patient-docs tmp; do
+          mc mb -p "local/$$b" || true
+          # private-политика по умолчанию: публичный доступ запрещён
+          mc anonymous set none "local/$$b" || true
+        done
+        # lifecycle "удалить через 1 день" — только если правила ещё нет.
+        # NB: grep в этом образе отсутствует — проверяем непустой вывод (sh-совместимо)
+        if [ -z "$(mc ilm rule ls local/tmp 2>/dev/null)" ]; then
+          mc ilm rule add --expire-days 1 local/tmp
+        fi
+        echo "minio-init: buckets and policies ready"
+        mc ls local
+
+  # --------------------------------------------------------------------------
+  # Keycloak 26: реалм medical-portal импортируется из манифеста (0.4).
+  # issuer = http://localhost:8180/realms/medical-portal (KC_HOSTNAME).
+  # --------------------------------------------------------------------------
+  keycloak:
+    logging: *default-logging
+    image: quay.io/keycloak/keycloak:26.2.0
+    command: start-dev --import-realm
+    environment:
+      KC_HEALTH_ENABLED: 'true'
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME:-http://localhost:8180}
+      # NB: KC_HTTP_RELATIVE_PATH="" (пустая строка из спеки) роняет старт:
+      # quarkus.management.root-path = "" → SRCFG00040. Дефолт Keycloak и
+      # так пустой — env не задаём (см. отчёт по отклонениям).
+      # Явно НЕ включаем token-exchange и прочие не-нужные фичи (0.4)
+    ports:
+      - '${KEYCLOAK_PORT:-8180}:8080'
+    volumes:
+      - ./keycloak/realm-medical-portal.json:/opt/keycloak/data/import/realm-medical-portal.json:ro
+      - keycloak-data:/opt/keycloak/data
+    healthcheck:
+      # management-интерфейс (KC_HEALTH_ENABLED) на 9000 (официальный healthcheck)
+      test:
+        - CMD-SHELL
+        - "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: localhost:9000\\r\\n\\r\\n' >&3; grep -q '200 OK' <&3"
+      interval: 15s
+      timeout: 5s
+      retries: 40
+      start_period: 60s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # RabbitMQ 4.1 + management: exchange'и medical.events/medical.dlx
+  # объявляются при старте из definitions.json (0.9, идемпотентно).
+  # Очереди НЕ объявляем — их создают сервисы сами при старте.
+  # --------------------------------------------------------------------------
+  rabbitmq:
+    logging: *default-logging
+    image: rabbitmq:4.1-management-alpine
+    # Фиксируем hostname: mnesia-каталог в томе зависит от nodename,
+    # иначе при пересоздании контейнера данные «переедут» в новый каталог.
+    hostname: rabbitmq
+    ports:
+      - '${RABBITMQ_PORT:-5672}:5672'
+      - '${RABBITMQ_MANAGEMENT_PORT:-15672}:15672'
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+      # rabbitmq.conf: loopback для guest + load_definitions (ERL-вариант
+      # падал на 4.1 c bad_environment_value — см. отчёт)
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # nginx: единая точка входа (S7.2 / architecture.md §9).
+  # Маршруты: / → web (SSR), /api/bff/* → web, /api/* → gateway, /media/* → MinIO.
+  # --------------------------------------------------------------------------
+  nginx:
+    logging: *default-logging
+    image: nginx:1.27-alpine
+    ports:
+      - '${NGINX_PORT:-8080}:80'
+      # Домены *.mp-kit.local (hosts → 127.0.0.1) ходят на стандартный порт 80
+      - '${NGINX_HTTP_PORT:-80}:80'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    # Веб и шлюз подняты (задачи 0.7/1.x): зависит от обоих
+    depends_on:
+      web:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Mailpit: dev-SMTP (UI :8025, SMTP :1025) — письма Keycloak/сервисов (S1.4).
+  # --------------------------------------------------------------------------
+  mailpit:
+    logging: *default-logging
+    image: axllent/mailpit:latest
+    ports:
+      - '${MAILPIT_UI_PORT:-8025}:8025'
+      - '${MAILPIT_SMTP_PORT:-1025}:1025'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1:8025/api/v1/info || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Web (Next.js, App Router + BFF): SSR-витрина (fsd.md §3).
+  # Depends от gateway: BFF ходит в gateway при старте страниц.
+  # --------------------------------------------------------------------------
+  web:
+    logging: *default-logging
+    build: { context: .., dockerfile: apps/web/Dockerfile }
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: '1'
+      PORT: '3000'
+      HOSTNAME: 0.0.0.0
+      # Внутренние адреса для BFF-роутов (задачи 1.x/2.x)
+      GATEWAY_INTERNAL_URL: http://gateway:4000
+      # Auth.js (задача 1.1): сессия и OIDC через Keycloak.
+      # NB: AUTH_URL НЕ задаём — Auth.js (trustHost) берёт origin из запроса,
+      # иначе redirect_uri всегда localhost и вход через *.mp-kit.local сломается.
+      AUTH_SECRET: ${AUTH_SECRET:-dev-only-secret-change-me}
+      AUTH_KEYCLOAK_ID: ${AUTH_KEYCLOAK_ID:-next-web}
+      AUTH_KEYCLOAK_SECRET: ${AUTH_KEYCLOAK_SECRET:-}
+      AUTH_KEYCLOAK_ISSUER: ${KEYCLOAK_HOSTNAME:-http://localhost:8180}/realms/${KEYCLOAK_REALM:-medical-portal}
+      # Серверные OIDC-вызовы (token/userinfo) — только внутри compose
+      AUTH_KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+    ports:
+      - '${WEB_PORT:-3000}:3000'
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/healthz || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Migrate-джобы (0.8): prisma migrate deploy ПЕРЕД стартом сервиса.
+  # Собираются в стадии build образа сервиса (там есть prisma CLI).
+  # Идемпотентно: повторный запуск — no-op.
+  # --------------------------------------------------------------------------
+  migrate-identity:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/identity/Dockerfile, target: migrate }
+    command: ['pnpm', '--filter', '@mp/identity', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://svc_identity:${SVC_IDENTITY_PASSWORD:-svc_identity_pw}@postgres:5432/db_identity
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+
+  migrate-catalog:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/catalog/Dockerfile, target: migrate }
+    command: ['pnpm', '--filter', '@mp/catalog', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://svc_catalog:${SVC_CATALOG_PASSWORD:-svc_catalog_pw}@postgres:5432/db_catalog
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+
+  migrate-patient:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/patient/Dockerfile, target: migrate }
+    command: ['pnpm', '--filter', '@mp/patient', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://svc_patients:${SVC_PATIENTS_PASSWORD:-svc_patients_pw}@postgres:5432/db_patients
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+
+  migrate-file:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/file/Dockerfile, target: migrate }
+    command: ['pnpm', '--filter', '@mp/file', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://svc_files:${SVC_FILES_PASSWORD:-svc_files_pw}@postgres:5432/db_files
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+
+  migrate-scheduling:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/scheduling/Dockerfile, target: migrate }
+    command: ['pnpm', '--filter', '@mp/scheduling', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://svc_schedule:${SVC_SCHEDULE_PASSWORD:-svc_schedule_pw}@postgres:5432/db_schedule
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+
+  migrate-report:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/report/Dockerfile, target: migrate }
+    command: ['pnpm', '--filter', '@mp/report', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://svc_report:${SVC_REPORT_PASSWORD:-svc_report_pw}@postgres:5432/db_report
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+
+  # --------------------------------------------------------------------------
+  # Приложения (0.7): каркасы всех сервисов, /healthz → 200.
+  # Прод-образы (multi-stage, non-root) собираются из Dockerfile сервиса.
+  # --------------------------------------------------------------------------
+  gateway:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/gateway/Dockerfile }
+    environment: &app-env
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SERVICE_NAME: gateway
+      PORT: '4000'
+      # Проверка токенов (1.2): jwks — по внутреннему адресу, issuer — публичный
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_HOSTNAME:-http://localhost:8180}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-medical-portal}
+      # Аудиории токенов: браузерный клиент + сервисные/e2e-клиенты реалма
+      AUTH_AUDIENCE: ${AUTH_AUDIENCE:-next-web,svc-e2e,svc-gateway,svc-backend,svc-identity}
+    ports:
+      - '${GATEWAY_PORT:-4000}:4000'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4000/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  identity:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/identity/Dockerfile }
+    environment:
+      <<: *app-env
+      SERVICE_NAME: identity
+      PORT: '4001'
+      DATABASE_URL: postgresql://svc_identity:${SVC_IDENTITY_PASSWORD:-svc_identity_pw}@postgres:5432/db_identity
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    ports:
+      - '4001:4001'
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      migrate-identity: { condition: service_completed_successfully }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4001/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  catalog:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/catalog/Dockerfile }
+    environment:
+      <<: *app-env
+      SERVICE_NAME: catalog
+      PORT: '4002'
+      DATABASE_URL: postgresql://svc_catalog:${SVC_CATALOG_PASSWORD:-svc_catalog_pw}@postgres:5432/db_catalog
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    ports:
+      - '4002:4002'
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      migrate-catalog: { condition: service_completed_successfully }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4002/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  patient:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/patient/Dockerfile }
+    environment:
+      <<: *app-env
+      SERVICE_NAME: patient
+      PORT: '4003'
+      DATABASE_URL: postgresql://svc_patients:${SVC_PATIENTS_PASSWORD:-svc_patients_pw}@postgres:5432/db_patients
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    ports:
+      - '4003:4003'
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      migrate-patient: { condition: service_completed_successfully }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4003/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  file:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/file/Dockerfile }
+    environment:
+      <<: *app-env
+      SERVICE_NAME: file
+      PORT: '4004'
+      DATABASE_URL: postgresql://svc_files:${SVC_FILES_PASSWORD:-svc_files_pw}@postgres:5432/db_files
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    ports:
+      - '4004:4004'
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      migrate-file: { condition: service_completed_successfully }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4004/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  scheduling:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/scheduling/Dockerfile }
+    environment:
+      <<: *app-env
+      SERVICE_NAME: scheduling
+      PORT: '4005'
+      DATABASE_URL: postgresql://svc_schedule:${SVC_SCHEDULE_PASSWORD:-svc_schedule_pw}@postgres:5432/db_schedule
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    ports:
+      - '4005:4005'
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      migrate-scheduling: { condition: service_completed_successfully }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4005/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  report:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/report/Dockerfile }
+    environment:
+      <<: *app-env
+      SERVICE_NAME: report
+      PORT: '4006'
+      DATABASE_URL: postgresql://svc_report:${SVC_REPORT_PASSWORD:-svc_report_pw}@postgres:5432/db_report
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    ports:
+      - '4006:4006'
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      migrate-report: { condition: service_completed_successfully }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4006/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  notification:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/notification/Dockerfile }
+    environment:
+      <<: *app-env
+      SERVICE_NAME: notification
+      PORT: '4007'
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    ports:
+      - '4007:4007'
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4007/healthz || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Elasticsearch + Kibana + Filebeat: канал логов pino (0.10).
+  # --------------------------------------------------------------------------
+  elasticsearch:
+    logging: *default-logging
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: 'false' # только dev
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - '${ELASTIC_PORT:-9200}:9200'
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      # single-node + number_of_replicas=0 → green; на первых индексах допускаем yellow
+      test:
+        - CMD-SHELL
+        - curl -s http://127.0.0.1:9200/_cluster/health | grep -qE '"status":"(green|yellow)"'
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+    restart: unless-stopped
+
+  kibana:
+    logging: *default-logging
+    image: docker.elastic.co/kibana/kibana:8.17.0
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - '${KIBANA_PORT:-5601}:5601'
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -sf -o /dev/null http://127.0.0.1:5601/api/status || exit 1']
+      interval: 15s
+      timeout: 10s
+      retries: 60
+      start_period: 90s
+    restart: unless-stopped
+
+  filebeat:
+    logging: *default-logging
+    image: elastic/filebeat:8.17.0
+    user: root # доступ к docker.sock для autodiscovery
+    # аргументы-флаги: entrypoint сам добавляет бинарь (см. elastic entrypoint).
+    # NB: `-environment container` НЕ работал в 8.17 (unknown command),
+    # а `-strict.perms` — только длинный флаг (unknown shorthand flag: 's')
+    command: ['-e', '--strict.perms=false']
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Логи контейнеров — источник для autodiscover-шаблона (type: container)
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - filebeatdata:/usr/share/filebeat/data # registry — переживает рестарты
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      # в образе filebeat нет curl/wget — держим простой liveness по PID 1
+      test: ['CMD-SHELL', 'kill -0 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # elastic-init: идемпотентная выгрузка ILM-политики и index-шаблона (0.10).
+  # Ретеншн — из LOG_ILM_HOT_DAYS / LOG_ILM_WARM_DAYS (дефолты 7/30).
+  # --------------------------------------------------------------------------
+  elastic-init:
+    logging: *default-logging
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      LOG_ILM_HOT_DAYS: ${LOG_ILM_HOT_DAYS:-7}
+      LOG_ILM_WARM_DAYS: ${LOG_ILM_WARM_DAYS:-30}
+      LOG_INDEX_PREFIX: ${LOG_INDEX_PREFIX:-mp-logs}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        # NB: shell-переменные экранированы двойным долларом, иначе compose
+        # интерполирует их в пустую строку. Значения ретеншна ниже интерполирует
+        # сам compose (из .env, дефолты 7/30).
+        ES=http://elasticsearch:9200
+        echo "elastic-init: uploading ILM policy ${LOG_INDEX_PREFIX:-mp-logs}-ilm ..."
+        curl -sf -X PUT "$$ES/_ilm/policy/${LOG_INDEX_PREFIX:-mp-logs}-ilm" \
+          -H 'Content-Type: application/json' -d @- <<'EOF' || true
+        {
+          "policy": {
+            "phases": {
+              "hot": {
+                "min_age": "0ms",
+                "actions": {
+                  "rollover": { "max_primary_shard_size": "50gb", "max_age": "${LOG_ILM_HOT_DAYS:-7}d" },
+                  "set_priority": { "priority": 100 }
+                }
+              },
+              "warm": {
+                "min_age": "${LOG_ILM_HOT_DAYS:-7}d",
+                "actions": {
+                  "forcemerge": { "max_num_segments": 1 },
+                  "set_priority": { "priority": 50 }
+                }
+              },
+              "delete": {
+                "min_age": "${LOG_ILM_WARM_DAYS:-30}d",
+                "actions": { "delete": {} }
+              }
+            }
+          }
+        }
+        EOF
+        echo "elastic-init: uploading index template ${LOG_INDEX_PREFIX:-mp-logs}-* ..."
+        curl -sf -X PUT "$$ES/_index_template/${LOG_INDEX_PREFIX:-mp-logs}" \
+          -H 'Content-Type: application/json' -d @- <<'EOF' || true
+        {
+          "index_patterns": ["${LOG_INDEX_PREFIX:-mp-logs}-*"],
+          "priority": 500,
+          "template": {
+            "settings": {
+              "number_of_shards": 1,
+              "number_of_replicas": 0,
+              "index.lifecycle.name": "${LOG_INDEX_PREFIX:-mp-logs}-ilm",
+              "index.mapping.total_fields.limit": 2000
+            },
+            "mappings": {
+              "properties": {
+                "@timestamp": { "type": "date" },
+                "service": { "type": "keyword" },
+                "traceId": { "type": "keyword" },
+                "level": { "type": "keyword" },
+                "eventId": { "type": "keyword" }
+              }
+            }
+          }
+        }
+        EOF
+        echo "elastic-init: done"
+        curl -s "$$ES/_ilm/policy" | head -c 400; echo
+        curl -s "$$ES/_index_template" | head -c 400; echo
+
+# ============================================================================
+# Тома: именованные (не анонимные), имена фиксированы — переживают
+# `docker compose restart`, `down` (без -v) и `down && up`.
+# ============================================================================
+volumes:
+  pgdata:
+    name: mp-v2_pgdata
+  miniodata:
+    name: mp-v2_miniodata
+  keycloak-data:
+    name: mp-v2_keycloak-data
+  rabbitmqdata:
+    name: mp-v2_rabbitmqdata
+  esdata:
+    name: mp-v2_esdata
+  filebeatdata:
+    name: mp-v2_filebeatdata
+
+# ============================================================================
+# ВСЕ сервисы определены: web, gateway, identity, catalog, patient, file,
+# scheduling, report, notification + migrate-джобы (0.7/0.8).
+# Дальнейшие задачи добавляют только доменные слои внутрь сервисов.
+# ============================================================================

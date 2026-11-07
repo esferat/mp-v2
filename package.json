@@ -1,0 +1,44 @@
+{
+  "name": "mp-v2",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@12.10.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "pnpm -r --no-bail run lint",
+    "lint:fix": "pnpm -r --no-bail run lint:fix",
+    "typecheck": "pnpm run gen && pnpm -r --no-bail run typecheck",
+    "test": "pnpm -r --no-bail run test",
+    "test:coverage": "pnpm -r --no-bail run test:coverage",
+    "build": "pnpm run gen && pnpm -r run build",
+    "gen": "pnpm --filter @mp/contracts gen && pnpm -r --filter \"./services/*\" run gen",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "dev:web": "pnpm --filter @mp/web dev",
+    "dev:gateway": "pnpm --filter @mp/gateway dev",
+    "db:migrate": "pnpm -r --filter \"./services/*\" run db:migrate",
+    "db:seed": "pnpm -r --filter \"./services/*\" run db:seed",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@mp/eslint-config-fsd": "workspace:*",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.72.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{js,mjs,cjs,json,md,yml,yaml,css}": [
+      "prettier --write"
+    ]
+  }
+}

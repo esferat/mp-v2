@@ -1,0 +1,8 @@
+title = "mp-v2"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Dev-seed креды локального окружения (только .env.example, не используются в проде)"
+paths = ['''\.env\.example$''']

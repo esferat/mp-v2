@@ -1,0 +1,33 @@
+# Зависимости и сборка
+node_modules/
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Генерируемый Prisma Client (создаётся `pnpm gen`)
+services/*/src/generated/
+
+# Покрытие и артефакты тестов
+coverage/
+.nyc_output/
+
+# Окружение и секреты
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Локальные сертификаты TLS
+infra/nginx/tls/*.pem
+infra/nginx/tls/*.key
+
+# Логи и редакторы
+*.log
+.idea/
+.vscode/
+.DS_Store
+
+# Sonar
+.scannerwork/

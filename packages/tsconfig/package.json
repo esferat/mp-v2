@@ -1,0 +1,12 @@
+{
+  "name": "@mp/tsconfig",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Общие пресеты TypeScript для проектов mp-v2",
+  "files": [
+    "strict-base.json",
+    "nest.json",
+    "next.json",
+    "library.json"
+  ]
+}

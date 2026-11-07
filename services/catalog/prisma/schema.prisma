@@ -1,0 +1,78 @@
+// Схема БД каталога (db_catalog) — владение catalog-service (architecture.md §5).
+// URL берётся из prisma.config.ts (env DATABASE_URL), а не отсюда (Prisma 7).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Специализация врача (справочник).
+model Specialization {
+  id        String   @id @default(cuid())
+  /// Уникально без учёта регистра: "Хирург" = "хирург" (3.3 AC).
+  name      String
+  /// Ключ уникальности в нижнем регистре (Postgres-вариант case-insensitive unique).
+  nameLower String   @unique
+  doctors   Doctor[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+/// Врач (3.1/3.2: карточка + расписание приёма).
+model Doctor {
+  id               String         @id @default(cuid())
+  firstName        String
+  lastName         String
+  middleName       String?
+  specializationId String
+  specialization   Specialization @relation(fields: [specializationId], references: [id])
+  /// ACTIVE — виден в записи; INACTIVE — архивирован (3.2).
+  status           String         @default("ACTIVE")
+  photoKey         String?
+  /// Расписание: начало/конец рабочего дня, HH:mm.
+  scheduleStart    String
+  scheduleEnd      String
+  /// Длительность приёма, минут (5–240).
+  durationMinutes  Int
+  /// Рабочие дни недели: 1 = понедельник … 7 = воскресенье.
+  workDays         Int[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([specializationId, status])
+  @@index([lastName, firstName])
+  /// Основной список: WHERE status = ... ORDER BY lastName, firstName.
+  @@index([status, lastName, firstName])
+}
+
+/// Outbox: событие пишется в той же транзакции, что и изменение (0.9).
+model OutboxMessage {
+  id            String    @id @default(cuid())
+  /// Агрегат-источник (например, id специализации).
+  aggregateId   String?
+  routingKey    String
+  payload       Json
+  /// Время возникновения события (occurredAt конверта).
+  occurredAt    DateTime?
+  status        String    @default("PENDING")
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  publishedAt   DateTime?
+  lastError     String?
+
+  @@index([status, nextAttemptAt])
+}
+
+/// Inbox: idempotency-key потребителя (0.9) — повторная доставка не даёт эффекта дважды.
+model InboxMessage {
+  messageId  String    @id
+  routingKey String
+  processedAt DateTime @default(now())
+}

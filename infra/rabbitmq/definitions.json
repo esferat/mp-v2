@@ -1,0 +1,40 @@
+{
+  "vhosts": [{ "name": "/" }],
+  "users": [
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": ""
+    }
+  ],
+  "permissions": [
+    { "user": "guest", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" }
+  ],
+  "exchanges": [
+    {
+      "name": "medical.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "medical.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "users": [],
+  "permissions": [],
+  "queues": [],
+  "bindings": [],
+  "policies": [],
+  "parameters": [],
+  "global_parameters": []
+}

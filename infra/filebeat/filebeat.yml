@@ -1,0 +1,97 @@
+# ============================================================================
+# mp-v2 — Filebeat: stdout docker-контейнеров → Elasticsearch (задача 0.10).
+# Логи сервисов — pino (JSON); после decode_json_fields поля service/traceId/
+# level/eventId лежат на верхнем уровне и попадают в маппинг index-шаблона
+# (см. elastic-init в docker-compose.yml).
+# ============================================================================
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: false
+      # Шаблон для всех контейнеров (без condition): логи container-runtime
+      # в /var/lib/docker/containers (монтируется в compose)
+      templates:
+        - config:
+            - type: container
+              paths:
+                - '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+
+processors:
+  # JSON от pino → поля на верхний уровень события.
+  # NB: ignore_decoding_error в 8.17 не существует, add_error_key убран:
+  # он писал строку в error.message, конфликтуя с ECS-объектом error.
+  # target не задаём: "" (по умолчанию) = верхний уровень; '.' создавал поле-точку
+  # и поля service/traceId не появлялись → фильтр has_fields отсеивал всё.
+  - decode_json_fields:
+      fields: ['message']
+      # NB: в filebeat 8.x decode_json_fields пишет результат В message
+      # (target не даёт корень) — service/traceId/level вытаскиваем наверх
+      # copy_fields: маппинг index-шаблона (0.10) ждёт их на верхнем уровне.
+      overwrite_keys: true
+  - copy_fields:
+      fields:
+        - from: 'message.service'
+          to: 'service'
+        - from: 'message.traceId'
+          to: 'traceId'
+        - from: 'message.eventId'
+          to: 'eventId'
+        - from: 'message.level'
+          to: 'level'
+        - from: 'message.msg'
+          to: 'msg'
+        - from: 'message.time'
+          to: 'time'
+        - from: 'message.method'
+          to: 'method'
+        - from: 'message.path'
+          to: 'path'
+        - from: 'message.status'
+          to: 'status'
+        - from: 'message.durationMs'
+          to: 'durationMs'
+        - from: 'message.requestTime'
+          to: 'requestTime'
+        - from: 'message.routingKey'
+          to: 'routingKey'
+      fail_on_error: false
+      ignore_missing: true
+  # Пропускаем только сервисные pino-логи (поля service/traceId появились в
+  # корне после target: ''); контейнерный шум (docker-события filebeat, nginx,
+  # текстовые логи) отбрасывается — у него поля service нет, и он не должен
+  # засорять индекс (AC 0.10: логи всех сервисов, без дублей и потерь).
+  - drop_event:
+      when:
+        not:
+          has_fields: ['service']
+  # Метаданные контейнера (docker.container.name и пр.)
+  - add_docker_metadata:
+      host: 'unix:///var/run/docker.sock'
+  # Labels контейнеров — сотни динамических полей (desktop_docker_io/binds/…),
+  # они исчерпывали limit total_fields=1000 и ВАЛИЛИ индексацию pino-событий
+  # (document_parsing_exception). Имя контейнера/образа остаются — их хватает.
+  - drop_fields:
+      fields:
+        - docker.container.labels
+        - container.labels
+      when:
+        has_fields: ['docker.container.labels']
+
+output.elasticsearch:
+  hosts: ['http://elasticsearch:9200']
+  index: 'mp-logs-%{+yyyy.MM.dd}'
+
+# ILM: политику (mp-logs-ilm) и шаблон выгружает elastic-init с ретеншном
+# из LOG_ILM_HOT_DAYS/LOG_ILM_WARM_DAYS; filebeat ссылается на то же имя.
+setup.ilm.enabled: true
+setup.ilm.policy_name: mp-logs-ilm
+setup.template.name: mp-logs
+setup.template.pattern: 'mp-logs-*'
+
+setup.kibana:
+  host: 'http://kibana:5601'
+
+# Логи filebeat — только stdout (нет дублирования в файлы)
+logging.to_files: false
+logging.level: info

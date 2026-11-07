@@ -1,0 +1,39 @@
+// Схема БД сервиса {{NAME}} ({{DB}}) — владение {{NAME}}-service (architecture.md §5).
+// URL берётся из prisma.config.ts (env DATABASE_URL), а не отсюда (Prisma 7).
+// Доменные модели добавляются в задачах эпиков — каркас содержит только
+// служебные таблицы outbox/inbox (0.9).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Outbox: событие пишется в той же транзакции, что и изменение (0.9).
+model OutboxMessage {
+  id            String    @id @default(cuid())
+  /// Агрегат-источник (например, id сущности).
+  aggregateId   String?
+  routingKey    String
+  payload       Json
+  /// Время возникновения события (occurredAt конверта).
+  occurredAt    DateTime?
+  status        String    @default("PENDING")
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  publishedAt   DateTime?
+  lastError     String?
+
+  @@index([status, nextAttemptAt])
+}
+
+/// Inbox: idempotency-key потребителя (0.9) — повторная доставка не даёт эффекта дважды.
+model InboxMessage {
+  messageId   String    @id
+  routingKey  String
+  processedAt DateTime  @default(now())
+}

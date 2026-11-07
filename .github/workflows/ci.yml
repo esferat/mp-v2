@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Новые раны отменяют предыдущие по тому же ref
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: lint · typecheck · test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # gitleaks (отдельный job) единственный, кому нужна полная история
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.10.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Установка зависимостей
+        run: pnpm install --frozen-lockfile
+
+      - name: Генерация контрактов (OpenAPI + Prisma Client)
+        run: pnpm gen
+
+      - name: Линт (границы FSD)
+        run: pnpm lint
+
+      # Без обёртки pnpm typecheck: она повторно запускает gen (уже выполнен выше)
+      - name: Типы
+        run: pnpm -r --no-bail run typecheck
+
+      - name: Формат
+        run: pnpm format:check
+
+      - name: Тесты с покрытием
+        run: pnpm test:coverage
+
+      - name: Загрузка покрытия
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: '**/coverage/lcov.info'
+          if-no-files-found: ignore
+
+  secrets:
+    name: gitleaks (секреты)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false

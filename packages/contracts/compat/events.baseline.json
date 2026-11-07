@@ -1,0 +1,296 @@
+{
+  "user.registered.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "user.role-changed.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "patient.created.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "patient.updated.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "doctor.created.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "doctor.updated.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "specialization.changed.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "document.uploaded.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "document.deleted.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "appointment.submitted.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "appointment.approved.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "appointment.declined.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "appointment.cancelled.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  },
+  "appointment.completed.v1": {
+    "required": [
+      "eventId",
+      "occurredAt",
+      "payload"
+    ],
+    "properties": {
+      "eventId": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "string"
+      },
+      "traceId": {
+        "type": "string"
+      },
+      "payload": {
+        "type": "object"
+      }
+    }
+  }
+}
