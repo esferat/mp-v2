@@ -18,7 +18,16 @@ export const slotsQuerySchema = z.object({
 });
 export type SlotsQuery = z.infer<typeof slotsQuerySchema>;
 
-export const slotListSchema = z.array(slotSchema.extend({ doctorId: z.string().min(1) }));
+/**
+ * Свободные окна с ФИО врача: wizard записи группирует слоты по врачу
+ * (design/booking.md шаг 2), не ходя в админский список врачей (3.1 AC: USER → 403).
+ */
+export const slotListSchema = z.array(
+  slotSchema.extend({
+    doctorId: z.string().min(1),
+    doctorName: z.string().min(1),
+  }),
+);
 export type SlotList = z.infer<typeof slotListSchema>;
 
 /** POST /api/scheduling/appointments */
@@ -44,6 +53,13 @@ export const appointmentSchema = z.object({
   slot: slotSchema,
   declineReason: z.string().min(1).optional(),
   createdAt: z.iso.datetime(),
+  /** Результат приёма для COMPLETED (9.2: история показывает read-only). */
+  visitResult: z
+    .object({
+      conclusion: z.string().min(1),
+      recommendations: z.string().min(1).optional(),
+    })
+    .optional(),
 });
 export type Appointment = z.infer<typeof appointmentSchema>;
 
@@ -63,3 +79,81 @@ export const setAppointmentStatusSchema = z.object({
   reason: z.string().min(3).max(500).optional(),
 });
 export type SetAppointmentStatusRequest = z.infer<typeof setAppointmentStatusSchema>;
+
+/** PUT /api/scheduling/appointments/:id/cancel (5.4): отмена из SUBMITTED/APPROVED. */
+export const cancelAppointmentSchema = z.object({
+  reason: z.string().min(3).max(500).optional(),
+});
+export type CancelAppointmentRequest = z.infer<typeof cancelAppointmentSchema>;
+
+/** Ответ списка записей с пагинацией (5.4/5.5 AC: total нужен пагинации). */
+export const appointmentListResponseSchema = z.object({
+  items: z.array(appointmentSchema),
+  total: z.number().int().min(0),
+});
+export type AppointmentListResponse = z.infer<typeof appointmentListResponseSchema>;
+
+/**
+ * Результат приёма (9.2): заключение обязательно (<= 4000), рекомендации —
+ * по желанию (<= 4000); валидация живёт в домене scheduling.
+ */
+export const enterVisitResultSchema = z.object({
+  conclusion: z.string().min(1).max(4000),
+  recommendations: z.string().max(4000).optional(),
+});
+export type EnterVisitResultRequest = z.infer<typeof enterVisitResultSchema>;
+
+/** Правка результата уже завершённого приёма (9.2). */
+export const updateVisitResultSchema = enterVisitResultSchema;
+export type UpdateVisitResultRequest = z.infer<typeof updateVisitResultSchema>;
+
+/** Результат приёма в ответах API (9.2). */
+export const visitResultSchema = z.object({
+  appointmentId: z.string().min(1),
+  conclusion: z.string().min(1),
+  recommendations: z.string().min(1).optional(),
+  /** Кто внёс (userId врача). */
+  createdBy: z.string().min(1),
+  updatedAt: z.iso.datetime(),
+});
+export type VisitResult = z.infer<typeof visitResultSchema>;
+
+/** Пациент врача из его записей (9.3: /doctor/patients, distinct). */
+export const doctorPatientSchema = z.object({
+  patientId: z.string().min(1),
+  patientName: z.string().min(1),
+  /** Последний приём (ISO-дата: YYYY-MM-DD). */
+  lastVisit: z.iso.date().optional(),
+});
+export type DoctorPatient = z.infer<typeof doctorPatientSchema>;
+
+export const doctorPatientListSchema = z.object({
+  items: z.array(doctorPatientSchema),
+  total: z.number().int().min(0),
+});
+export type DoctorPatientList = z.infer<typeof doctorPatientListSchema>;
+
+/**
+ * Внутренние вызовы file → scheduling (9.3): есть ли у врача действующая
+ * связь с пациентом. Связь = запись APPROVED или COMPLETED (отменённая/
+ * отклонённая запись доступа не даёт — AC 9.3 «потеря связи закрывает доступ»).
+ * В gateway-реестр не входит: маршрут служебный, вызывается только файловым
+ * сервисом напрямую (http://scheduling:4005).
+ */
+export const doctorRelationQuerySchema = z.object({
+  /** Keycloak sub врача (не doctorId: file знает только subject.sub). */
+  userId: z.string().min(1),
+  patientId: z.string().min(1),
+});
+export type DoctorRelationQuery = z.infer<typeof doctorRelationQuerySchema>;
+
+export const doctorRelationResponseSchema = z.object({
+  related: z.boolean(),
+});
+export type DoctorRelationResponse = z.infer<typeof doctorRelationResponseSchema>;
+
+/** Привязка sub → doctorId (9.3: file решает, свои ли файлы врача). */
+export const doctorByUserResponseSchema = z.object({
+  doctorId: z.string().min(1),
+});
+export type DoctorByUserResponse = z.infer<typeof doctorByUserResponseSchema>;

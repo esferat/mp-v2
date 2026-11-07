@@ -7,7 +7,7 @@ import {
   type ExceptionFilter,
 } from '@nestjs/common';
 import { getTraceId, LOGGER, type Logger } from '@mp/service-kit';
-import { DomainError } from '../../shared/model';
+import { DomainError, ValidationError } from '../../shared/model';
 
 /** Профиль HTTP-ответа без зависимости от типов express. */
 interface HttpResponseLike {
@@ -33,10 +33,16 @@ export class ApiErrorFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<HttpResponseLike>();
     const request = host.switchToHttp().getRequest<HttpRequestLike>();
-    const { status, code, message } = classify(exception);
+    const { status, code, message, field } = classify(exception);
     const requestId = getTraceId();
 
-    const payload = { code, message, ...(requestId ? { requestId } : {}) };
+    // field: ошибка валидации привязана к полю формы (4.4/4.5)
+    const payload = {
+      code,
+      message,
+      ...(field ? { field } : {}),
+      ...(requestId ? { requestId } : {}),
+    };
 
     if (status >= 500) {
       this.log.error(
@@ -58,11 +64,37 @@ interface Classified {
   status: number;
   code: string;
   message: string;
+  field?: string;
 }
 
 function classify(exception: unknown): Classified {
   if (exception instanceof DomainError) {
-    return { status: exception.status, code: exception.code, message: exception.message };
+    const field = exception instanceof ValidationError ? exception.field : undefined;
+    return {
+      status: exception.status,
+      code: exception.code,
+      message: exception.message,
+      ...(field ? { field } : {}),
+    };
+  }
+
+  // Nest превращает LIMIT_FILE_SIZE (multer) в 413 PayloadTooLarge,
+  // но контракт 4.4 требует 400 с понятным кодом
+  if (exception instanceof HttpException && exception.getStatus() === 413) {
+    return { status: 400, code: 'FILE_TOO_LARGE', message: 'Файл больше 5 МБ' };
+  }
+
+  // Ошибки multer (лимит/форма multipart) — это валидация входа, а не 500
+  const multerCode = extractMulterCode(exception);
+  if (multerCode === 'LIMIT_FILE_SIZE') {
+    return { status: 400, code: 'FILE_TOO_LARGE', message: 'Файл больше 5 МБ' };
+  }
+  if (multerCode.startsWith('LIMIT_')) {
+    return {
+      status: 400,
+      code: 'FILE_INVALID',
+      message: 'Некорректная загрузка (ожидается один файл в поле file)',
+    };
   }
 
   if (exception instanceof HttpException) {
@@ -83,4 +115,11 @@ function classify(exception: unknown): Classified {
 
   // Внутренняя ошибка: детали — только в лог, клиенту — обобщённое сообщение.
   return { status: 500, code: 'INTERNAL_ERROR', message: 'Внутренняя ошибка сервера' };
+}
+
+/** code ошибки multer ('LIMIT_FILE_SIZE' и т.п.); '' — не multer. */
+function extractMulterCode(exception: unknown): string {
+  if (typeof exception !== 'object' || exception === null || !('code' in exception)) return '';
+  const code = (exception as { code?: unknown }).code;
+  return typeof code === 'string' ? code : '';
 }

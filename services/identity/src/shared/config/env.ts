@@ -23,6 +23,8 @@ export const IdentityEnvSchema = z.object({
   /// patient-service напрямую (architecture.md §165: сервис → сервис).
   PATIENT_SERVICE_URL: z.string().min(1).default('http://patient:4003'),
   PATIENT_SERVICE_TIMEOUT_MS: z.coerce.number().int().min(100).default(10_000),
+  /// catalog-service для саги врача (9.1: шаг B — создание врача с userId).
+  CATALOG_SERVICE_URL: z.string().min(1).default('http://catalog:4002'),
 });
 
 export type IdentityEnv = BaseEnv & z.infer<typeof IdentityEnvSchema>;

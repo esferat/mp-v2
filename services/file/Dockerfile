@@ -17,6 +17,7 @@ COPY packages/tsconfig/package.json packages/tsconfig/
 COPY packages/eslint-config-fsd/package.json packages/eslint-config-fsd/
 COPY packages/contracts/package.json packages/contracts/
 COPY packages/service-kit/package.json packages/service-kit/
+COPY packages/storage/package.json packages/storage/
 COPY services/file/package.json services/file/
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
@@ -28,6 +29,7 @@ COPY services/file ./services/file
 # contracts: генерация dist + openapi/gateway.json; service-kit: tsc → dist
 RUN pnpm --filter @mp/contracts gen \
   && pnpm --filter @mp/service-kit build \
+  && pnpm --filter @mp/storage build \
   && pnpm --filter @mp/file gen \
   && pnpm --filter @mp/file build \
   # Чистый prod-набор зависимостей сервиса (включая workspace-пакеты)

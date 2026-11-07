@@ -1,4 +1,4 @@
-﻿# ============================================================================
+# ============================================================================
 # mp-v2 — единый compose-стек инфраструктуры (Этап 0: задачи 0.3, 0.4, 0.5,
 # 0.8, 0.9, 0.10, сценарий S7.2).
 #
@@ -332,7 +332,7 @@ services:
       KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_HOSTNAME:-http://localhost:8180}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-medical-portal}
       # Аудиории токенов: браузерный клиент + сервисные/e2e-клиенты реалма
-      AUTH_AUDIENCE: ${AUTH_AUDIENCE:-next-web,svc-e2e,svc-gateway,svc-backend,svc-identity}
+      AUTH_AUDIENCE: ${AUTH_AUDIENCE:-next-web,svc-e2e,svc-gateway,svc-backend,svc-identity,svc-file}
     ports:
       - '${GATEWAY_PORT:-4000}:4000'
     healthcheck:
@@ -398,6 +398,11 @@ services:
       PORT: '4003'
       DATABASE_URL: postgresql://svc_patients:${SVC_PATIENTS_PASSWORD:-svc_patients_pw}@postgres:5432/db_patients
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+      # MinIO (4.1: presigned photoUrl в списке пациентов)
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minio123}
+      PRESIGNED_TTL_SECONDS: ${PRESIGNED_TTL_SECONDS:-300}
     ports:
       - '4003:4003'
     depends_on:
@@ -421,6 +426,14 @@ services:
       PORT: '4004'
       DATABASE_URL: postgresql://svc_files:${SVC_FILES_PASSWORD:-svc_files_pw}@postgres:5432/db_files
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+      # MinIO (4.4): внутренний адрес, креды из корневых переменных minio
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minio123}
+      PRESIGNED_TTL_SECONDS: ${PRESIGNED_TTL_SECONDS:-300}
+      # Service account svc-file (вызовы patient/catalog, 3.4/4.4)
+      KEYCLOAK_SVC_FILE_CLIENT_ID: ${KEYCLOAK_SVC_FILE_CLIENT_ID:-svc-file}
+      KEYCLOAK_SVC_FILE_SECRET: ${KEYCLOAK_SVC_FILE_SECRET:-dev-file-secret}
     ports:
       - '4004:4004'
     depends_on:
@@ -444,6 +457,10 @@ services:
       PORT: '4005'
       DATABASE_URL: postgresql://svc_schedule:${SVC_SCHEDULE_PASSWORD:-svc_schedule_pw}@postgres:5432/db_schedule
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+      # Строгая последовательность обработки (4.6 AC): denorm-потребители
+      # (patient.* → ФИО в записях) обязаны идти по порядку событий,
+      # иначе «более старое событие» может примениться после нового.
+      RABBITMQ_PREFETCH: ${RABBITMQ_PREFETCH:-1}
     ports:
       - '4005:4005'
     depends_on:

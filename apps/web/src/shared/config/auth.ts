@@ -71,11 +71,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } as JwtState;
       }
 
-      // До истечения 60 с — пробуем обновить; сбой не роняет сессию
+      // До истечения 60 с — пробуем обновить; сбой не роняет сессию.
+      // Эндпоинт — ВНУТРЕННИЙ адрес Keycloak: jwt-callback выполняется в
+      // контейнере web, где localhost:8180 недоступен (без этого обновление
+      // всегда падало и SSR ломался через TTL access_token ~5 мин).
       if (msUntilExpiry(state) < 60_000) {
         return refreshAccessToken(
           state,
-          env.AUTH_KEYCLOAK_ISSUER,
+          `${env.AUTH_KEYCLOAK_INTERNAL_URL}/realms/${env.AUTH_KEYCLOAK_REALM}`,
           env.AUTH_KEYCLOAK_ID,
           env.AUTH_KEYCLOAK_SECRET,
         );
@@ -92,6 +95,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       const state = token as JwtState;
       session.user.roles = state.roles ?? [];
+      // sub пациента/врача для серверных загрузок (профиль 4.2, кабинет 9.x)
+      if (state.user?.sub) {
+        session.user.id = state.user.sub;
+      }
       return session;
     },
 

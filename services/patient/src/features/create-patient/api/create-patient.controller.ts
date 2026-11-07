@@ -1,7 +1,7 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { createPatientRequestSchema, type CreatePatientRequest, type Patient } from '@mp/contracts';
-import { PATIENT_REPOSITORY } from '../../../entities/patient';
-import type { PatientRepository } from '../../../entities/patient';
+import type { PatientContext } from '../../../entities/patient';
+import { UNIT_OF_WORK, type UnitOfWork } from '../../../entities/repository';
 import { ZodPipe } from '../../../shared/lib';
 import { createPatient } from '../app/create-patient';
 
@@ -13,14 +13,14 @@ import { createPatient } from '../app/create-patient';
 @Controller('api/patient')
 export class CreatePatientController {
   constructor(
-    @Inject(PATIENT_REPOSITORY)
-    private readonly repository: PatientRepository,
+    @Inject(UNIT_OF_WORK)
+    private readonly unitOfWork: UnitOfWork<PatientContext>,
   ) {}
 
   @Post()
   create(
     @Body(new ZodPipe(createPatientRequestSchema)) body: CreatePatientRequest,
   ): Promise<Patient> {
-    return createPatient(this.repository, body);
+    return createPatient(this.unitOfWork, body);
   }
 }

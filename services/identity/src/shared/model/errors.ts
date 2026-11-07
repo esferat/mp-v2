@@ -39,3 +39,10 @@ export class ConflictError extends DomainError {
     super(message, 409, 'CONFLICT');
   }
 }
+
+/** Сбой соседнего сервиса (502): catalog/patient недоступны или ответ не ОК. */
+export class UpstreamError extends DomainError {
+  constructor(message: string) {
+    super(message, 502, 'UPSTREAM_ERROR');
+  }
+}

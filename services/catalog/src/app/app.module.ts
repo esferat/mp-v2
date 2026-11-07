@@ -17,6 +17,10 @@ import { DeleteSpecializationModule } from '../features/delete-specialization';
 import { GetDoctorsModule } from '../features/get-doctors';
 import { GetSpecializationsModule } from '../features/get-specializations';
 import { HealthFeatureModule } from '../features/health';
+import { CreateDoctorModule } from '../features/create-doctor';
+import { UpdateDoctorModule } from '../features/update-doctor';
+import { GetDoctorModule } from '../features/get-doctor';
+import { SetDoctorPhotoModule } from '../features/set-doctor-photo';
 
 /**
  * Composition root (fsd.md §4.1): только регистрация слайсов и глобальных
@@ -53,6 +57,10 @@ const env = getCatalogEnv();
 
     // Слайсы
     HealthFeatureModule,
+    CreateDoctorModule,
+    UpdateDoctorModule,
+    GetDoctorModule,
+    SetDoctorPhotoModule,
     GetSpecializationsModule,
     GetDoctorsModule,
     CreateSpecializationModule,

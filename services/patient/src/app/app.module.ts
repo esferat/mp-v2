@@ -14,6 +14,10 @@ import { ApiErrorFilter, RequestLogInterceptor } from './kernel';
 import { getPatientEnv } from '../shared/config';
 import { CreatePatientModule } from '../features/create-patient';
 import { GetPatientByUserModule } from '../features/get-patient-by-user';
+import { GetPatientModule } from '../features/get-patient';
+import { GetPatientsModule } from '../features/get-patients';
+import { UpdatePatientModule } from '../features/update-patient';
+import { SetPatientPhotoModule } from '../features/set-patient-photo';
 import { HealthFeatureModule } from '../features/health';
 
 /**
@@ -53,6 +57,10 @@ const env = getPatientEnv();
     HealthFeatureModule,
     CreatePatientModule,
     GetPatientByUserModule,
+    GetPatientModule,
+    GetPatientsModule,
+    UpdatePatientModule,
+    SetPatientPhotoModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

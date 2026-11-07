@@ -1,4 +1,10 @@
-import { Inject, Injectable, Module, type DynamicModule } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Module,
+  type DynamicModule,
+  type InjectionToken,
+} from '@nestjs/common';
 import type { Logger } from 'pino';
 import { LOGGER } from '../logger/logger.module';
 
@@ -75,14 +81,50 @@ export interface InboxModuleOptions {
   store: InboxStore;
 }
 
-/** Модуль inbox (0.9): InboxModule.forRoot({ store: createPrismaInboxStore(prisma.inboxMessage) }). */
+/** Асинхронные опции (зеркало OutboxModule.forRootAsync): store из DI-клиента. */
+export interface InboxModuleAsyncOptions<TArgs extends unknown[] = unknown[]> {
+  /** Зависимости фабрики (например, [PrismaService]). */
+  inject?: unknown[];
+  /** Возвращает опции модуля (store — часто из Prisma-делегата). */
+  useFactory: (...args: TArgs) => InboxModuleOptions | Promise<InboxModuleOptions>;
+}
+
+const INBOX_RAW_OPTIONS = Symbol('MP_INBOX_RAW_OPTIONS');
+
+/**
+ * Модуль inbox (0.9): InboxModule.forRoot({ store: createPrismaInboxStore(prisma.inboxMessage) })
+ * или forRootAsync({ inject: [PrismaService],
+ *   useFactory: (prisma) => ({ store: createPrismaInboxStore(prisma.inboxMessage) }) }).
+ */
 @Module({})
 export class InboxModule {
   static forRoot(options: InboxModuleOptions): DynamicModule {
     return {
       module: InboxModule,
+      global: true,
       providers: [{ provide: INBOX_STORE, useValue: options.store }, InboxService],
-      exports: [InboxService],
+      exports: [InboxService, INBOX_STORE],
+    };
+  }
+
+  static forRootAsync<TArgs extends unknown[]>(
+    options: InboxModuleAsyncOptions<TArgs>,
+  ): DynamicModule {
+    const inject = (options.inject ?? []) as InjectionToken[];
+
+    return {
+      module: InboxModule,
+      global: true,
+      providers: [
+        { provide: INBOX_RAW_OPTIONS, useFactory: options.useFactory, inject },
+        {
+          provide: INBOX_STORE,
+          useFactory: (raw: InboxModuleOptions) => raw.store,
+          inject: [INBOX_RAW_OPTIONS],
+        },
+        InboxService,
+      ],
+      exports: [InboxService, INBOX_STORE],
     };
   }
 }

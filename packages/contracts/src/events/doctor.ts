@@ -4,6 +4,8 @@ import { doctorScheduleSchema, doctorStatusSchema } from '../domain';
 
 const doctorCore = {
   doctorId: z.string().min(1),
+  /** Keycloak sub врача (9.1): scheduling строит привязку sub → doctorId. */
+  userId: z.string().min(1).nullable().optional(),
   status: doctorStatusSchema,
   firstName: z.string().min(1),
   lastName: z.string().min(1),

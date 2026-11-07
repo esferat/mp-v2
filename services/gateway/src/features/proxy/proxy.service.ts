@@ -89,6 +89,8 @@ export class ProxyService {
         method,
         headers,
         ...(body !== undefined ? { body } : {}),
+        // undici требует duplex при потоковом теле (multipart, 3.4/4.4)
+        ...(isWebStream(body) ? ({ duplex: 'half' } as RequestInit & { duplex?: 'half' }) : {}),
         redirect: 'manual',
         signal: AbortSignal.timeout(this.timeoutMs),
       });
@@ -156,6 +158,11 @@ function buildRequestBody(method: string, request: ProxyRequestLike): FetchBody 
   }
 
   return JSON.stringify(body);
+}
+
+/** Потоковое тело (Web ReadableStream): fetch требует опцию duplex. */
+function isWebStream(body: FetchBody | undefined): boolean {
+  return typeof body === 'object' && body !== null && 'getReader' in body;
 }
 
 /** Сетевые ошибки fetch → единые 502/504 ApiError. */

@@ -14,6 +14,9 @@ export { DatePickersProvider } from './date-pickers';
 // Примитивы MUI
 export * from './primitives';
 
+// Библиотека компонентов mp-ui-kit (единственные Mp*-компоненты в web)
+export * from 'mp-ui-kit';
+
 // Предметные обёртки
 export { StatusBadge } from './status-badge';
 export type { StatusTone } from './status-badge';

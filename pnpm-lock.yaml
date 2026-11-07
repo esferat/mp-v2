@@ -223,6 +223,9 @@ importers:
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
+      mp-ui-kit:
+        specifier: file:vendor/mp-ui-kit-0.1.0.tgz
+        version: file:apps/web/vendor/mp-ui-kit-0.1.0.tgz(491ab1748a80a5ca18bace301c4663df)
       next:
         specifier: ^16.4.5
         version: 16.4.5(@babel/core@7.29.13(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -382,6 +385,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.1163.0
         version: 3.1163.0
+      '@mp/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -488,6 +494,9 @@ importers:
       '@mp/service-kit':
         specifier: workspace:*
         version: link:../../packages/service-kit
+      '@mp/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@nestjs/common':
         specifier: ^12.4.0
         version: 12.4.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
@@ -738,6 +747,9 @@ importers:
       '@mp/service-kit':
         specifier: workspace:*
         version: link:../../packages/service-kit
+      '@mp/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@nestjs/common':
         specifier: ^12.4.0
         version: 12.4.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
@@ -3815,6 +3827,18 @@ packages:
 
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+
+  mp-ui-kit@file:apps/web/vendor/mp-ui-kit-0.1.0.tgz:
+    resolution: {integrity: sha512-emV4bSaQG+vVVToNpWx7Ozp0/JEqnEMrBKzy7g0xbsE8nQTzzViObKATpiz2tK/nhlXLAf86HjL9POtEasUnyQ==, tarball: file:apps/web/vendor/mp-ui-kit-0.1.0.tgz}
+    version: 0.1.0
+    peerDependencies:
+      '@emotion/react': ^11.0.0
+      '@emotion/styled': ^11.0.0
+      '@mui/material': ^7.0.0 || ^8.0.0 || ^9.0.0
+      '@mui/x-date-pickers': ^9.0.0
+      date-fns: ^4.0.0
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -7823,6 +7847,16 @@ snapshots:
       brace-expansion: 1.1.21
 
   minimist@1.2.8: {}
+
+  mp-ui-kit@file:apps/web/vendor/mp-ui-kit-0.1.0.tgz(491ab1748a80a5ca18bace301c4663df):
+    dependencies:
+      '@emotion/react': 11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0)
+      '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0)
+      '@mui/material': 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@mui/x-date-pickers': 9.17.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.1)(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      date-fns: 4.4.0
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
 
   ms@2.1.3: {}
 

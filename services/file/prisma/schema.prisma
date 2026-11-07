@@ -37,3 +37,24 @@ model InboxMessage {
   routingKey  String
   processedAt DateTime  @default(now())
 }
+
+/// Реестр файлов (4.4): объект в MinIO + владельцы/метаданные.
+/// Ключ плоский (без '/'): маршрут GET /api/files/:key — один сегмент.
+model FileObject {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  bucket     String
+  /// PATIENT | DOCTOR.
+  ownerType  String
+  ownerId    String
+  /// MIME по магическим байтам (не Content-Type клиента, 4.4).
+  mime       String
+  size       Int
+  /// userId загрузившего: createdBy из 4.4 и uploadedBy из 9.3 — одно поле.
+  uploadedBy String
+  /// ANALYSIS | REFERRAL | DISCHARGE | OTHER; null у фото (9.3).
+  category   String?
+  createdAt  DateTime @default(now())
+
+  @@index([ownerType, ownerId])
+}

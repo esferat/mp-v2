@@ -1,11 +1,12 @@
 import { Global, Module, type DynamicModule } from '@nestjs/common';
 import type { Logger } from '@mp/service-kit';
 import { LOGGER } from '@mp/service-kit';
-import { PATIENT_CARDS, USER_DIRECTORY } from '../../entities/registration';
+import { CATALOG_DOCTORS, PATIENT_CARDS, USER_DIRECTORY } from '../../entities/registration';
 import { getIdentityEnv, type IdentityEnv } from '../config';
 import { PrismaService } from './prisma.service';
 import { KeycloakAdminClient } from './keycloak-admin.client';
 import { PatientHttpCards } from './patient.http.client';
+import { CatalogHttpClient } from './catalog.http.client';
 import { ClientCredentialsTokenCache } from './token-cache';
 
 /** Общий кэш client-credentials токена (Admin API + service-to-service). */
@@ -42,8 +43,14 @@ export class SharedApiModule {
             new PatientHttpCards(getIdentityEnv(), tokens),
           inject: [TOKEN_CACHE],
         },
+        {
+          provide: CATALOG_DOCTORS,
+          useFactory: (tokens: ClientCredentialsTokenCache) =>
+            new CatalogHttpClient(getIdentityEnv(), tokens),
+          inject: [TOKEN_CACHE],
+        },
       ],
-      exports: [PrismaService, USER_DIRECTORY, PATIENT_CARDS, TOKEN_CACHE],
+      exports: [PrismaService, USER_DIRECTORY, PATIENT_CARDS, CATALOG_DOCTORS, TOKEN_CACHE],
     };
   }
 }
@@ -51,5 +58,6 @@ export class SharedApiModule {
 export { PrismaService } from './prisma.service';
 export { KeycloakAdminClient } from './keycloak-admin.client';
 export { PatientHttpCards } from './patient.http.client';
+export { CatalogHttpClient } from './catalog.http.client';
 export { ClientCredentialsTokenCache } from './token-cache';
 export type { IdentityEnv };

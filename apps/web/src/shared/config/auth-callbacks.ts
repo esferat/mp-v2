@@ -107,7 +107,11 @@ export async function refreshAccessToken(
       body,
       signal: AbortSignal.timeout(10_000),
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      // Текст ответа безопасен (описание ошибки grant) и критичен для диагностики
+      const detail = await response.text().catch(() => '');
+      throw new Error(`HTTP ${response.status} ${detail.slice(0, 300)}`);
+    }
 
     const refreshed = (await response.json()) as TokenResponse;
     return {
@@ -118,7 +122,9 @@ export async function refreshAccessToken(
       expiresAt: Date.now() + (refreshed.expires_in ?? 300) * 1000,
       error: undefined,
     };
-  } catch {
+  } catch (error) {
+    // ВРЕМЕННО ДИАГНОСТИКА: показать причину сбоя обновления токена
+    console.error('[auth] refresh token failed:', error);
     // Продолжаем со старым токеном; при следующем тике попробуем снова
     return { ...token, error: 'RefreshAccessTokenError' };
   }

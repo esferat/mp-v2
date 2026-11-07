@@ -15,6 +15,8 @@ COPY packages/tsconfig/package.json packages/tsconfig/
 COPY packages/eslint-config-fsd/package.json packages/eslint-config-fsd/
 COPY packages/contracts/package.json packages/contracts/
 COPY apps/web/package.json apps/web/
+# mp-ui-kit лежит ВНЕ контекста сборки — вендорим тарболл (README mp-ui-kit, вариант 1)
+COPY apps/web/vendor apps/web/vendor
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 

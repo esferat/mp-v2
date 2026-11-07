@@ -23,7 +23,9 @@ async function bootstrap(): Promise<void> {
     log.info({ port: env.PORT }, 'scheduling запущен');
   } catch (error) {
     log.fatal({ err: error }, 'не удалось запустить scheduling');
-    process.exit(1);
+    // Без process.exit(): асинхронный вывод pino успевает долиться
+    // (event loop пуст → процесс завершится сам с кодом 1)
+    process.exitCode = 1;
   }
 }
 

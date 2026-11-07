@@ -4,6 +4,8 @@ import { z } from 'zod';
 export const apiErrorSchema = z.object({
   code: z.string().min(1),
   message: z.string().min(1),
+  /** Поле формы для ошибок валидации (3.2 AC: ошибка приходит на конкретное поле). */
+  field: z.string().min(1).optional(),
   requestId: z.string().min(1).optional(),
 });
 export type ApiError = z.infer<typeof apiErrorSchema>;
@@ -17,3 +19,19 @@ export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
 
 /** Пустой ответ (204). */
 export const okSchema = z.object({ ok: z.literal(true) });
+
+/**
+ * Внутренние вызовы file → patient/catalog (3.4/4.3): привязка фото
+ * к карточке. key = null очищает фото (компонент компенсации при сбое).
+ * В gateway-реестр не входит: маршрут служебный, вызывается только сервисом.
+ */
+export const setPhotoRequestSchema = z.object({
+  key: z.string().min(1).nullable(),
+});
+export type SetPhotoRequest = z.infer<typeof setPhotoRequestSchema>;
+
+/** Прежний ключ фото (null, если фото не было) для очистки старого объекта. */
+export const setPhotoResponseSchema = z.object({
+  previousKey: z.string().min(1).nullable(),
+});
+export type SetPhotoResponse = z.infer<typeof setPhotoResponseSchema>;

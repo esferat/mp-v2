@@ -10,9 +10,11 @@ export {
   isPublicPath,
   TOKEN_VERIFIER,
 } from './auth/auth.module';
-export type { AuthModuleOptions, RequestAuth } from './auth/auth.module';
+export type { AuthModuleOptions, RequestAuth, AccessSubject } from './auth/auth.module';
 export { JwksTokenVerifier, TokenInvalidError, matchesAudience } from './auth/jwks-verifier';
 export type { JwksVerifierOptions, VerifiedToken } from './auth/jwks-verifier';
+export { ClientCredentialsTokenCache } from './auth/client-credentials';
+export type { ServiceAccountCredentials } from './auth/client-credentials';
 
 // Логирование и трассировка
 export { createLogger } from './logger/logger';

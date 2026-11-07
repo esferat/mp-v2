@@ -4,6 +4,8 @@ import { paginationQuerySchema } from './common';
 
 export const doctorListItemSchema = z.object({
   id: z.string().min(1),
+  /** Keycloak sub учётной записи врача (9.1); null/нет — привязки ещё нет. */
+  userId: z.string().min(1).nullable().optional(),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   middleName: z.string().min(1).optional(),
@@ -35,10 +37,20 @@ export const createDoctorSchema = z.object({
   middleName: z.string().min(1).max(100).optional(),
   specializationId: z.string().min(1),
   schedule: doctorScheduleSchema,
+  /**
+   * Keycloak sub учётной записи врача: заполняет сага 9.1
+   * (identity создал пользователя с ролью DOCTOR и передал его сюда).
+   */
+  userId: z.string().min(1).optional(),
 });
 export type CreateDoctorRequest = z.infer<typeof createDoctorSchema>;
 
 export const updateDoctorSchema = createDoctorSchema.extend({
+  /**
+   * id из пути (сверка на сервере): расхождение пути и тела — 400,
+   * прямой PUT с чужим id не обновляет молча (3.2 AC, «урок текущей системы»).
+   */
+  id: z.string().min(1).optional(),
   status: doctorStatusSchema.optional(),
 });
 export type UpdateDoctorRequest = z.infer<typeof updateDoctorSchema>;

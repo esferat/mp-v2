@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { decideAccess, isGuestOnlyPath, requiredRoleFor } from '../src/shared/lib/route-guard';
+import {
+  decideAccess,
+  homeRedirectFor,
+  isGuestOnlyPath,
+  requiredRoleFor,
+} from '../src/shared/lib/route-guard';
 
 /**
  * Unit-тесты гарда (AC 1.3): каждый сегмент — гость, своя роль, чужая роль.
@@ -106,5 +111,22 @@ describe('isGuestOnlyPath', () => {
     expect(isGuestOnlyPath('/auth/login')).toBe(true);
     expect(isGuestOnlyPath('/authx')).toBe(false);
     expect(isGuestOnlyPath('/cabinet')).toBe(false);
+  });
+});
+
+describe('homeRedirectFor (9.1: домашняя страница после входа)', () => {
+  it('админ попадает в администрирование', () => {
+    expect(homeRedirectFor(['ADMIN'])).toBe('/admin/doctors');
+    expect(homeRedirectFor(['ADMIN', 'DOCTOR'])).toBe('/admin/doctors');
+  });
+
+  it('врач (без админки) попадает в кабинет врача', () => {
+    expect(homeRedirectFor(['DOCTOR'])).toBe('/doctor/schedule');
+    expect(homeRedirectFor(['USER', 'DOCTOR'])).toBe('/doctor/schedule');
+  });
+
+  it('пациент и гость остаются на агрегированной главной', () => {
+    expect(homeRedirectFor(['USER'])).toBeNull();
+    expect(homeRedirectFor([])).toBeNull();
   });
 });

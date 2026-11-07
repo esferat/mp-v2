@@ -15,14 +15,18 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
   const path = `${request.nextUrl.pathname.replace(/^\/api\/bff/, '')}${request.nextUrl.search}`;
 
   const isBodyMethod = request.method !== 'GET' && request.method !== 'HEAD';
-  const body = isBodyMethod ? await request.text() : undefined;
   const contentType = request.headers.get('content-type');
+  const isMultipart = (contentType ?? '').includes('multipart/form-data');
+  // multipart: тело уходит стримом (binary нельзя превращать в строку, 3.4/4.4)
+  const body = !isBodyMethod ? undefined : isMultipart ? request.body : await request.text();
 
   try {
     const client = await createServerClient();
     const result = await client.request<unknown>(path, {
       method: request.method,
       ...(body ? { body } : {}),
+      // undici требует duplex для потокового тела
+      ...(isMultipart ? ({ duplex: 'half' } as RequestInit & { duplex?: 'half' }) : {}),
       headers: {
         ...(contentType ? { 'content-type': contentType } : {}),
         // Прокидываем trace-id от nginx — он же в логах сервисов (S7.2/8.1)
@@ -45,6 +49,7 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
       {
         code: apiError.code,
         message: apiError.message,
+        ...(apiError.field ? { field: apiError.field } : {}),
         ...(apiError.requestId ? { requestId: apiError.requestId } : {}),
       },
       { status: apiError.status >= 100 && apiError.status < 600 ? apiError.status : 500 },

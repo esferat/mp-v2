@@ -27,6 +27,17 @@ export type AppointmentStatus = z.infer<typeof appointmentStatusSchema>;
 export const ownerTypeSchema = z.enum(['PATIENT', 'DOCTOR']);
 export type OwnerType = z.infer<typeof ownerTypeSchema>;
 
+/** Вид загружаемого файла (4.4: фото vs документ определяют бакет и MIME). */
+export const fileKindSchema = z.enum(['PHOTO', 'DOCUMENT']);
+export type FileKind = z.infer<typeof fileKindSchema>;
+
+/**
+ * Категория документа пациента (9.3): enum живёт в contracts,
+ * поле в событии document.uploaded.v1 опционально (обратная совместимость v1).
+ */
+export const documentCategorySchema = z.enum(['ANALYSIS', 'REFERRAL', 'DISCHARGE', 'OTHER']);
+export type DocumentCategory = z.infer<typeof documentCategorySchema>;
+
 const timeRegex = /^\d{2}:\d{2}$/;
 
 /** Слот: дата и локальное время начала/конца (scheduling-service). */

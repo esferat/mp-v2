@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, Typography } from '@/shared/ui';
+import { Alert, Box, Stack, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { DoctorsTable } from '@/widgets/doctors-table';
+import { DoctorControls } from '@/widgets/doctor-controls';
 import type { DoctorListResponse } from '@mp/contracts';
 
 export const metadata: Metadata = { title: 'Врачи — Администрирование' };
@@ -49,9 +50,10 @@ export default async function DoctorsAdminPage(): Promise<ReactNode> {
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Врачи ({result.list.total})
-      </Typography>
+      <Stack direction="row" sx={{ mb: 2, alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6">Врачи ({result.list.total})</Typography>
+        <DoctorControls />
+      </Stack>
       <DoctorsTable initial={result.list} />
     </Box>
   );

@@ -14,6 +14,7 @@ import { ApiErrorFilter, RequestLogInterceptor } from './kernel';
 import { getIdentityEnv } from '../shared/config';
 import { HealthFeatureModule } from '../features/health';
 import { RegisterModule } from '../features/register';
+import { RegisterDoctorModule } from '../features/register-doctor';
 
 /**
  * Composition root (fsd.md §4.1): только регистрация слайсов и глобальных
@@ -52,6 +53,7 @@ const env = getIdentityEnv();
     // Слайсы
     HealthFeatureModule,
     RegisterModule,
+    RegisterDoctorModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

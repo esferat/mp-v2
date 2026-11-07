@@ -39,3 +39,31 @@ export class ConflictError extends DomainError {
     super(message, 409, 'CONFLICT');
   }
 }
+
+/** Конфликт слота (409): уникальный индекс брони уже занят (5.3 AC: SLOT_TAKEN). */
+export class SlotTakenError extends DomainError {
+  constructor() {
+    super('Слот уже занят', 409, 'SLOT_TAKEN');
+  }
+}
+
+/** Недопустимый переход статуса записи (409, канон §1 / 5.4 AC). */
+export class InvalidTransitionError extends DomainError {
+  constructor(from: string, to: string) {
+    super(`Переход ${from} → ${to} не разрешён`, 409, 'INVALID_TRANSITION');
+  }
+}
+
+/** Доступ запрещён (403): чужая запись/документ или нет привязки врача (9.2/9.3). */
+export class ForbiddenError extends DomainError {
+  constructor(message: string) {
+    super(message, 403, 'FORBIDDEN');
+  }
+}
+
+/** Сбой соседнего сервиса (502): patient/catalog недоступны или ответ не ОК. */
+export class UpstreamError extends DomainError {
+  constructor(message: string) {
+    super(message, 502, 'UPSTREAM_ERROR');
+  }
+}

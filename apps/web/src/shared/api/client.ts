@@ -55,16 +55,29 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
 
     let lastError: ApiError | null = null;
 
-    for (let attempt = 0; attempt < attempts; attempt += 1) {
+    let attempt = 0;
+    let retriedAfterRefresh = false;
+
+    while (attempt < attempts) {
       try {
         return await requestOnce<T>(path, init, method);
       } catch (error) {
         const apiError = toApiErrorInternal(error);
         lastError = apiError;
+        // Истёкший access token: первый запрос после TTL падает 401, но
+        // Auth.js обновляет куку через GET /api/auth/session (jwt → refresh) —
+        // повторяем ОДИН раз уже с новой кукой. Выполнение запроса на 401 не
+        // начиналось, поэтому это безопасно и для мутаций (в отличие от ретрая 5xx).
+        if (apiError.status === 401 && !retriedAfterRefresh && baseUrl.startsWith('/')) {
+          retriedAfterRefresh = true;
+          await refreshSessionCookie();
+          continue; // повтор той же попытки с обновлённой кукой
+        }
         const retryable = apiError.isNetworkError || apiError.isServerError;
         if (!retryable || attempt === attempts - 1) throw apiError;
         // Экспоненциальная пауза: 200мс, 400мс…
         await sleep(200 * 2 ** attempt);
+        attempt += 1;
       }
     }
 
@@ -144,15 +157,18 @@ async function responseToApiError(response: Response): Promise<ApiError> {
   let code = `HTTP_${response.status}`;
   let message = response.statusText || 'Ошибка запроса';
   let requestId: string | undefined;
+  let field: string | undefined;
 
   try {
     const body = (await response.json()) as {
       code?: string;
       message?: string;
+      field?: string;
       requestId?: string;
     };
     if (body.code) code = body.code;
     if (body.message) message = body.message;
+    if (body.field) field = body.field;
     if (body.requestId) requestId = body.requestId;
   } catch {
     // Не-JSON тело — оставляем дефолтные поля
@@ -161,6 +177,7 @@ async function responseToApiError(response: Response): Promise<ApiError> {
   return new ApiError(message, {
     code,
     status: response.status,
+    ...(field ? { field } : {}),
     ...(requestId ? { requestId } : {}),
   });
 }
@@ -173,4 +190,17 @@ function toApiErrorInternal(error: unknown): ApiError {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Просмотр сессии у Auth.js: jwt-callback обновляет истёкший access token
+ * и пишет новую куку в ответ — после этого повтор запроса проходит.
+ * Только для браузера ('/api/bff' baseUrl); на сервере вызов бессмысленен.
+ */
+async function refreshSessionCookie(): Promise<void> {
+  try {
+    await fetch('/api/auth/session', { cache: 'no-store', credentials: 'include' });
+  } catch {
+    // сбой обновления не должен маскировать исходную ошибку 401
+  }
 }

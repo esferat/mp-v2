@@ -25,6 +25,7 @@
     "@mui/x-date-pickers": "^9.17.0",
     "@mp/contracts": "workspace:*",
     "date-fns": "^4.4.0",
+    "mp-ui-kit": "file:vendor/mp-ui-kit-0.1.0.tgz",
     "next": "^16.4.5",
     "next-auth": "5.0.0-beta.32",
     "react": "^19.3.1",

@@ -7,7 +7,7 @@ import {
   type ExceptionFilter,
 } from '@nestjs/common';
 import { getTraceId, LOGGER, type Logger } from '@mp/service-kit';
-import { DomainError } from '../../shared/model';
+import { DomainError, ValidationError } from '../../shared/model';
 
 /** Профиль HTTP-ответа без зависимости от типов express. */
 interface HttpResponseLike {
@@ -33,10 +33,16 @@ export class ApiErrorFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<HttpResponseLike>();
     const request = host.switchToHttp().getRequest<HttpRequestLike>();
-    const { status, code, message } = classify(exception);
+    const { status, code, message, field } = classify(exception);
     const requestId = getTraceId();
 
-    const payload = { code, message, ...(requestId ? { requestId } : {}) };
+    // field: ошибка валидации привязана к полю формы (3.2 AC)
+    const payload = {
+      code,
+      message,
+      ...(field ? { field } : {}),
+      ...(requestId ? { requestId } : {}),
+    };
 
     if (status >= 500) {
       this.log.error(
@@ -58,11 +64,18 @@ interface Classified {
   status: number;
   code: string;
   message: string;
+  field?: string;
 }
 
 function classify(exception: unknown): Classified {
   if (exception instanceof DomainError) {
-    return { status: exception.status, code: exception.code, message: exception.message };
+    const field = exception instanceof ValidationError ? exception.field : undefined;
+    return {
+      status: exception.status,
+      code: exception.code,
+      message: exception.message,
+      ...(field ? { field } : {}),
+    };
   }
 
   if (exception instanceof HttpException) {

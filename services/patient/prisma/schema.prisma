@@ -23,6 +23,8 @@ model Patient {
   lastName     String
   middleName   String?
   birthDate    DateTime
+  /// Ключ фото в MinIO (4.3): привязывает file-service, наружу не отдаётся.
+  photoKey     String?
   registeredAt DateTime @default(now())
 
   @@index([lastName, firstName])

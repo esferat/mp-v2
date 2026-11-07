@@ -1,9 +1,11 @@
 import type {
+  CreateDoctorData,
   DoctorListItem,
   DoctorListQuery,
   DoctorRepository,
   DoctorSchedule,
   DoctorStatus,
+  UpdateDoctorData,
 } from '../../entities/doctor';
 import type { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from './prisma.service';
@@ -13,6 +15,7 @@ type Db = PrismaService | Prisma.TransactionClient;
 /** Prisma-строка врача с названием специализации. */
 interface DoctorRow {
   id: string;
+  userId: string | null;
   firstName: string;
   lastName: string;
   middleName: string | null;
@@ -26,6 +29,9 @@ interface DoctorRow {
   specialization: { name: string };
 }
 
+/** JOIN специализации: название нужно и списку, и событиям (3.5). */
+const includeSpec = { specialization: { select: { name: true } } } as const;
+
 function toDomain(row: DoctorRow): DoctorListItem {
   const schedule: DoctorSchedule = {
     startTime: row.scheduleStart,
@@ -36,6 +42,7 @@ function toDomain(row: DoctorRow): DoctorListItem {
 
   return {
     id: row.id,
+    userId: row.userId,
     firstName: row.firstName,
     lastName: row.lastName,
     ...(row.middleName ? { middleName: row.middleName } : {}),
@@ -49,7 +56,26 @@ function toDomain(row: DoctorRow): DoctorListItem {
 }
 
 /**
- * Prisma-реализация порта DoctorRepository (3.1).
+ * Данные формы в колонки: единственная точка маппинга create/update (DRY).
+ * middleName: null при отсутствии — явная очистка отчества при редактировании.
+ */
+function toRowData(data: CreateDoctorData | UpdateDoctorData): Prisma.DoctorUncheckedCreateInput {
+  return {
+    ...(data.userId !== undefined ? { userId: data.userId } : {}),
+    firstName: data.firstName,
+    lastName: data.lastName,
+    middleName: data.middleName ?? null,
+    specializationId: data.specializationId,
+    scheduleStart: data.schedule.startTime,
+    scheduleEnd: data.schedule.endTime,
+    durationMinutes: data.schedule.durationMinutes,
+    workDays: data.schedule.workDays,
+    ...(data.status ? { status: data.status } : {}),
+  };
+}
+
+/**
+ * Prisma-реализация порта DoctorRepository (3.1/3.2).
  *
  * Поиск по ФИО — ILIKE (mode: insensitive, Prisma сам экранирует шаблон);
  * триграммный GIN-индекс (pg_trgm, миграция 2_search) ускоряет его на больших
@@ -65,7 +91,7 @@ export class PrismaDoctorRepository implements DoctorRepository {
     const [rows, total] = await Promise.all([
       this.db.doctor.findMany({
         where,
-        include: { specialization: { select: { name: true } } },
+        include: includeSpec,
         orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
         skip: query.offset,
         take: query.limit,
@@ -75,6 +101,57 @@ export class PrismaDoctorRepository implements DoctorRepository {
 
     return { items: rows.map(toDomain), total };
   }
+
+  async findById(id: string): Promise<DoctorListItem | null> {
+    const row = await this.db.doctor.findUnique({ where: { id }, include: includeSpec });
+    return row ? toDomain(row) : null;
+  }
+
+  async findByUserId(userId: string): Promise<DoctorListItem | null> {
+    const row = await this.db.doctor.findUnique({ where: { userId }, include: includeSpec });
+    return row ? toDomain(row) : null;
+  }
+
+  async create(data: CreateDoctorData): Promise<DoctorListItem> {
+    const row = await this.db.doctor.create({
+      data: toRowData(data),
+      include: includeSpec,
+    });
+    return toDomain(row);
+  }
+
+  async update(id: string, data: UpdateDoctorData): Promise<DoctorListItem> {
+    const row = await this.db.doctor.update({
+      where: { id },
+      data: toRowData(data),
+      include: includeSpec,
+    });
+    return toDomain(row);
+  }
+
+  async setPhoto(id: string, key: string | null): Promise<DoctorListItem | null> {
+    try {
+      const row = await this.db.doctor.update({
+        where: { id },
+        data: { photoKey: key },
+        include: includeSpec,
+      });
+      return toDomain(row);
+    } catch (error) {
+      if (isRecordMissing(error)) return null;
+      throw error;
+    }
+  }
+}
+
+/** P2025: запись не найдена (гонка удаления). */
+function isRecordMissing(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: unknown }).code === 'P2025'
+  );
 }
 
 /** Фильтры: поиск по ФИО (без учёта регистра), статус. */

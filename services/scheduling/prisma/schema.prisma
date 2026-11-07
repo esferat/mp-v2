@@ -37,3 +37,78 @@ model InboxMessage {
   routingKey  String
   processedAt DateTime  @default(now())
 }
+
+/// Копия расписания врача (5.1): denormalized read-model из doctor.* событий.
+/// sourceAt = occurredAt события-источника: повтор/приход вразнобой не
+/// «омолаживает» копию (идемпотентность потребителя, 3.5/5.1 AC).
+model DoctorScheduleCopy {
+  doctorId            String    @id
+  /// Keycloak sub врача (9.1/9.2): привязка sub → doctorId без HTTP
+  userId              String?
+  specializationId    String
+  /// денормированное название специализации (списки/события без JOIN)
+  specializationName  String
+  lastName            String
+  firstName           String
+  middleName          String?
+  /// ACTIVE | INACTIVE: архивный врач не даёт слотов (5.1 AC)
+  status              String    @default("ACTIVE")
+  /// HH:mm
+  startTime           String
+  endTime             String
+  durationMinutes     Int
+  /// 1 = понедельник … 7 = воскресенье
+  workDays            Int[]
+  /// occurredAt события-источника (идемпотентное применение)
+  sourceAt            DateTime
+  updatedAt           DateTime  @updatedAt
+
+  @@index([specializationId, status])
+  @@index([userId])
+}
+
+/// Запись на приём (5.3): снапшоты ФИО — история не переписывается
+/// справочниками (архивирование врача не меняет прошлые записи, 3.2 AC).
+model Appointment {
+  id                   String    @id @default(cuid())
+  doctorId             String
+  /// снапшот на момент записи
+  doctorName           String
+  specializationId     String
+  specializationName   String
+  patientId            String
+  /// снапшот ФИО пациента
+  patientName          String
+  /// HH:mm начала и конца окна
+  startTime            String
+  endTime              String
+  localDate            DateTime
+  /// SUBMITTED | APPROVED | DECLINED | CANCELLED | COMPLETED
+  status               String    @default("SUBMITTED")
+  declineReason        String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([localDate, status])
+  @@index([patientId, localDate])
+  @@index([doctorId, localDate, startTime])
+  @@index([specializationId, localDate])
+
+  /// Результат приёма (9.2): только для COMPLETED, один на запись
+  visitResult VisitResult?
+}
+
+/// Результат приёма (9.2): заключение + рекомендации, вносит врач записи.
+model VisitResult {
+  id              String    @id @default(cuid())
+  appointmentId   String    @unique
+  appointment     Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  conclusion      String
+  recommendations String?
+  /// userId врача, внёсшего результат.
+  createdBy       String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([createdBy])
+}

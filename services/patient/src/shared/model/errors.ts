@@ -39,3 +39,10 @@ export class ConflictError extends DomainError {
     super(message, 409, 'CONFLICT');
   }
 }
+
+/** Доступ запрещён (403): чужая карточка или роль не даёт права (4.2, защита в глубину). */
+export class ForbiddenError extends DomainError {
+  constructor(message: string) {
+    super(message, 403, 'FORBIDDEN');
+  }
+}

@@ -6,7 +6,7 @@
   "registrationAllowed": true,
   "resetPasswordAllowed": true,
   "duplicateEmailsAllowed": false,
-  "verifyEmail": true,
+  "verifyEmail": false,
   "rememberMe": false,
   "editUsernameAllowed": false,
   "loginTheme": "keycloak",
@@ -25,9 +25,18 @@
   },
   "roles": {
     "realm": [
-      { "name": "ADMIN", "description": "Администратор портала" },
-      { "name": "USER", "description": "Пациент (личный кабинет)" },
-      { "name": "DOCTOR", "description": "Врач (кабинет врача)" }
+      {
+        "name": "ADMIN",
+        "description": "Администратор портала"
+      },
+      {
+        "name": "USER",
+        "description": "Пациент (личный кабинет)"
+      },
+      {
+        "name": "DOCTOR",
+        "description": "Врач (кабинет врача)"
+      }
     ]
   },
   "clients": [
@@ -45,9 +54,20 @@
       "redirectUris": [
         "http://localhost:3000/*",
         "http://localhost:8080/*",
-        "http://localhost:3000/api/auth/*"
+        "http://localhost:3000/api/auth/*",
+        "http://portal.mp-kit.local/*",
+        "http://portal.mp-kit.local:8080/*",
+        "http://mp-kit.local/*",
+        "http://mp-kit.local:8080/*",
+        "http://localhost/*",
+        "http://localhost:8080/api/auth/*"
       ],
-      "webOrigins": ["http://localhost:3000", "http://localhost:8080"],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "http://portal.mp-kit.local",
+        "http://mp-kit.local"
+      ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "+",
@@ -76,6 +96,21 @@
       "protocol": "openid-connect",
       "publicClient": false,
       "secret": "dev-identity-secret",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "frontchannelLogout": false,
+      "attributes": {},
+      "webOrigins": []
+    },
+    {
+      "clientId": "svc-file",
+      "name": "Service account: file (uploads, presigned, photo link)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "dev-file-secret",
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
@@ -130,7 +165,13 @@
       "lastName": "Тест",
       "enabled": true,
       "emailVerified": true,
-      "credentials": [{ "type": "password", "value": "Password123!", "temporary": false }],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
       "realmRoles": ["ADMIN"]
     },
     {
@@ -140,7 +181,13 @@
       "lastName": "Тест",
       "enabled": true,
       "emailVerified": true,
-      "credentials": [{ "type": "password", "value": "Password123!", "temporary": false }],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
       "realmRoles": ["USER"]
     },
     {
@@ -150,7 +197,109 @@
       "lastName": "Тест",
       "enabled": true,
       "emailVerified": true,
-      "credentials": [{ "type": "password", "value": "Password123!", "temporary": false }],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["DOCTOR"]
+    },
+    {
+      "username": "admin1@test.mp",
+      "email": "admin1@test.mp",
+      "firstName": "Админ",
+      "lastName": "Первый",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "admin2@test.mp",
+      "email": "admin2@test.mp",
+      "firstName": "Админ",
+      "lastName": "Второй",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "patient1@test.mp",
+      "email": "patient1@test.mp",
+      "firstName": "Пациент",
+      "lastName": "Первый",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["USER"]
+    },
+    {
+      "username": "patient2@test.mp",
+      "email": "patient2@test.mp",
+      "firstName": "Пациент",
+      "lastName": "Второй",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["USER"]
+    },
+    {
+      "username": "doctor1@test.mp",
+      "email": "doctor1@test.mp",
+      "firstName": "Врач",
+      "lastName": "Первый",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["DOCTOR"]
+    },
+    {
+      "username": "doctor2@test.mp",
+      "email": "doctor2@test.mp",
+      "firstName": "Врач",
+      "lastName": "Второй",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
       "realmRoles": ["DOCTOR"]
     }
   ]

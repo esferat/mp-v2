@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { FileKind, OwnerType } from '@mp/contracts';
 
 /**
  * Конфигурация хранилища (0.5): env валидируется при первом обращении,
@@ -12,6 +13,13 @@ export const storageEnvSchema = z.object({
   MINIO_SECRET_KEY: z.string().min(1).default('minio123'),
   /// Регион не обязателен для MinIO, но SDK требует строку.
   MINIO_REGION: z.string().default('us-east-1'),
+  /**
+   * Публичный адрес MinIO для presigned-ссылок (4.5): подпись должна
+   * указывать на хост, доступный браузеру (localhost:9000), тогда как
+   * MINIO_ENDPOINT (minio:9000) используется для внутренних вызовов
+   * PutObject из контейнеров.
+   */
+  MINIO_PUBLIC_ENDPOINT: z.string().min(1).default('http://localhost:9000'),
   /// TTL presigned-ссылки GET (NFR портала: 5 минут).
   PRESIGNED_TTL_SECONDS: z.coerce.number().int().min(10).max(604800).default(300),
 });
@@ -45,3 +53,21 @@ export const BUCKETS = {
 } as const;
 
 export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];
+
+/**
+ * Бакет по владельцу и виду файла (4.4): единственная точка знания
+ * «куда класть» — ею пользуются file-service (загрузка) и сервисы,
+ * подписывающие photoUrl (patient/catalog).
+ *
+ * DOCUMENT — только у пациента (сканы/направления): врач кладёт
+ * документы ПАЦИЕНТА (ownerType=PATIENT, 9.3), свои файлы — фото.
+ */
+export function bucketFor(ownerType: OwnerType, kind: FileKind): string {
+  if (kind === 'DOCUMENT') {
+    if (ownerType !== 'PATIENT') {
+      throw new Error('DOCUMENT поддерживается только для ownerType=PATIENT');
+    }
+    return BUCKETS.patientDocs;
+  }
+  return ownerType === 'PATIENT' ? BUCKETS.patientPhotos : BUCKETS.doctorPhotos;
+}

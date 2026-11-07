@@ -3,6 +3,14 @@ import type {
   SpecializationContext,
   SpecializationRepository,
 } from '../src/entities/specialization';
+import type {
+  CreateDoctorData,
+  DoctorContext,
+  DoctorListItem,
+  DoctorListQuery,
+  DoctorRepository,
+  UpdateDoctorData,
+} from '../src/entities/doctor';
 import type { OutboxWriter } from '../src/shared/model';
 import { UnitOfWork } from '../src/entities/repository';
 
@@ -86,4 +94,124 @@ export function makeContext(): {
   const repository = new InMemorySpecializationRepository();
   const outbox = new InMemoryOutbox();
   return { repository, outbox, unitOfWork: new InMemoryUnitOfWork(repository, outbox) };
+}
+
+/**
+ * In-memory репозиторий врачей (3.2): поведение совпадает с Prisma-адаптером,
+ * включая очистку отчества при отсутствии middleName в данных.
+ */
+export class InMemoryDoctorRepository implements DoctorRepository {
+  readonly rows = new Map<string, DoctorListItem>();
+  private seq = 0;
+
+  constructor(private readonly specializations: InMemorySpecializationRepository) {}
+
+  async findPage(query: DoctorListQuery): Promise<{ items: DoctorListItem[]; total: number }> {
+    let items = [...this.rows.values()];
+
+    if (query.status) items = items.filter((row) => row.status === query.status);
+    const search = query.search?.trim().toLowerCase();
+    if (search) {
+      items = items.filter((row) =>
+        `${row.lastName} ${row.firstName} ${row.middleName ?? ''}`.toLowerCase().includes(search),
+      );
+    }
+
+    items.sort(
+      (a, b) =>
+        a.lastName.localeCompare(b.lastName, 'ru') || a.firstName.localeCompare(b.firstName, 'ru'),
+    );
+    const total = items.length;
+    return { items: items.slice(query.offset, query.offset + query.limit), total };
+  }
+
+  async findById(id: string): Promise<DoctorListItem | null> {
+    return this.rows.get(id) ?? null;
+  }
+
+  async findByUserId(userId: string): Promise<DoctorListItem | null> {
+    return [...this.rows.values()].find((row) => row.userId === userId) ?? null;
+  }
+
+  async create(data: CreateDoctorData): Promise<DoctorListItem> {
+    const spec = await this.specializations.findById(data.specializationId);
+    const row: DoctorListItem = {
+      id: `doc-${++this.seq}`,
+      ...(data.userId ? { userId: data.userId } : {}),
+      firstName: data.firstName,
+      lastName: data.lastName,
+      ...(data.middleName ? { middleName: data.middleName } : {}),
+      specializationId: data.specializationId,
+      specializationName: spec?.name ?? 'Неизвестная специализация',
+      status: data.status ?? 'ACTIVE',
+      schedule: data.schedule,
+    };
+    this.rows.set(row.id, row);
+    return row;
+  }
+
+  async update(id: string, data: UpdateDoctorData): Promise<DoctorListItem> {
+    const prev = this.rows.get(id);
+    if (!prev) throw new Error(`врач ${id} не существует (настройка теста)`);
+
+    const spec = await this.specializations.findById(data.specializationId);
+    const row: DoctorListItem = {
+      ...prev,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      specializationId: data.specializationId,
+      specializationName: spec?.name ?? 'Неизвестная специализация',
+      schedule: data.schedule,
+      ...(data.middleName ? { middleName: data.middleName } : {}),
+      ...(data.status ? { status: data.status } : {}),
+    };
+    // Явная очистка отчества: middleName отсутствует в данных (как в Prisma)
+    if (!data.middleName) delete row.middleName;
+    this.rows.set(id, row);
+    return row;
+  }
+
+  async setPhoto(id: string, key: string | null): Promise<DoctorListItem | null> {
+    const prev = this.rows.get(id);
+    if (!prev) return null;
+    // Локальная копия с изменяемым photoKey (доменный интерфейс readonly)
+    const row = { ...prev } as { photoKey?: string };
+    if (key === null) delete row.photoKey;
+    else row.photoKey = key;
+    this.rows.set(id, row);
+    return row;
+  }
+}
+
+/**
+ * UoW без транзакции для слайсов врача (3.2): карточка + outbox.
+ * Атомарность проверяется интеграционными тестами (0.7).
+ */
+export class InMemoryDoctorUnitOfWork implements UnitOfWork<DoctorContext> {
+  constructor(
+    private readonly doctors: InMemoryDoctorRepository,
+    private readonly outbox: InMemoryOutbox,
+  ) {}
+
+  run<T>(fn: (ctx: DoctorContext) => Promise<T>): Promise<T> {
+    return fn({ doctors: this.doctors, outbox: this.outbox });
+  }
+}
+
+/** Сборка контекста (врачи + справочник отдельным портом) для одного теста. */
+export function makeCatalogContext(): {
+  specializations: InMemorySpecializationRepository;
+  doctors: InMemoryDoctorRepository;
+  outbox: InMemoryOutbox;
+  unitOfWork: UnitOfWork<DoctorContext>;
+} {
+  const specializations = new InMemorySpecializationRepository();
+  const doctors = new InMemoryDoctorRepository(specializations);
+  const outbox = new InMemoryOutbox();
+  return {
+    specializations,
+    doctors,
+    outbox,
+    unitOfWork: new InMemoryDoctorUnitOfWork(doctors, outbox),
+  };
 }

@@ -175,6 +175,64 @@
       }
     },
     "/api/catalog/doctors/:id": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Карточка врача (форма редактирования, 3.2)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DoctorListItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
       "put": {
         "tags": [
           "catalog"
@@ -243,6 +301,66 @@
           },
           "409": {
             "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalog/doctors/by-user/:userId": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Врач по Keycloak sub (9.1: идемпотентность саги, 9.3)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DoctorListItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
             "content": {
               "application/json": {
                 "schema": {
@@ -719,10 +837,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Appointment"
-                  }
+                  "$ref": "#/components/schemas/AppointmentListResponse"
                 }
               }
             }
@@ -765,7 +880,7 @@
         "tags": [
           "scheduling"
         ],
-        "summary": "История записей пациента (patientId из токена)",
+        "summary": "История записей пациента (patientId строго из токена, 5.5)",
         "parameters": [
           {
             "name": "offset",
@@ -790,6 +905,74 @@
               "minimum": 1,
               "maximum": 100
             }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "enum": [
+                "SUBMITTED",
+                "APPROVED",
+                "DECLINED",
+                "CANCELLED",
+                "COMPLETED"
+              ]
+            }
+          },
+          {
+            "name": "specId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "doctorId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "patientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
           }
         ],
         "responses": {
@@ -798,10 +981,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Appointment"
-                  }
+                  "$ref": "#/components/schemas/AppointmentListResponse"
                 }
               }
             }
@@ -919,6 +1099,497 @@
         }
       }
     },
+    "/api/scheduling/appointments/:id/cancel": {
+      "put": {
+        "tags": [
+          "scheduling"
+        ],
+        "summary": "Отмена записи (из SUBMITTED или APPROVED, 5.4)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAppointmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scheduling/appointments/doctor": {
+      "get": {
+        "tags": [
+          "scheduling"
+        ],
+        "summary": "Приёмы врача (9.2: doctorId из привязки sub, свои записи)",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "enum": [
+                "SUBMITTED",
+                "APPROVED",
+                "DECLINED",
+                "CANCELLED",
+                "COMPLETED"
+              ]
+            }
+          },
+          {
+            "name": "specId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "doctorId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "patientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scheduling/appointments/doctor/patients": {
+      "get": {
+        "tags": [
+          "scheduling"
+        ],
+        "summary": "Пациенты врача (9.3: distinct из записей)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DoctorPatientList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scheduling/appointments/:id/result": {
+      "post": {
+        "tags": [
+          "scheduling"
+        ],
+        "summary": "Внести результат приёма (9.2: APPROVED → COMPLETED)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterVisitResultRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisitResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "scheduling"
+        ],
+        "summary": "Результат приёма (9.2: врач записи или ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisitResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "scheduling"
+        ],
+        "summary": "Правка результата (9.2: только врач записи)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVisitResultRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisitResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/identity/register": {
       "post": {
         "tags": [
@@ -979,6 +1650,437 @@
           },
           "409": {
             "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/identity/doctors": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Сага врача с учётной записью DOCTOR (9.1, только ADMIN)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDoctorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterDoctorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/patient/by-user/:userId": {
+      "get": {
+        "tags": [
+          "patient"
+        ],
+        "summary": "Карточка пациента по Keycloak sub (сага/профиль)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/patient/:id": {
+      "get": {
+        "tags": [
+          "patient"
+        ],
+        "summary": "Карточка пациента по id (4.2: ADMIN или владелец)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "patient"
+        ],
+        "summary": "Обновление карточки (4.2: ADMIN или владелец, id сверяется)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/patients": {
+      "get": {
+        "tags": [
+          "patient"
+        ],
+        "summary": "Админский список пациентов с поиском и пагинацией (4.1)",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/files": {
+      "get": {
+        "tags": [
+          "file"
+        ],
+        "summary": "Список файлов владельца (4.5/9.3: владелец или ADMIN)",
+        "parameters": [
+          {
+            "name": "ownerType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "enum": [
+                "PATIENT",
+                "DOCTOR"
+              ]
+            }
+          },
+          {
+            "name": "ownerId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
             "content": {
               "application/json": {
                 "schema": {
@@ -1109,6 +2211,64 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "file"
+        ],
+        "summary": "Удалить файл (владелец или ADMIN, 4.4)",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет/просрочен токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -1123,6 +2283,10 @@
             "minLength": 1
           },
           "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field": {
             "type": "string",
             "minLength": 1
           },
@@ -1174,6 +2338,17 @@
           "id": {
             "type": "string",
             "minLength": 1
+          },
+          "userId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "firstName": {
             "type": "string",
@@ -1291,6 +2466,17 @@
                 "id": {
                   "type": "string",
                   "minLength": 1
+                },
+                "userId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "firstName": {
                   "type": "string",
@@ -1434,6 +2620,10 @@
               "durationMinutes",
               "workDays"
             ]
+          },
+          "userId": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [
@@ -1498,6 +2688,14 @@
               "durationMinutes",
               "workDays"
             ]
+          },
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
           },
           "status": {
             "type": "string",
@@ -1607,13 +2805,18 @@
             "doctorId": {
               "type": "string",
               "minLength": 1
+            },
+            "doctorName": {
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": [
             "localDate",
             "start",
             "end",
-            "doctorId"
+            "doctorId",
+            "doctorName"
           ]
         }
       },
@@ -1722,6 +2925,22 @@
             "type": "string",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "visitResult": {
+            "type": "object",
+            "properties": {
+              "conclusion": {
+                "type": "string",
+                "minLength": 1
+              },
+              "recommendations": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "conclusion"
+            ]
           }
         },
         "required": [
@@ -1786,6 +3005,122 @@
           }
         }
       },
+      "AppointmentListResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "SUBMITTED",
+                    "APPROVED",
+                    "DECLINED",
+                    "CANCELLED",
+                    "COMPLETED"
+                  ]
+                },
+                "patientId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "patientName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "doctorId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "doctorName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "specializationName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "slot": {
+                  "type": "object",
+                  "properties": {
+                    "localDate": {
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    "start": {
+                      "type": "string",
+                      "pattern": "^\\d{2}:\\d{2}$"
+                    },
+                    "end": {
+                      "type": "string",
+                      "pattern": "^\\d{2}:\\d{2}$"
+                    }
+                  },
+                  "required": [
+                    "localDate",
+                    "start",
+                    "end"
+                  ]
+                },
+                "declineReason": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "visitResult": {
+                  "type": "object",
+                  "properties": {
+                    "conclusion": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "recommendations": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "conclusion"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "patientId",
+                "patientName",
+                "doctorId",
+                "doctorName",
+                "specializationName",
+                "slot",
+                "createdAt"
+              ]
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
       "SetAppointmentStatusRequest": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -1805,6 +3140,192 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "CancelAppointmentRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        }
+      },
+      "EnterVisitResultRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "conclusion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "recommendations": {
+            "type": "string",
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "conclusion"
+        ]
+      },
+      "UpdateVisitResultRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "conclusion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "recommendations": {
+            "type": "string",
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "conclusion"
+        ]
+      },
+      "VisitResult": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "conclusion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommendations": {
+            "type": "string",
+            "minLength": 1
+          },
+          "createdBy": {
+            "type": "string",
+            "minLength": 1
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "appointmentId",
+          "conclusion",
+          "createdBy",
+          "updatedAt"
+        ]
+      },
+      "DoctorPatient": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "patientName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastVisit": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          }
+        },
+        "required": [
+          "patientId",
+          "patientName"
+        ]
+      },
+      "DoctorPatientList": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "patientId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "patientName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "lastVisit": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                }
+              },
+              "required": [
+                "patientId",
+                "patientName"
+              ]
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "DoctorRelationQuery": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "patientId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "userId",
+          "patientId"
+        ]
+      },
+      "DoctorRelationResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "related": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "related"
+        ]
+      },
+      "DoctorByUserResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "doctorId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "doctorId"
         ]
       },
       "RegisterRequest": {
@@ -1867,6 +3388,100 @@
         "required": [
           "userId",
           "email"
+        ]
+      },
+      "RegisterDoctorRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "middleName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "specializationId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schedule": {
+            "type": "object",
+            "properties": {
+              "startTime": {
+                "type": "string",
+                "pattern": "^\\d{2}:\\d{2}$"
+              },
+              "endTime": {
+                "type": "string",
+                "pattern": "^\\d{2}:\\d{2}$"
+              },
+              "durationMinutes": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 240
+              },
+              "workDays": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7
+                }
+              }
+            },
+            "required": [
+              "startTime",
+              "endTime",
+              "durationMinutes",
+              "workDays"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName",
+          "specializationId",
+          "schedule"
+        ]
+      },
+      "RegisterDoctorResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "doctorId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "userId",
+          "doctorId"
         ]
       },
       "Patient": {
@@ -1961,6 +3576,195 @@
           "birthDate"
         ]
       },
+      "UpdatePatientRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "middleName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "birthDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "birthDate"
+        ]
+      },
+      "PatientListQuery": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "offset": {
+            "default": 0,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "default": 20,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "search": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "PatientListItem": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "middleName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "birthDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "registrationDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "photoUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "firstName",
+          "lastName",
+          "birthDate",
+          "email",
+          "registrationDate"
+        ]
+      },
+      "PatientListResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "userId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "firstName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "lastName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "middleName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "birthDate": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                },
+                "registrationDate": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                "photoUrl": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "required": [
+                "id",
+                "userId",
+                "firstName",
+                "lastName",
+                "birthDate",
+                "email",
+                "registrationDate"
+              ]
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
       "UploadFileResponse": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -2007,6 +3811,158 @@
         "required": [
           "url",
           "expiresInSeconds"
+        ]
+      },
+      "FileMeta": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ownerType": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "DOCTOR"
+            ]
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mime": {
+            "type": "string",
+            "minLength": 1
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "uploadedBy": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "ANALYSIS",
+              "REFERRAL",
+              "DISCHARGE",
+              "OTHER"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "key",
+          "ownerType",
+          "ownerId",
+          "mime",
+          "size",
+          "uploadedBy",
+          "createdAt"
+        ]
+      },
+      "FileListQuery": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "ownerType": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "DOCTOR"
+            ]
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "ownerType",
+          "ownerId"
+        ]
+      },
+      "FileListResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "ownerType": {
+                  "type": "string",
+                  "enum": [
+                    "PATIENT",
+                    "DOCTOR"
+                  ]
+                },
+                "ownerId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "mime": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "size": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "uploadedBy": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "category": {
+                  "type": "string",
+                  "enum": [
+                    "ANALYSIS",
+                    "REFERRAL",
+                    "DISCHARGE",
+                    "OTHER"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "key",
+                "ownerType",
+                "ownerId",
+                "mime",
+                "size",
+                "uploadedBy",
+                "createdAt"
+              ]
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total"
         ]
       }
     }

@@ -13,6 +13,10 @@ import { PrismaService, SharedApiModule } from '../shared/api';
 import { ApiErrorFilter, RequestLogInterceptor } from './kernel';
 import { getFileEnv } from '../shared/config';
 import { HealthFeatureModule } from '../features/health';
+import { UploadFileModule } from '../features/upload-file';
+import { DeleteFileModule } from '../features/delete-file';
+import { GetFileLinkModule } from '../features/get-file-link';
+import { ListFilesModule } from '../features/list-files';
 
 /**
  * Composition root (fsd.md §4.1): только регистрация слайсов и глобальных
@@ -49,6 +53,10 @@ const env = getFileEnv();
 
     // Слайсы
     HealthFeatureModule,
+    UploadFileModule,
+    DeleteFileModule,
+    GetFileLinkModule,
+    ListFilesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

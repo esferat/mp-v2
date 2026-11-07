@@ -39,3 +39,17 @@ export class ConflictError extends DomainError {
     super(message, 409, 'CONFLICT');
   }
 }
+
+/** Доступ запрещён (403): чужой файл или не хватает прав (4.4/4.5). */
+export class ForbiddenError extends DomainError {
+  constructor(message: string) {
+    super(message, 403, 'FORBIDDEN');
+  }
+}
+
+/** Сбой соседнего сервиса (502): patient/catalog недоступны или ответ не ОК. */
+export class UpstreamError extends DomainError {
+  constructor(message: string) {
+    super(message, 502, 'UPSTREAM_ERROR');
+  }
+}

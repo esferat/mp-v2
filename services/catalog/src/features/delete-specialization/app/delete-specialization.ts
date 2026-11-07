@@ -21,7 +21,7 @@ export async function deleteSpecialization(
 
     if (specialization.doctorsCount > 0) {
       throw new ConflictError(
-        `Нельзя удалить: специализацией пользуются ${specialization.doctorsCount} врачей`,
+        `Нельзя удалить: специализацией пользуются врачи (всего: ${specialization.doctorsCount})`,
         { doctorsCount: specialization.doctorsCount },
       );
     }

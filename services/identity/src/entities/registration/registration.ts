@@ -11,15 +11,20 @@ export interface NewUser {
   firstName: string;
   lastName: string;
   middleName?: string;
-  /** Дата рождения для атрибутов пользователя. */
-  birthDate: string;
+  /** Дата рождения для атрибутов пользователя (карточка пациента, 1.4). */
+  birthDate?: string;
+  /**
+   * Realm-роль: USER (пациент, 1.4) или DOCTOR (врач, 9.1).
+   * По умолчанию USER — прежнее поведение не меняется.
+   */
+  realmRole?: 'USER' | 'DOCTOR';
 }
 
 /** Порт каталога пользователей (реализация — shared/api/keycloak-admin.client). */
 export interface UserDirectory {
   /** Поиск по email (exact): userId или null. */
   findByEmail(email: string): Promise<string | null>;
-  /** Создание пользователя с ролью USER. Email занят → EmailExistsError. */
+  /** Создание пользователя с ролью (по умолчанию USER). Email занят → EmailExistsError. */
   createUser(user: NewUser): Promise<string>;
   /** Компенсация: best-effort удаление (ретраи делает адаптер). */
   deleteUser(userId: string): Promise<void>;
@@ -59,3 +64,24 @@ export class PatientServiceError extends Error {
 /** DI-токены привязки реализаций (сборка — в app/app.module.ts). */
 export const USER_DIRECTORY = Symbol('IdentityUserDirectory');
 export const PATIENT_CARDS = Symbol('IdentityPatientCards');
+export const CATALOG_DOCTORS = Symbol('IdentityCatalogDoctors');
+
+/** Порт catalog-service: создание врача с userId (сага 9.1, шаг B). */
+export interface CatalogDoctors {
+  /** Возвращает карточку созданного врача (нужен id для ответа саги). */
+  createDoctor(data: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    middleName?: string;
+    specializationId: string;
+    schedule: {
+      startTime: string;
+      endTime: string;
+      durationMinutes: number;
+      workDays: number[];
+    };
+  }): Promise<{ id: string }>;
+  /** Существующий врач по userId (9.1: идемпотентный повтор саги); null — нет. */
+  findDoctorByUser(userId: string): Promise<{ id: string } | null>;
+}

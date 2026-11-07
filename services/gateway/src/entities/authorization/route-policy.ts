@@ -32,6 +32,12 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
     roles: null,
     comment: 'сага регистрации 1.4 — гость ещё не имеет токена',
   },
+  {
+    methods: ['POST'],
+    path: '/api/identity/doctors',
+    roles: ['ADMIN'],
+    comment: 'сага врача с учётной записью DOCTOR (9.1) — только админ',
+  },
 
   // Каталог: админский CRUD; чтение справочника — для записи (эпики 3, 5)
   { methods: ['POST', 'PUT', 'PATCH', 'DELETE'], path: '/api/catalog/doctors', roles: ['ADMIN'] },
@@ -57,12 +63,16 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
   // NB: POST /api/patient (создание из саги) идёт identity → patient НАПРЯМУЮ,
   // не через gateway — наружу создание не выдаём (1.4).
   { methods: ['POST'], path: '/api/patient', roles: ['ADMIN'] },
+  // Внутренний маршрут (5.3/9.3): сервисные вызовы scheduling идут напрямую
+  // в сеть контейнеров; через gateway — только админ (без сервисов ролей нет)
+  { methods: ['GET'], path: '/api/patient/internal', roles: ['ADMIN'] },
   { methods: ['GET'], path: '/api/patients', roles: ['ADMIN', 'DOCTOR'] },
   { path: '/api/patients', roles: ['ADMIN'] },
   { path: '/api/patient', roles: ['ADMIN', 'USER', 'DOCTOR'] },
 
-  // Записи: бронь — пациент; статусы — админ; результат приёма — врач/админ
-  { methods: ['POST'], path: '/api/scheduling/appointments', roles: ['USER', 'DOCTOR'] },
+  // Записи: бронь — пациент/админ (5.3: ADMIN указывает patientId явно);
+  // статусы — админ/врач; результат приёма — врач/админ
+  { methods: ['POST'], path: '/api/scheduling/appointments', roles: ['USER', 'DOCTOR', 'ADMIN'] },
   { methods: ['PUT', 'PATCH'], path: '/api/scheduling/appointments', roles: ['ADMIN', 'DOCTOR'] },
   { path: '/api/scheduling/appointments', roles: ['ADMIN', 'USER', 'DOCTOR'] },
   { path: '/api/scheduling', roles: ['ADMIN', 'USER', 'DOCTOR'], comment: 'слоты читают все роли' },

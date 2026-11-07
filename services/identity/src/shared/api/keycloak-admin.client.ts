@@ -49,7 +49,7 @@ export class KeycloakAdminClient implements UserDirectory {
         enabled: true,
         emailVerified: false,
         attributes: {
-          birthDate: [user.birthDate],
+          ...(user.birthDate ? { birthDate: [user.birthDate] } : {}),
           ...(user.middleName ? { middleName: [user.middleName] } : {}),
         },
         // Пароль — только в этом теле запроса; в логи и ответы не попадает
@@ -70,8 +70,8 @@ export class KeycloakAdminClient implements UserDirectory {
       throw new Error('Keycloak не вернул Location созданного пользователя');
     }
 
-    await this.assignUserRole(userId);
-    this.log.debug({ userId }, 'пользователь Keycloak создан, роль USER назначена');
+    await this.assignUserRole(userId, user.realmRole ?? 'USER');
+    this.log.debug({ userId, role: user.realmRole ?? 'USER' }, 'пользователь Keycloak создан');
     return userId;
   }
 
@@ -103,18 +103,21 @@ export class KeycloakAdminClient implements UserDirectory {
   }
 
   /**
-   * Назначение realm-роли USER (идемпотентно: повторное назначение — no-op).
+   * Назначение realm-роли (идемпотентно: повторное назначение — no-op).
    * NB: Keycloak 26 ищет роль по **id** — с одним name отвечает 404
    * «Role not found», поэтому сначала читаем роль по имени.
    */
-  private async assignUserRole(userId: string): Promise<void> {
+  private async assignUserRole(
+    userId: string,
+    roleName: 'USER' | 'DOCTOR' = 'USER',
+  ): Promise<void> {
     const realmAdmin = `${this.env.KEYCLOAK_INTERNAL_URL}/admin/realms/${this.env.KEYCLOAK_REALM}`;
 
-    const roleResp = await this.request(new URL(`${realmAdmin}/roles/USER`), {
+    const roleResp = await this.request(new URL(`${realmAdmin}/roles/${roleName}`), {
       method: 'GET',
     });
     if (!roleResp.ok) {
-      throw new Error(`Keycloak role USER не найден: HTTP ${roleResp.status}`);
+      throw new Error(`Keycloak role ${roleName} не найден: HTTP ${roleResp.status}`);
     }
     const role = (await roleResp.json()) as { id: string; name: string };
 

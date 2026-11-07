@@ -1,8 +1,9 @@
-import type {
-  DoctorListItem,
-  DoctorListQuery,
-  DoctorRepository,
-  PhotoUrlSigner,
+import {
+  toPublicDoctor,
+  type DoctorListItem,
+  type DoctorListQuery,
+  type DoctorRepository,
+  type PhotoUrlSigner,
 } from '../../../entities/doctor';
 
 /**
@@ -16,27 +17,6 @@ export async function getDoctors(
   query: DoctorListQuery,
 ): Promise<{ items: DoctorListItem[]; total: number }> {
   const { items, total } = await repository.findPage(query);
-
-  const mapped = await Promise.all(
-    items.map(async (item): Promise<DoctorListItem> => {
-      // Явная сборка: photoKey (внутренний ключ MinIO) не попадает в ответ
-      const base: DoctorListItem = {
-        id: item.id,
-        firstName: item.firstName,
-        lastName: item.lastName,
-        ...(item.middleName ? { middleName: item.middleName } : {}),
-        specializationId: item.specializationId,
-        specializationName: item.specializationName,
-        status: item.status,
-        schedule: item.schedule,
-      };
-
-      if (item.photoKey && signer) {
-        return { ...base, photoUrl: await signer.sign(item.photoKey) };
-      }
-      return base;
-    }),
-  );
-
+  const mapped = await Promise.all(items.map((item) => toPublicDoctor(item, signer)));
   return { items: mapped, total };
 }

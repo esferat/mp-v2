@@ -1,7 +1,10 @@
 import { Global, Module, type DynamicModule } from '@nestjs/common';
-import { PATIENT_REPOSITORY } from '../../entities/patient';
+import { PATIENT_REPOSITORY, PHOTO_URL_SIGNER } from '../../entities/patient';
+import { UNIT_OF_WORK } from '../../entities/repository';
 import { PrismaService } from './prisma.service';
 import { PrismaPatientRepository } from './prisma.patient-repository';
+import { PrismaUnitOfWork } from './prisma.unit-of-work';
+import { PatientPhotoUrlSigner } from './photo-signer';
 
 /**
  * Адаптеры доступа к данным (fsd.md §4.4): Prisma-реализации портов entities.
@@ -23,11 +26,15 @@ export class SharedApiModule {
           useFactory: (prisma: PrismaService) => new PrismaPatientRepository(prisma),
           inject: [PrismaService],
         },
+        { provide: UNIT_OF_WORK, useClass: PrismaUnitOfWork },
+        { provide: PHOTO_URL_SIGNER, useClass: PatientPhotoUrlSigner },
       ],
-      exports: [PrismaService, PATIENT_REPOSITORY],
+      exports: [PrismaService, PATIENT_REPOSITORY, UNIT_OF_WORK, PHOTO_URL_SIGNER],
     };
   }
 }
 
 export { PrismaService } from './prisma.service';
 export { PrismaPatientRepository } from './prisma.patient-repository';
+export { PrismaUnitOfWork } from './prisma.unit-of-work';
+export { PatientPhotoUrlSigner } from './photo-signer';

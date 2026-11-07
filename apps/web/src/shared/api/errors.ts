@@ -7,13 +7,19 @@ export class ApiError extends Error {
   readonly code: string;
   readonly status: number;
   readonly requestId?: string;
+  /** Поле формы для ошибок валидации (3.2 AC: ошибка приходит на поле). */
+  readonly field?: string;
 
-  constructor(message: string, options: { code: string; status: number; requestId?: string }) {
+  constructor(
+    message: string,
+    options: { code: string; status: number; requestId?: string; field?: string },
+  ) {
     super(message);
     this.name = 'ApiError';
     this.code = options.code;
     this.status = options.status;
     this.requestId = options.requestId;
+    this.field = options.field;
   }
 
   /** Серверная ошибка (5xx) — общий экран с retry (2.4). */

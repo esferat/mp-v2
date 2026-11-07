@@ -28,6 +28,15 @@ export interface AuthModuleOptions {
 export type { VerifiedToken as RequestAuth };
 
 /**
+ * Кто запрашивает (распространённый вид claims для доменных проверок
+ * прав: file-service, scheduling — единый тип вместо локальных копий, DRY).
+ */
+export interface AccessSubject {
+  sub: string;
+  roles: readonly string[];
+}
+
+/**
  * Глобальная проверка JWT (1.2, «защита в глубину»): каждый сервис принимает
  * только подписанный токен своего реалма (jwks, iss, aud/azp, exp) — прямой
  * вызов без токена или с чужим токеном → 401. Ролевые проверки — забота

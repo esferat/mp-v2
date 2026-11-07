@@ -19,6 +19,7 @@ export const MENU_ITEMS: readonly MenuItem[] = [
   { href: '/admin/doctors', label: 'Врачи', roles: ['ADMIN'] },
   { href: '/admin/specializations', label: 'Специализации', roles: ['ADMIN'] },
   { href: '/admin/patients', label: 'Пациенты', roles: ['ADMIN'] },
+  { href: '/admin/schedule', label: 'Управление записями', roles: ['ADMIN'] },
   { href: '/admin/reports', label: 'Отчёты', roles: ['ADMIN'] },
 
   // Личный кабинет пациента (USER)

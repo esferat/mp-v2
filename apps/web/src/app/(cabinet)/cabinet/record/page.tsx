@@ -1,14 +1,39 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Paper, Typography } from '@/shared/ui';
+import { Alert, Box, Typography } from '@/shared/ui';
+import { ApiError, createServerApi } from '@/shared/api';
+import { BookingWizard } from '@/features/booking-wizard';
 
-export const metadata: Metadata = { title: 'Запись на приём' };
+export const metadata: Metadata = { title: 'Запись на приём — Кабинет' };
 
-/** Страница-заглушка: мастер записи — задачи 5.2/5.3. */
-export default function RecordPage(): ReactNode {
-  return (
-    <Paper sx={{ p: 3 }}>
-      <Typography>Мастер записи появится в задачах 5.2–5.3.</Typography>
-    </Paper>
-  );
+/**
+ * Запись к врачу (5.2/5.3): специализации грузятся на сервере (SSR),
+ * мастер — клиентский остов (запрос слотов и бронь без перезагрузки).
+ */
+export default async function RecordPage(): Promise<ReactNode> {
+  try {
+    const api = await createServerApi();
+    const specializations = await api.catalog.getSpecializations();
+
+    return (
+      <Box>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Запись к врачу
+        </Typography>
+        <BookingWizard specializations={specializations} />
+      </Box>
+    );
+  } catch (error) {
+    const apiError = error instanceof ApiError ? error : null;
+    return (
+      <Alert severity="error" role="alert">
+        Не удалось загрузить направления: {apiError?.message ?? 'Неизвестная ошибка'}
+        {apiError?.requestId ? (
+          <Typography variant="caption" sx={{ display: 'block' }}>
+            requestId: {apiError.requestId}
+          </Typography>
+        ) : null}
+      </Alert>
+    );
+  }
 }

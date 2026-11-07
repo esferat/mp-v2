@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { eventEnvelope } from './common';
-import { slotSchema } from '../domain';
+import { appointmentStatusSchema, slotSchema } from '../domain';
 
 /** Денализованные поля записи (architecture.md §5, п.2) — без них отчёты и списки ходили бы через сеть. */
 const appointmentCore = {
@@ -27,6 +27,8 @@ export const appointmentDeclinedV1 = eventEnvelope(appointmentDeclinedV1Payload)
 
 export const appointmentCancelledV1Payload = z.object({
   appointmentId: z.string().min(1),
+  /** Откуда отменена (SUBMITTED/APPROVED) — для счётчиков проекции (5.4/канон §1). */
+  previousStatus: appointmentStatusSchema.optional(),
 });
 export const appointmentCancelledV1 = eventEnvelope(appointmentCancelledV1Payload);
 

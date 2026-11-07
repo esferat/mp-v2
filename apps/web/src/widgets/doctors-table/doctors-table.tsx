@@ -2,7 +2,17 @@
 
 import { useState } from 'react';
 import type { DoctorListItem, DoctorListResponse } from '@mp/contracts';
-import { Alert, Box, DataTable, FormField, PaginationBar, StatusBadge } from '@/shared/ui';
+import {
+  Alert,
+  Box,
+  DataTable,
+  FormField,
+  LinkButton,
+  MpAvatar,
+  PaginationBar,
+  Stack,
+  StatusBadge,
+} from '@/shared/ui';
 import { useDoctorsSearch, fetchDoctorsPage } from '@/features/search-doctors';
 import { usePagination } from '@/shared/lib';
 import { toApiError } from '@/shared/api/errors';
@@ -72,7 +82,16 @@ export function DoctorsTable({ initial }: { initial: DoctorListResponse }): Reac
           {
             key: 'lastName',
             header: 'Врач',
-            render: (doctor) => `${doctor.lastName} ${doctor.firstName}`,
+            render: (doctor) => (
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                <MpAvatar
+                  size="sm"
+                  name={`${doctor.lastName} ${doctor.firstName}`}
+                  {...(doctor.photoUrl ? { src: doctor.photoUrl } : {})}
+                />
+                <span>{`${doctor.lastName} ${doctor.firstName}`}</span>
+              </Stack>
+            ),
           },
           { key: 'specializationName', header: 'Специализация' },
           {
@@ -83,6 +102,15 @@ export function DoctorsTable({ initial }: { initial: DoctorListResponse }): Reac
                 label={doctor.status}
                 tone={doctor.status === 'ACTIVE' ? 'success' : 'neutral'}
               />
+            ),
+          },
+          {
+            key: 'actions',
+            header: '',
+            render: (doctor) => (
+              <LinkButton href={`/admin/doctors/${doctor.id}`} size="small" variant="text">
+                Редактировать
+              </LinkButton>
             ),
           },
         ]}

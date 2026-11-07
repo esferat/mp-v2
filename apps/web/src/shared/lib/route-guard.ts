@@ -38,6 +38,17 @@ export function isGuestOnlyPath(pathname: string): boolean {
 }
 
 /**
+ * Домашняя страница после входа (9.1 AC: «вход врача ведёт на
+ * /doctor/schedule»): ADMIN → администрирование, DOCTOR → кабинет врача,
+ * остальным (USER, гость) остаётся агрегированная главная.
+ */
+export function homeRedirectFor(roles: readonly string[]): string | null {
+  if (roles.includes('ADMIN')) return '/admin/doctors';
+  if (roles.includes('DOCTOR')) return '/doctor/schedule';
+  return null;
+}
+
+/**
  * Решение для запроса: где «стоим», какая роль нужна, есть ли сессия.
  *
  * @param pathname — путь без query
