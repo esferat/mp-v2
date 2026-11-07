@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { DoctorPatientList } from '@mp/contracts';
-import { Box, DataTable, FormField, LinkButton, Typography } from '@/shared/ui';
+import { Box, DataTable, MpTextField, LinkButton, Typography } from '@/shared/ui';
 import { formatRuDate } from '@/shared/lib';
 
 /**
@@ -27,11 +27,12 @@ export function DoctorPatientsTable({
   return (
     <Box>
       <Box sx={{ mb: 2, maxWidth: 420 }}>
-        <FormField
+        <MpTextField
           label="Поиск по ФИО"
           name="doctor-patient-search"
+          size="small"
           value={search}
-          onChange={setSearch}
+          onChange={(event) => setSearch(event.target.value)}
           placeholder="Фамилия или имя"
         />
       </Box>

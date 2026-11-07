@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { PatientListResponse } from '@mp/contracts';
-import { Alert, Box, DataTable, FormField, MpAvatar, PaginationBar } from '@/shared/ui';
+import { Alert, Box, DataTable, MpTextField, MpAvatar, PaginationBar } from '@/shared/ui';
 import { fetchPatientsPage, usePatientsSearch } from '@/features/search-patients';
 import { usePagination } from '@/shared/lib';
 import { toApiError } from '@/shared/api/errors';
@@ -47,11 +47,12 @@ export function PatientsTable({ initial }: { initial: PatientListResponse }): Re
   return (
     <Box>
       <Box sx={{ mb: 2, maxWidth: 420 }}>
-        <FormField
+        <MpTextField
           label="Поиск по ФИО или email"
           name="patient-search"
+          size="small"
           value={searchState.search}
-          onChange={searchState.setSearch}
+          onChange={(event) => searchState.setSearch(event.target.value)}
           placeholder="Фамилия, имя или почта"
           error={searchState.error !== null && searchActive}
           {...(searchActive && searchState.error

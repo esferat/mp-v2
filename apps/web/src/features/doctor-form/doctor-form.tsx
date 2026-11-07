@@ -19,7 +19,13 @@ import {
 } from '@/shared/ui';
 import { ApiError, toApiError } from '@/shared/api/errors';
 import { browserApi } from '@/shared/api/browser';
-import { DAY_LABELS, isFormField, schedulePreview, validateDoctorForm } from './validate';
+import {
+  DAY_LABELS,
+  DURATION_OPTIONS,
+  isFormField,
+  schedulePreview,
+  validateDoctorForm,
+} from './validate';
 import type { DoctorFormField, DoctorFormErrors, DoctorFormValues } from './validate';
 
 /**
@@ -39,10 +45,6 @@ interface DoctorFormBase {
 
 export type DoctorFormProps = DoctorFormBase &
   ({ mode: 'create'; initial?: undefined } | { mode: 'edit'; initial: DoctorListItem });
-
-/** Границы длительности приёма (3.2: entities/schedule — 5…240 мин). */
-const DURATION_MIN = 5;
-const DURATION_MAX = 240;
 
 const STATUS_OPTIONS = [
   { value: 'ACTIVE', label: 'Активен' },
@@ -209,6 +211,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
       >
         <MpTextField
           label="Фамилия"
+          size="small"
           required
           fullWidth
           value={values.lastName}
@@ -218,6 +221,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
         />
         <MpTextField
           label="Имя"
+          size="small"
           required
           fullWidth
           value={values.firstName}
@@ -227,6 +231,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
         />
         <MpTextField
           label="Отчество"
+          size="small"
           fullWidth
           value={values.middleName}
           onChange={(event) => patch('middleName', event.target.value)}
@@ -240,6 +245,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
       >
         <MpSelect
           label="Специализация"
+          size="small"
           required
           placeholder="Не выбрано"
           value={values.specializationId}
@@ -251,6 +257,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
         {mode === 'edit' ? (
           <MpSelect
             label="Статус"
+            size="small"
             value={status}
             options={STATUS_OPTIONS}
             onChange={(event) => setStatus(event.target.value as 'ACTIVE' | 'INACTIVE')}
@@ -268,6 +275,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
         <MpTextField
           label="Начало дня"
           type="time"
+          size="small"
           sx={{ width: { xs: '100%', sm: 160 } }}
           slotProps={{ htmlInput: { step: 300 } }}
           value={values.startTime}
@@ -278,6 +286,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
         <MpTextField
           label="Конец дня"
           type="time"
+          size="small"
           sx={{ width: { xs: '100%', sm: 160 } }}
           slotProps={{ htmlInput: { step: 300 } }}
           value={values.endTime}
@@ -285,30 +294,19 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
           {...(errors['schedule.endTime'] ? { helperText: errors['schedule.endTime'] } : {})}
           onChange={(event) => patch('endTime', event.target.value, 'schedule.endTime')}
         />
-        <MpTextField
+        <MpSelect
           label="Длительность приёма"
-          type="number"
-          value={values.durationMinutes}
-          error={Boolean(errors['schedule.durationMinutes'])}
-          {...(errors['schedule.durationMinutes']
-            ? { helperText: errors['schedule.durationMinutes'] }
-            : { helperText: '5–240 мин, шаг 5' })}
-          slotProps={{ htmlInput: { min: DURATION_MIN, max: DURATION_MAX, step: 5 } }}
+          required
+          size="small"
+          // не во всю строку: в одном ряду с полями времени (design/doctor-form.md)
+          fullWidth={false}
           sx={{ width: 200 }}
+          value={values.durationMinutes}
+          options={DURATION_OPTIONS}
+          error={Boolean(errors['schedule.durationMinutes'])}
+          {...(errors['schedule.durationMinutes'] ? { helperText: errors['schedule.durationMinutes'] } : {})}
           onChange={(event) => {
-            const next = Number(event.target.value);
-            if (Number.isFinite(next))
-              patch('durationMinutes', next, 'schedule.durationMinutes');
-          }}
-          onBlur={(event) => {
-            // ручной ввод зажимается в доменные границы 5–240 (entities/schedule)
-            const clamped = Math.min(
-              DURATION_MAX,
-              Math.max(DURATION_MIN, Number(event.target.value) || DURATION_MIN),
-            );
-            if (clamped !== values.durationMinutes) {
-              patch('durationMinutes', clamped, 'schedule.durationMinutes');
-            }
+            patch('durationMinutes', event.target.value, 'schedule.durationMinutes')
           }}
         />
       </Stack>
@@ -351,6 +349,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
             <Stack spacing={2}>
               <MpTextField
                 label="Email"
+                size="small"
                 required
                 type="email"
                 value={values.email}
@@ -360,6 +359,7 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
               />
               <MpTextField
                 label="Пароль"
+                size="small"
                 required
                 type="password"
                 value={values.password}

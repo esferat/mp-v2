@@ -81,7 +81,7 @@ describe('doctors HTTP (create/update/get)', () => {
     expect(await doctors.findById(response.body.id)).not.toBeNull();
   });
 
-  it('POST: период не кратен длительности -> 400 с полем (не 500)', async () => {
+  it('POST: период не кратен -> 400 с полем (не 500)', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/catalog/doctors')
       .send({
@@ -95,10 +95,11 @@ describe('doctors HTTP (create/update/get)', () => {
     expect(response.body).toMatchObject({
       code: 'VALIDATION_ERROR',
       field: 'schedule.durationMinutes',
+      message: 'Рабочий период должен быть кратен длительности приёма',
     });
   });
 
-  it('POST: нарушение Zod (длительность 4) -> 400 с полем', async () => {
+  it('POST: Zod-границы (длительность 4) -> 400 с полем', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/catalog/doctors')
       .send({

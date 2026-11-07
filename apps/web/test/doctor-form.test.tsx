@@ -125,7 +125,7 @@ describe('DoctorForm (3.2: форма врача)', () => {
 
   it('ошибка сервера с полем показывается под этим полем', async () => {
     createDoctor.mockRejectedValue(
-      new ApiError('Рабочий период должен быть кратен длительности приёма', {
+      new ApiError('Длительность должна делить час без остатка (5, 10, 15, 20 или 30 мин)', {
         code: 'VALIDATION_ERROR',
         status: 400,
         field: 'schedule.durationMinutes',
@@ -138,50 +138,33 @@ describe('DoctorForm (3.2: форма врача)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
 
     expect(
-      await screen.findByText('Рабочий период должен быть кратен длительности приёма'),
+      await screen.findByText(
+        'Длительность должна делить час без остатка (5, 10, 15, 20 или 30 мин)',
+      ),
     ).toBeTruthy();
     expect(push).not.toHaveBeenCalled();
   });
 
-  it('степпер длительности: старт 30, кнопки ±5 мин, границы 5…240', () => {
+  it('селектор длительности: старт 30, только опции 5/10/15/20/30 (кратно часу)', async () => {
     renderForm();
 
-    const input = document.querySelector('input[type=number]') as HTMLInputElement;
-    expect(input).toBeTruthy();
+    const combobox = screen.getByRole('combobox', { name: /Длительность приёма/ });
     // стартовое значение 30 (3.2: toValues)
-    expect(input.value).toBe('30');
+    expect(combobox.textContent).toContain('30');
 
-    const inc = screen.getByLabelText('Увеличить длительность на 5 минут');
-    const dec = screen.getByLabelText('Уменьшить длительность на 5 минут');
+    // открываются только допустимые длительности
+    fireEvent.mouseDown(combobox);
+    const options = await screen.findAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual([
+      '5 мин',
+      '10 мин',
+      '15 мин',
+      '20 мин',
+      '30 мин',
+    ]);
 
-    fireEvent.click(inc);
-    expect(input.value).toBe('35');
-    fireEvent.click(inc);
-    expect(input.value).toBe('40');
-    fireEvent.click(dec);
-    expect(input.value).toBe('35');
-
-    // верхняя граница: добиваем до 240, дальше кнопка заблокирована
-    for (let i = 0; i < 45; i += 1) fireEvent.click(inc);
-    expect(input.value).toBe('240');
-    expect((inc as HTMLButtonElement).disabled).toBe(true);
-
-    // нижняя граница: до 5, дальше кнопка заблокирована
-    for (let i = 0; i < 60; i += 1) fireEvent.click(dec);
-    expect(input.value).toBe('5');
-    expect((dec as HTMLButtonElement).disabled).toBe(true);
-  });
-
-  it('ручной ввод длительности зажимается в 5…240 при потере фокуса', () => {
-    renderForm();
-    const input = document.querySelector('input[type=number]') as HTMLInputElement;
-
-    fireEvent.change(input, { target: { value: '999' } });
-    fireEvent.blur(input);
-    expect(input.value).toBe('240');
-
-    fireEvent.change(input, { target: { value: '1' } });
-    fireEvent.blur(input);
-    expect(input.value).toBe('5');
+    // выбор опции обновляет значение
+    fireEvent.click(options[2]); // 15 мин
+    expect(combobox.textContent).toContain('15');
   });
 });

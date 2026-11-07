@@ -6,7 +6,7 @@ import {
   Alert,
   Box,
   DataTable,
-  FormField,
+  MpTextField,
   LinkButton,
   MpAvatar,
   PaginationBar,
@@ -58,11 +58,12 @@ export function DoctorsTable({ initial }: { initial: DoctorListResponse }): Reac
   return (
     <Box>
       <Box sx={{ mb: 2, maxWidth: 420 }}>
-        <FormField
+        <MpTextField
           label="Поиск по ФИО"
           name="doctor-search"
+          size="small"
           value={searchState.search}
-          onChange={searchState.setSearch}
+          onChange={(event) => searchState.setSearch(event.target.value)}
           placeholder="Фамилия, имя или отчество"
           error={searchState.error !== null && searchActive}
           {...(searchActive && searchState.error

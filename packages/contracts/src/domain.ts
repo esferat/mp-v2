@@ -54,8 +54,18 @@ export const doctorScheduleSchema = z.object({
   startTime: z.string().regex(timeRegex),
   /** Конец рабочего дня, HH:mm */
   endTime: z.string().regex(timeRegex),
-  /** Длительность приёма, минут (5–240) */
-  durationMinutes: z.number().int().min(5).max(240),
+  /**
+   * Длительность приёма, минут: {5, 10, 15, 20, 30} — час должен делиться
+   * на n целых приёмов без остатка (60 % duration === 0).
+   */
+  durationMinutes: z
+    .number()
+    .int()
+    .min(5)
+    .max(30)
+    .refine((value) => 60 % value === 0, {
+      message: 'Длительность должна делить час без остатка (5, 10, 15, 20 или 30 мин)',
+    }),
   /** Рабочие дни: 1 = понедельник … 7 = воскресенье */
   workDays: z.array(z.number().int().min(1).max(7)).min(1),
 });

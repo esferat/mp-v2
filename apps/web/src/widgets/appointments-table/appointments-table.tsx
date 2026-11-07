@@ -191,11 +191,6 @@ export function AppointmentsTable({
 
       <DataTable<AppointmentListResponse['items'][number]>
         columns={[
-          {
-            key: 'id',
-            header: 'ID записи',
-            render: (item) => shortId(item.id),
-          },
           { key: 'patientName', header: 'Пациент' },
           { key: 'doctorName', header: 'Врач' },
           { key: 'specializationName', header: 'Специализация' },

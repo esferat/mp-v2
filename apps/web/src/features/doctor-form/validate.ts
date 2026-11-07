@@ -36,6 +36,19 @@ export type DoctorFormField =
 
 export type DoctorFormErrors = Partial<Record<DoctorFormField, string>>;
 
+/**
+ * Допустимые длительности приёма (3.2): каждая делит час без остатка —
+ * в часе n целых приёмов (60/5=12, 60/10=6, 60/15=4, 60/20=3, 60/30=2).
+ * Источник правил — контракт doctorScheduleSchema (зеркало сервера).
+ */
+export const DURATION_OPTIONS: ReadonlyArray<{ value: number; label: string }> = [
+  { value: 5, label: '5 мин' },
+  { value: 10, label: '10 мин' },
+  { value: 15, label: '15 мин' },
+  { value: 20, label: '20 мин' },
+  { value: 30, label: '30 мин' },
+];
+
 /** Рабочие дни для чекбоксов (1 = Пн … 7 = Вс). */
 export const DAY_LABELS: ReadonlyArray<{ value: number; label: string }> = [
   { value: 1, label: 'Пн' },
@@ -116,12 +129,11 @@ export function validateDoctorForm(values: DoctorFormValues): DoctorFormErrors {
     errors['schedule.startTime'] = 'Время в формате HH:mm';
   } else if (start >= end) {
     errors['schedule.startTime'] = 'Начало рабочего дня должно быть раньше конца';
-  } else if (duration < 5 || duration > 240) {
-    errors['schedule.durationMinutes'] = 'Длительность приёма от 5 до 240 минут';
+  } else if (!DURATION_OPTIONS.some((option) => option.value === duration)) {
+    errors['schedule.durationMinutes'] = 'Длительность: 5, 10, 15, 20 или 30 минут';
+  } else if ((end - start) % duration !== 0) {
+    errors['schedule.durationMinutes'] = 'Рабочий период должен быть кратен длительности приёма';
   }
-  // NB: требование «период кратен длительности» снято (по запросу): сетка
-  // слотов и так не предлагает неполные окна (computeSlots/preview), а правило
-  // запрещало рабочие длительности вроде 7/40/55 мин.
 
   if (values.workDays.length === 0) {
     errors['schedule.workDays'] = 'Выберите хотя бы один рабочий день';

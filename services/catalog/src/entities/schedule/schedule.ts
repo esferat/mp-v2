@@ -52,15 +52,25 @@ export function validateSchedule(schedule: ScheduleWindow): ScheduleIssue | null
       message: 'Начало рабочего дня должно быть раньше конца',
     };
   }
-  if (schedule.durationMinutes < 5 || schedule.durationMinutes > 240) {
+  if (schedule.durationMinutes < 5 || schedule.durationMinutes > 30) {
     return {
       field: 'schedule.durationMinutes',
-      message: 'Длительность приёма от 5 до 240 минут',
+      message: 'Длительность: 5, 10, 15, 20 или 30 минут',
     };
   }
-  // NB: требование «период кратен длительности» снято: сетка слотов
-  // (entities/scheduling) не предлагает неполные окна, а правило запрещало
-  // рабочие длительности вроде 7/40/55 мин при периоде 09:00–18:00.
+  if (60 % schedule.durationMinutes !== 0) {
+    return {
+      field: 'schedule.durationMinutes',
+      message: 'Длительность должна делить час без остатка (5, 10, 15, 20 или 30 мин)',
+    };
+  }
+  const period = end - start;
+  if (period % schedule.durationMinutes !== 0) {
+    return {
+      field: 'schedule.durationMinutes',
+      message: 'Рабочий период должен быть кратен длительности приёма',
+    };
+  }
   if (schedule.workDays.length === 0) {
     return { field: 'schedule.workDays', message: 'Выберите хотя бы один рабочий день' };
   }

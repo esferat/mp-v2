@@ -42,17 +42,35 @@ describe('validateSchedule (домен, 3.2)', () => {
     expect(issue).toMatchObject({ field: 'schedule.startTime' });
   });
 
-  it('период не кратен длительности -> ошибка на schedule.durationMinutes', () => {
+  it('период не кратен длительности -> ошибка на schedule.durationMinutes (3.2)', () => {
+    // 09:00–18:15 = 555 мин; 555 % 30 != 0
     const issue = validateSchedule({ ...valid, endTime: '18:15', durationMinutes: 30 });
-    expect(issue).toMatchObject({ field: 'schedule.durationMinutes' });
+    expect(issue).toMatchObject({
+      field: 'schedule.durationMinutes',
+      message: 'Рабочий период должен быть кратен длительности приёма',
+    });
   });
 
-  it('длительность вне 5-240 -> ошибка на schedule.durationMinutes', () => {
-    expect(validateSchedule({ ...valid, durationMinutes: 4 })).toMatchObject({
+  it('длительность вне 5-30 -> ошибка на schedule.durationMinutes', () => {
+    expect(validateSchedule({ ...valid, durationMinutes: 45 })).toMatchObject({
       field: 'schedule.durationMinutes',
+      message: 'Длительность: 5, 10, 15, 20 или 30 минут',
     });
-    expect(validateSchedule({ ...valid, durationMinutes: 300 })).toMatchObject({
+    expect(validateSchedule({ ...valid, durationMinutes: 120 })).toMatchObject({
       field: 'schedule.durationMinutes',
+      message: 'Длительность: 5, 10, 15, 20 или 30 минут',
+    });
+  });
+
+  it('длительность не делит час -> ошибка на schedule.durationMinutes', () => {
+    // 60 % 25 = 10 и 60 % 7 != 0: в часе нет целого числа приёмов
+    expect(validateSchedule({ ...valid, durationMinutes: 25 })).toMatchObject({
+      field: 'schedule.durationMinutes',
+      message: 'Длительность должна делить час без остатка (5, 10, 15, 20 или 30 мин)',
+    });
+    expect(validateSchedule({ ...valid, durationMinutes: 7 })).toMatchObject({
+      field: 'schedule.durationMinutes',
+      message: 'Длительность должна делить час без остатка (5, 10, 15, 20 или 30 мин)',
     });
   });
 

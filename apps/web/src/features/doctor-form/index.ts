@@ -4,6 +4,7 @@
 export { DoctorForm } from './doctor-form';
 export {
   DAY_LABELS,
+  DURATION_OPTIONS,
   formatMinutes,
   isFormField,
   schedulePreview,

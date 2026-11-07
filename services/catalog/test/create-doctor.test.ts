@@ -47,7 +47,7 @@ describe('createDoctor (use-case, 3.2)', () => {
     });
   });
 
-  it('нечётный период -> ValidationError 400 с полем schedule.durationMinutes', async () => {
+  it('период не кратен длительности -> ValidationError 400 (3.2)', async () => {
     const { unitOfWork, specializations, outbox } = makeCatalogContext();
     const spec = await specializations.create('Хирург');
 
@@ -61,6 +61,24 @@ describe('createDoctor (use-case, 3.2)', () => {
     ).rejects.toMatchObject({ status: 400, field: 'schedule.durationMinutes' });
 
     expect(outbox.events).toHaveLength(0);
+  });
+
+  it('длительность не делит час -> ValidationError 400', async () => {
+    const { unitOfWork, specializations } = makeCatalogContext();
+    const spec = await specializations.create('Хирург');
+
+    await expect(
+      createDoctor(unitOfWork, specializations, {
+        firstName: 'Иван',
+        lastName: 'Иванов',
+        specializationId: spec.id,
+        schedule: { ...schedule, durationMinutes: 25 },
+      }),
+    ).rejects.toMatchObject({
+      status: 400,
+      field: 'schedule.durationMinutes',
+      message: 'Длительность должна делить час без остатка (5, 10, 15, 20 или 30 мин)',
+    });
   });
 
   it('начало позже конца -> ValidationError 400 с полем schedule.startTime', async () => {

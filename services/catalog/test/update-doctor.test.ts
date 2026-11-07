@@ -34,11 +34,11 @@ describe('updateDoctor (use-case, 3.2)', () => {
       lastName: 'Иванов',
       middleName: 'Иванович',
       specializationId: spec.id,
-      schedule: { ...schedule, durationMinutes: 45, endTime: '18:00' },
+      schedule: { ...schedule, durationMinutes: 20, endTime: '18:00' },
       status: 'ACTIVE',
     });
 
-    expect(updated).toMatchObject({ firstName: 'Пётр', schedule: { durationMinutes: 45 } });
+    expect(updated).toMatchObject({ firstName: 'Пётр', schedule: { durationMinutes: 20 } });
     expect(ctx.outbox.events).toHaveLength(before + 1);
     expect(ctx.outbox.events[before]?.routingKey).toBe(RoutingKeys.DoctorUpdated);
     expect(ctx.outbox.events[before]?.payload).toMatchObject({
