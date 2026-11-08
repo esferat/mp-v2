@@ -304,9 +304,11 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
           value={values.durationMinutes}
           options={DURATION_OPTIONS}
           error={Boolean(errors['schedule.durationMinutes'])}
-          {...(errors['schedule.durationMinutes'] ? { helperText: errors['schedule.durationMinutes'] } : {})}
+          {...(errors['schedule.durationMinutes']
+            ? { helperText: errors['schedule.durationMinutes'] }
+            : {})}
           onChange={(event) => {
-            patch('durationMinutes', event.target.value, 'schedule.durationMinutes')
+            patch('durationMinutes', event.target.value, 'schedule.durationMinutes');
           }}
         />
       </Stack>

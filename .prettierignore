@@ -11,6 +11,10 @@ scripts/service-template/
 # Генерируемые артефакты (JSON.stringify + prettier расходятся по переносам)
 packages/contracts/openapi/
 packages/contracts/compat/
+# Тема Keycloak: артефакт keycloakify build + вендорная статика Keycloakify,
+# копируемая плагином Vite в public/ при сборке
+build_keycloak/
+packages/keycloak-theme/public/
 docs/
 mp-ui-kit/
 medicalportal/

@@ -15,7 +15,7 @@ export type RouteDecision =
   | { type: 'login'; callbackUrl: string }
   /** Нет роли → страница 403, защищённый контент не отдаётся. */
   | { type: 'forbidden'; required: RequiredRole }
-  /** Гость на /auth → оставить; авторизован на /auth → на главную. */
+  /** Гость на /auth (вход/регистрация) → оставить; авторизован → на главную. */
   | { type: 'home' };
 
 /** Защищённые сегменты (functional-spec 1.3). */
@@ -65,7 +65,7 @@ export function decideAccess(pathname: string, roles: readonly string[] | null):
   }
 
   if (isGuestOnlyPath(pathname)) {
-    // Залогинен на /auth/login|signup → некуда, ведём на главную (1.3)
+    // Залогинен на /auth/login|register → некуда, ведём на главную (1.3)
     return authenticated ? { type: 'home' } : { type: 'allow' };
   }
 

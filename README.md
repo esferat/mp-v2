@@ -82,6 +82,18 @@ docker compose --env-file .env.example -f infra/docker-compose.yml up -d web gat
 docker compose --env-file .env.example -f infra/docker-compose.yml up -d --force-recreate nginx
 ```
 
+### Тема Keycloak (вход / регистрация / сброс пароля)
+
+Страницы аутентификации оформляет кастомная тема `mp-portal` — пакет `packages/keycloak-theme` (Keycloakify: React-страницы Keycloak в стиле портала). Тема запекается в образ Keycloak (`infra/keycloak/Dockerfile` → `/opt/keycloak/providers/mp-portal.jar`), поэтому после правок в пакете пересобираются образ и контейнер:
+
+```bash
+pnpm --filter @mp/keycloak-theme build
+docker compose --env-file .env.example -f infra/docker-compose.yml build keycloak
+docker compose --env-file .env.example -f infra/docker-compose.yml up -d --force-recreate keycloak
+```
+
+JAR монтировать в контейнер нельзя: JVM держит его открытым, и переименование файла при следующей сборке темы падает с EPERM. Реалм ссылается на тему через `loginTheme: "mp-portal"` (`infra/keycloak/realm-medical-portal.json`; у живого реалма правится через Admin API — импорт работает только на пустой БД).
+
 ### Миграции Prisma
 
 Новая миграция — папка `services/<svc>/prisma/migrations/<N>_<name>/migration.sql`; применяет её джоб `migrate-<svc>`:

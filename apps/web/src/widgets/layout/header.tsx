@@ -7,6 +7,10 @@ import { SignInButton, signOutAction } from '@/features/signin';
  * на сервере, токен в DOM не попадает (AC 1.1). Пункты меню по ролям —
  * вторичный слой защиты (основная — гарды 1.3).
  *
+ * Фон — фирменный градиент из темы (MuiAppBar override), поэтому весь
+ * контент шапки белый: ссылки, чипы ролей и кнопки задают белый через
+ * токены темы (common.white), без «сырых» цветов.
+ *
  * Ссылки — через LinkButton (next/link): мягкая навигация вместо полной
  * перезагрузки страницы. Обёртка клиентская, потому что в Server Components
  * нельзя передавать функцию-компонент в MUI Button (ошибка RSC).
@@ -16,7 +20,7 @@ export async function Header(): Promise<React.JSX.Element> {
   const roles = session?.user.roles ?? [];
 
   return (
-    <AppBar position="static" color="transparent" elevation={0}>
+    <AppBar position="static" color="primary" elevation={0}>
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{ gap: 2 }}>
           <LinkButton
@@ -35,23 +39,43 @@ export async function Header(): Promise<React.JSX.Element> {
           {session ? (
             <>
               {roles.map((role) => (
-                <Chip key={role} label={role} size="small" color="primary" variant="outlined" />
+                <Chip
+                  key={role}
+                  label={role}
+                  size="small"
+                  variant="outlined"
+                  sx={{ borderColor: 'common.white', color: 'common.white', fontWeight: 600 }}
+                />
               ))}
-              <Box component="span" sx={{ color: 'text.secondary' }}>
+              <Box component="span" sx={{ color: 'common.white' }}>
                 {session.user.email}
               </Box>
               <form action={signOutAction}>
-                <Button type="submit" variant="outlined" size="small">
+                <Button
+                  type="submit"
+                  variant="outlined"
+                  size="small"
+                  sx={{ borderColor: 'common.white', color: 'common.white' }}
+                >
                   Выйти
                 </Button>
               </form>
             </>
           ) : (
             <>
-              <LinkButton href="/auth/signup" size="small" color="inherit">
+              <LinkButton href="/auth/register" size="small" color="inherit">
                 Регистрация
               </LinkButton>
-              <SignInButton callbackUrl="/" variant="contained" size="small">
+              <SignInButton
+                callbackUrl="/"
+                variant="contained"
+                size="small"
+                sx={{
+                  bgcolor: 'common.white',
+                  color: 'primary.dark',
+                  '&:hover': { bgcolor: 'grey.100' },
+                }}
+              >
                 Войти
               </SignInButton>
             </>

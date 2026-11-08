@@ -9,7 +9,7 @@
   "verifyEmail": false,
   "rememberMe": false,
   "editUsernameAllowed": false,
-  "loginTheme": "keycloak",
+  "loginTheme": "mp-portal",
   "accountTheme": "keycloak",
   "emailTheme": "keycloak",
   "internationalizationEnabled": true,

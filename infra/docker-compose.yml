@@ -115,7 +115,13 @@ services:
   # --------------------------------------------------------------------------
   keycloak:
     logging: *default-logging
-    image: quay.io/keycloak/keycloak:26.2.0
+    # Keycloak + тема входа (Keycloakify): jar запекается в образ, а не
+    # монтируется — см. infra/keycloak/Dockerfile. Пересборка после правки темы:
+    #   pnpm --filter @mp/keycloak-theme build && docker compose build keycloak
+    build:
+      context: ..
+      dockerfile: infra/keycloak/Dockerfile
+    image: mp-v2-keycloak:local
     command: start-dev --import-realm
     environment:
       KC_HEALTH_ENABLED: 'true'

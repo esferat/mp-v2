@@ -40,7 +40,7 @@ describe('decideAccess: гость (нет сессии)', () => {
 
   it('/auth/* гостю разрешён', () => {
     expect(decideAccess('/auth/login', null)).toEqual({ type: 'allow' });
-    expect(decideAccess('/auth/signup', null)).toEqual({ type: 'allow' });
+    expect(decideAccess('/auth/register', null)).toEqual({ type: 'allow' });
   });
 
   it('публичные страницы разрешены', () => {
@@ -101,7 +101,7 @@ describe('decideAccess: чужая роль → 403 (AC 1.3)', () => {
 describe('decideAccess: авторизован на /auth/*', () => {
   it('→ home (некуда входить повторно)', () => {
     expect(decideAccess('/auth/login', ['USER'])).toEqual({ type: 'home' });
-    expect(decideAccess('/auth/signup', ['USER'])).toEqual({ type: 'home' });
+    expect(decideAccess('/auth/register', ['USER'])).toEqual({ type: 'home' });
   });
 });
 

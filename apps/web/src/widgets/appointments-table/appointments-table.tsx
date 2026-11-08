@@ -45,10 +45,6 @@ type Filters = {
   to?: string;
 };
 
-function shortId(id: string): string {
-  return id.length > 10 ? `${id.slice(0, 8)}…` : id;
-}
-
 export function AppointmentsTable({
   initial,
   initialFilters,

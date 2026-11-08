@@ -1,0 +1,655 @@
+/*
+ * Стили страниц Keycloak (вход / регистрация / сброс пароля) под дизайн портала.
+ *
+ * Источник токенов — apps/web/src/shared/ui/theme.ts (тема MUI):
+ *   primary #1976d2 (dark #1565c0), secondary #00897b (dark #00695c),
+ *   error #d32f2f, warning.dark #bf3608, фон #f5f7fa, радиус 8, шрифт Inter,
+ *   градиент бренда linear-gradient(90deg, #1565c0 0%, #1976d2 45%, #00695c 100%).
+ *
+ * Селекторы построены на семантических классах Keycloakify `kc*Class` (kcClsx
+ * возвращает имя ключа всегда, даже при doUseDefaultCss=false) и стабильных
+ * id (`#kc-header`, `#kc-content`, `#kc-form-login`, …). Подложка PatternFly
+ * не подключается — см. комментарий в src/login/KcPage.tsx.
+ */
+
+:root {
+  /* Палитра портала (без «магических» цветов ниже — только токены) */
+  --mp-primary: #1976d2;
+  --mp-primary-dark: #1565c0;
+  --mp-secondary: #00897b;
+  --mp-secondary-dark: #00695c;
+  --mp-error: #d32f2f;
+  --mp-error-dark: #b71c1c;
+  --mp-warning-dark: #bf3608;
+  --mp-success-dark: #1b5e20;
+  --mp-info-dark: #0d47a1;
+
+  --mp-bg: #f5f7fa;
+  --mp-surface: #ffffff;
+  --mp-text: rgba(0, 0, 0, 0.87);
+  --mp-text-muted: rgba(0, 0, 0, 0.6);
+  --mp-border: #cfd8dc;
+  --mp-border-soft: #eceff1;
+
+  --mp-radius: 8px;
+  --mp-gradient-brand: linear-gradient(90deg, #1565c0 0%, #1976d2 45%, #00695c 100%);
+  --mp-gradient-page: linear-gradient(180deg, #eef4fb 0%, #f5f7fa 480px);
+
+  /* Геометрия карточки: ширина и внутренний отступ держим в переменных,
+     чтобы шапка и карточка были выровнены по левому краю полей ввода. */
+  --mp-card-width: 400px;
+  --mp-card-padding: 32px;
+  --mp-gutter: 16px;
+
+  /* Системный светлый интерфейс независимо от ОС (страницы только светлые) */
+  color-scheme: light;
+}
+
+/* --- База -------------------------------------------------------------- */
+
+html.kcHtmlClass,
+body.kcBodyClass {
+  height: 100%;
+}
+
+body.kcBodyClass {
+  margin: 0;
+  font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--mp-text);
+  /* Мягкий вертикальный градиент фона — как в MuiCssBaseline портала */
+  background-color: var(--mp-bg);
+  background-image: var(--mp-gradient-page);
+  background-repeat: no-repeat;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* --- Каркас страницы ---------------------------------------------------- */
+
+.kcLoginClass {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Шапка: фирменный градиент (как AppBar портала) ---------------------- */
+
+#kc-header.kcHeaderClass {
+  width: 100%;
+  padding: 14px var(--mp-gutter);
+  background-color: var(--mp-primary-dark);
+  background-image: var(--mp-gradient-brand);
+  color: var(--mp-surface);
+  box-shadow: 0 1px 3px rgba(21, 101, 192, 0.25);
+}
+
+#kc-header-wrapper.kcHeaderWrapperClass {
+  width: min(var(--mp-card-width), 100%);
+  margin: 0 auto;
+  padding: 0 var(--mp-card-padding);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--mp-surface);
+}
+
+/* --- Карточка формы ------------------------------------------------------ */
+
+.kcFormCardClass {
+  width: min(var(--mp-card-width), calc(100% - 2 * var(--mp-gutter)));
+  margin: 32px auto 48px;
+  padding: var(--mp-card-padding);
+  background: var(--mp-surface);
+  border-radius: var(--mp-radius);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.kcFormHeaderClass {
+  margin: 0 0 20px;
+}
+
+/* Заголовок страницы + акцентная полоса под ним (как в SectionLayout) */
+#kc-page-title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--mp-primary-dark);
+}
+
+#kc-page-title::after {
+  content: '';
+  display: block;
+  width: 72px;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: var(--mp-radius);
+  background-image: var(--mp-gradient-brand);
+}
+
+/* Блок «вы вошли как …» (перезапуск входа) */
+#kc-username.kcFormGroupClass {
+  margin-bottom: 16px;
+}
+
+#kc-attempted-username {
+  display: block;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+#reset-login {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.875rem;
+}
+
+/* --- Переключатель языка ------------------------------------------------- */
+
+.kcLocaleMainClass {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+#kc-locale-dropdown.menu-button-links {
+  position: relative;
+}
+
+#kc-current-locale-link {
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  color: var(--mp-text-muted);
+  background: var(--mp-bg);
+  border: 1px solid var(--mp-border-soft);
+  border-radius: var(--mp-radius);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+#kc-current-locale-link:hover {
+  color: var(--mp-primary-dark);
+  background: #e3f2fd;
+}
+
+/* Меню скрыто по умолчанию: menu-button-links.js раскрывает его inline
+   style="display:block" и снимает свойство при закрытии. */
+#language-switch1.kcLocaleListClass {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: none;
+  min-width: 160px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--mp-surface);
+  border: 1px solid var(--mp-border-soft);
+  border-radius: var(--mp-radius);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.kcLocaleListItemClass {
+  margin: 0;
+}
+
+a.kcLocaleItemClass {
+  display: block;
+  padding: 7px 10px;
+  font-size: 0.875rem;
+  color: var(--mp-text);
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+a.kcLocaleItemClass:hover {
+  color: var(--mp-primary-dark);
+  background: rgba(25, 118, 210, 0.1);
+}
+
+/* --- Сообщения (ошибки/успех/предупреждение) ---------------------------- */
+
+.kcAlertClass {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  border-radius: var(--mp-radius);
+}
+
+/* Иконки PatternFly (font-awesome) не загружаются — рисуем маркер сами */
+.kcAlertClass .pf-c-alert__icon {
+  display: none;
+}
+
+.kcAlertClass .kcAlertTitleClass {
+  font-weight: 600;
+}
+
+.alert-error.kcAlertClass {
+  background: #fdecea;
+  border-left-color: var(--mp-error);
+  color: var(--mp-error-dark);
+}
+
+.alert-error.kcAlertClass::before {
+  content: '×';
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.alert-success.kcAlertClass {
+  background: #e8f5e9;
+  border-left-color: var(--mp-secondary-dark);
+  color: var(--mp-success-dark);
+}
+
+.alert-success.kcAlertClass::before {
+  content: '✓';
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.alert-warning.kcAlertClass {
+  background: #fff3e0;
+  border-left-color: var(--mp-warning-dark);
+  color: var(--mp-warning-dark);
+}
+
+.alert-warning.kcAlertClass::before {
+  content: '!';
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.alert-info.kcAlertClass {
+  background: #e3f2fd;
+  border-left-color: var(--mp-primary);
+  color: var(--mp-info-dark);
+}
+
+.alert-info.kcAlertClass::before {
+  content: 'i';
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+/* --- Поля формы ---------------------------------------------------------- */
+
+.kcFormGroupClass {
+  margin-bottom: 16px;
+}
+
+/* Обязательность поля: «*» идёт текстом сразу после label */
+.kcLabelWrapperClass {
+  margin-bottom: 6px;
+}
+
+label.kcLabelClass {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mp-text);
+}
+
+/* Вход/сброс пароля: label — прямой ребёнок группы (без обёртки) */
+.kcFormGroupClass > label.kcLabelClass {
+  display: block;
+  margin-bottom: 6px;
+}
+
+input.kcInputClass,
+select.kcInputClass,
+textarea.kcInputClass {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--mp-text);
+  background: var(--mp-surface);
+  border: 1px solid var(--mp-border);
+  border-radius: var(--mp-radius);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+input.kcInputClass::placeholder {
+  color: rgba(0, 0, 0, 0.38);
+}
+
+input.kcInputClass:hover,
+select.kcInputClass:hover,
+textarea.kcInputClass:hover {
+  border-color: #90a4ae;
+}
+
+input.kcInputClass:focus,
+select.kcInputClass:focus,
+textarea.kcInputClass:focus {
+  outline: none;
+  border-color: var(--mp-primary);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.18);
+}
+
+input.kcInputClass[aria-invalid='true'],
+textarea.kcInputClass[aria-invalid='true'] {
+  border-color: var(--mp-error);
+}
+
+input.kcInputClass[aria-invalid='true']:focus,
+textarea.kcInputClass[aria-invalid='true']:focus {
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.18);
+}
+
+input.kcInputClass:disabled,
+select.kcInputClass:disabled,
+textarea.kcInputClass:disabled {
+  color: var(--mp-text-muted);
+  background: var(--mp-bg);
+  cursor: not-allowed;
+}
+
+/* Ошибки и подсказки полей */
+.kcInputErrorMessageClass,
+#input-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--mp-error);
+}
+
+.kcInputHelperTextBeforeClass,
+.kcInputHelperTextAfterClass {
+  margin-top: 6px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--mp-text-muted);
+}
+
+/* --- Пароль: поле + кнопка показать/скрыть ------------------------------- */
+
+.kcInputGroup {
+  display: flex;
+  align-items: stretch;
+}
+
+.kcInputGroup > .kcInputClass {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  border-radius: var(--mp-radius) 0 0 var(--mp-radius);
+}
+
+.kcFormPasswordVisibilityButtonClass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0 12px;
+  color: var(--mp-text-muted);
+  background: var(--mp-bg);
+  border: 1px solid var(--mp-border);
+  border-left: none;
+  border-radius: 0 var(--mp-radius) var(--mp-radius) 0;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.kcFormPasswordVisibilityButtonClass:hover {
+  color: var(--mp-primary-dark);
+  background: #e3f2fd;
+}
+
+.kcFormPasswordVisibilityButtonClass:focus-visible {
+  outline: 2px solid var(--mp-primary);
+  outline-offset: -2px;
+}
+
+/* Глаз рисуем маской из SVG (font-awesome не подключён) */
+.kcFormPasswordVisibilityIconShow,
+.kcFormPasswordVisibilityIconHide {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.kcFormPasswordVisibilityIconShow {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+}
+
+.kcFormPasswordVisibilityIconHide {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24'/%3E%3Cline x1='1' y1='1' x2='23' y2='23'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24'/%3E%3Cline x1='1' y1='1' x2='23' y2='23'/%3E%3C/svg%3E");
+}
+
+/* --- Опции формы: «запомнить» слева, ссылки справа ------------------------ */
+
+.kcFormSettingClass,
+.kcFormOptionsClass,
+#kc-form-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.kcFormOptionsWrapperClass {
+  margin-left: auto;
+}
+
+#kc-form-options .checkbox {
+  margin: 0;
+}
+
+#kc-form-options .checkbox label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--mp-text-muted);
+  cursor: pointer;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--mp-primary);
+  cursor: pointer;
+}
+
+/* --- Кнопки -------------------------------------------------------------- */
+
+.kcButtonClass {
+  display: inline-block;
+  padding: 11px 16px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  border: 1px solid transparent;
+  border-radius: var(--mp-radius);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.kcButtonLargeClass {
+  padding: 12px 16px;
+  font-size: 1rem;
+}
+
+.kcButtonBlockClass {
+  display: block;
+  width: 100%;
+}
+
+.kcButtonPrimaryClass {
+  color: var(--mp-surface);
+  background-color: var(--mp-primary);
+  border-color: var(--mp-primary);
+}
+
+.kcButtonPrimaryClass:hover:not(:disabled) {
+  background-color: var(--mp-primary-dark);
+  border-color: var(--mp-primary-dark);
+  box-shadow: 0 1px 4px rgba(21, 101, 192, 0.4);
+}
+
+.kcButtonPrimaryClass:active:not(:disabled) {
+  background-color: #0d47a1;
+  border-color: #0d47a1;
+  box-shadow: none;
+}
+
+.kcButtonPrimaryClass:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Вторичная (passkey/другие способы) */
+.kcButtonDefaultClass {
+  color: var(--mp-text);
+  background-color: var(--mp-surface);
+  border-color: var(--mp-border);
+}
+
+.kcButtonDefaultClass:hover:not(:disabled) {
+  background-color: var(--mp-bg);
+  border-color: #90a4ae;
+}
+
+.kcButtonSecondaryClass {
+  color: var(--mp-primary-dark);
+  background-color: transparent;
+  border-color: var(--mp-primary);
+}
+
+.kcButtonSecondaryClass:hover:not(:disabled) {
+  background-color: rgba(25, 118, 210, 0.08);
+}
+
+/* --- Информационный блок под формой (регистрация / назад ко входу) ------- */
+
+#kc-info.kcSignUpClass {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mp-border-soft);
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--mp-text-muted);
+}
+
+#kc-info a {
+  font-weight: 600;
+}
+
+/* --- Ссылки -------------------------------------------------------------- */
+
+a {
+  color: var(--mp-primary-dark);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--mp-secondary-dark);
+  text-decoration: underline;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--mp-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Регистрация: условия использования ---------------------------------- */
+
+#kc-registration-terms-text {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--mp-text-muted);
+}
+
+.kcCheckboxInputClass {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* --- Сетка/обёртки, оставшиеся от PatternFly: гасим колоночные классы ------ */
+
+.kcInputWrapperClass,
+.kcFormButtonsClass,
+.kcContentWrapperClass,
+.kcLabelWrapperClass {
+  display: block;
+  width: 100%;
+}
+
+/* --- Адаптив (design/auth-login.md: <600 — поля в ширину, отступы меньше) - */
+
+@media (max-width: 480px) {
+  :root {
+    --mp-card-padding: 20px;
+    --mp-gutter: 12px;
+  }
+
+  .kcFormCardClass {
+    margin-top: 24px;
+    margin-bottom: 32px;
+  }
+
+  #kc-header {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  #kc-header-wrapper.kcHeaderWrapperClass {
+    font-size: 1rem;
+  }
+
+  #kc-page-title {
+    font-size: 1.25rem;
+  }
+}

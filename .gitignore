@@ -6,6 +6,11 @@ build/
 out/
 *.tsbuildinfo
 
+# Вендорная статика Keycloakify: плагин Vite копирует её в public/ при каждой
+# сборке темы (packages/keycloak-theme), сама тема собирается в build_keycloak
+# (там лежит собственный .gitignore от keycloakify)
+packages/keycloak-theme/public/
+
 # Генерируемый Prisma Client (создаётся `pnpm gen`)
 services/*/src/generated/
 

@@ -1,0 +1,25 @@
+{
+  "name": "@mp/keycloak-theme",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Тема Keycloak (вход/регистрация/сброс пароля) в стиле портала — Keycloakify",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && tsc --noEmit && keycloakify build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "keycloakify": "^11.16.4",
+    "typescript": "^5.9.0",
+    "vite": "^8.3.6"
+  }
+}

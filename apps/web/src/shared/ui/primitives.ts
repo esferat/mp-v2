@@ -30,6 +30,9 @@ export {
   Typography,
 } from '@mui/material';
 
+// Типы пропсов для проброса в предметные обёртки (например, sx у кнопок)
+export type { ButtonProps } from '@mui/material';
+
 export { default as Alert } from '@mui/material/Alert';
 export { default as MuiAlert } from '@mui/material/Alert';
 export { default as MuiDialog } from '@mui/material/Dialog';
