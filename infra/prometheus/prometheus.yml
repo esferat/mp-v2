@@ -1,0 +1,24 @@
+# Сбор метрик сервисов mp-v2 (0.9: наблюдаемость).
+# Каждый сервис отдаёт /metrics (service-kit, MetricsModule): метрики процесса
+# + outbox_lag_seconds (лаг публикации событий). Endpoint публичный — без токена
+# (isPublicPath / политика gateway).
+# Алерты, дашборды и ретеншн-политики поверх этого — этап 5 (8.6).
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: mp-services
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - gateway:4000
+          - identity:4001
+          - catalog:4002
+          - patient:4003
+          - file:4004
+          - scheduling:4005
+          - report:4006
+          - notification:4007
+        labels:
+          stack: mp-v2

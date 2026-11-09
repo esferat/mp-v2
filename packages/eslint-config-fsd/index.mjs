@@ -101,10 +101,10 @@ function fsdPolicies() {
 }
 
 /**
- * @param {{ root?: string, react?: boolean }} [options]
+ * @param {{ root?: string, react?: boolean, tsconfigRootDir?: string }} [options]
  */
 export function createFsdConfig(options = {}) {
-  const { root = 'src', react = false } = options;
+  const { root = 'src', react = false, tsconfigRootDir = process.cwd() } = options;
 
   return [
     {
@@ -120,6 +120,19 @@ export function createFsdConfig(options = {}) {
     },
     js.configs.recommended,
     ...tseslint.configs.recommended,
+    {
+      languageOptions: {
+        parserOptions: {
+          // typescript-eslint v8.72: без явного tsconfigRootDir парсер выводит его
+          // из стека конфигов и падает «multiple candidate TSConfigRootDirs», когда
+          // один процесс eslint линтит файлы нескольких пакетов (lint-staged в
+          // pre-commit моно-репозитория). Типизированных правил (project/
+          // projectService) в пресете нет — достаточно стабильного абсолютного пути:
+          // cwd вызова (корень пакета при `pnpm -r lint`, корень репо в хуке).
+          tsconfigRootDir,
+        },
+      },
+    },
     {
       plugins: { boundaries },
       settings: {

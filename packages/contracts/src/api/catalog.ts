@@ -21,6 +21,8 @@ export type DoctorListItem = z.infer<typeof doctorListItemSchema>;
 export const doctorListQuerySchema = paginationQuerySchema.extend({
   search: z.string().min(1).optional(),
   status: doctorStatusSchema.optional(),
+  /** Фильтр по специализации (3.1, макет design/doctors-list.md). */
+  specId: z.string().min(1).optional(),
 });
 export type DoctorListQuery = z.infer<typeof doctorListQuerySchema>;
 

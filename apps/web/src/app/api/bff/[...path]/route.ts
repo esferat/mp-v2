@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ApiError, createServerClient } from '@/shared/api';
+import { revalidateCatalog } from '@/shared/api/catalog-cache';
 
 /**
  * Универсальный BFF-роут (задача 2.6): браузер ходит ТОЛЬКО сюда
@@ -38,7 +39,11 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
       noRetry: true,
     });
 
-    return NextResponse.json(result);
+    const response = NextResponse.json(result);
+    // Успешная мутация справочника → инвалидация серверного кэша (2.6:
+    // revalidateTag; события doctor.*/specialization.* как раз от этих правок)
+    if (isBodyMethod) revalidateCatalog(path);
+    return response;
   } catch (error) {
     const apiError =
       error instanceof ApiError

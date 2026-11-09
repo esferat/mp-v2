@@ -494,6 +494,16 @@ input[type='radio'] {
   cursor: pointer;
 }
 
+/*
+ * AC 1.5: выход из остальных сессий при смене пароля — принудительный
+ * (см. src/login/template.tsx: в форму добавляется logout-sessions=on).
+ * Исходный чекбокс Keycloak снимается только визуально, поэтому прячем его,
+ * чтобы он не внушал мысль, что выход можно отменить.
+ */
+#kc-form-options .checkbox:has(input[name='logout-sessions']) {
+  display: none;
+}
+
 /* --- Кнопки -------------------------------------------------------------- */
 
 .kcButtonClass {

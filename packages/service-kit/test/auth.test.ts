@@ -40,6 +40,8 @@ describe('isPublicPath (1.2: health всегда, префиксы сервис�
   it('health-эндпоинты публичны всегда', () => {
     expect(isPublicPath('/healthz', undefined)).toBe(true);
     expect(isPublicPath('/readyz', [])).toBe(true);
+    // scrape Prometheus ходит без токена (0.9)
+    expect(isPublicPath('/metrics', undefined)).toBe(true);
   });
 
   it('префиксы из AUTH_PUBLIC_PATHS', () => {

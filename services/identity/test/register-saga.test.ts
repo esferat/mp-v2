@@ -1,43 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { RegisterRequest } from '@mp/contracts';
-import {
-  EmailExistsError,
-  PatientServiceError,
-  type PatientCards,
-  type UserDirectory,
-} from '../src/entities/registration';
+import { PatientServiceError, type PatientCards } from '../src/entities/registration';
 import { registerUser, type RegisterSagaDeps } from '../src/processes/register-user-saga';
+import { FakeDirectory } from './helpers/fake-directory';
 
 /**
  * In-memory фейки: Keycloak и patient-service без сети (1.4 — тесты ядра
  * на подменённых портах, PostgreSQL/RabbitMQ не нужны).
  */
-class FakeDirectory implements UserDirectory {
-  readonly users = new Map<string, string>(); // email → userId
-  createCalls = 0;
-  deleteCalls: string[] = [];
-  failCreateWith: Error | null = null;
-
-  async findByEmail(email: string): Promise<string | null> {
-    return this.users.get(email.toLowerCase()) ?? null;
-  }
-
-  async createUser(user: { email: string }): Promise<string> {
-    this.createCalls += 1;
-    if (this.failCreateWith) throw this.failCreateWith;
-    const email = user.email.toLowerCase();
-    if (this.users.has(email)) throw new EmailExistsError(email);
-    const userId = `kc-${this.users.size + 1}`;
-    this.users.set(email, userId);
-    return userId;
-  }
-
-  async deleteUser(userId: string): Promise<void> {
-    this.deleteCalls.push(userId);
-    for (const [email, id] of this.users) if (id === userId) this.users.delete(email);
-  }
-}
-
 class FakeCards implements PatientCards {
   readonly cards = new Map<string, { id: string }>();
   failNextCreate = false;

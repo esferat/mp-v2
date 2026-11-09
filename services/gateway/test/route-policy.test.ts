@@ -37,6 +37,52 @@ describe('findPolicy', () => {
     expect(findPolicy('GET', '/api/reports/visits')?.roles).toEqual(['ADMIN']);
     expect(findPolicy('PUT', '/api/scheduling/appointments/1/status')?.roles).toContain('ADMIN');
   });
+
+  // 0.9: scrape Prometheus ходит на /metrics без токена
+  it('метрики процесса публичны (scrape без токена)', () => {
+    expect(findPolicy('GET', '/metrics')?.roles).toBeNull();
+    expect(allowsRoles(findPolicy('GET', '/metrics'), [])).toBe(true);
+  });
+
+  // TD-02 (9.1 AC): расписание врача — 403 обязан выдать и gateway, и сервис
+  it('расписание врача — только DOCTOR/ADMIN, USER не проходит', () => {
+    const list = findPolicy('GET', '/api/scheduling/appointments/doctor');
+    const patients = findPolicy('GET', '/api/scheduling/appointments/doctor/patients');
+
+    expect(list?.roles).toEqual(['DOCTOR', 'ADMIN']);
+    expect(patients?.roles).toEqual(['DOCTOR', 'ADMIN']);
+    expect(allowsRoles(list, ['USER'])).toBe(false);
+    expect(allowsRoles(list, ['DOCTOR'])).toBe(true);
+    expect(allowsRoles(list, ['ADMIN'])).toBe(true);
+  });
+
+  it('список всех записей — только ADMIN; своя история /me — любая роль', () => {
+    // 1.2/5.4: сервис прав на список не проверяет — рубеж на шлюзе
+    expect(findPolicy('GET', '/api/scheduling/appointments')?.roles).toEqual(['ADMIN']);
+    expect(allowsRoles(findPolicy('GET', '/api/scheduling/appointments'), ['USER'])).toBe(false);
+    // 5.5: /me не задет ужесточением (patientId берётся из токена)
+    expect(findPolicy('GET', '/api/scheduling/appointments/me')?.roles).toEqual([
+      'ADMIN',
+      'USER',
+      'DOCTOR',
+    ]);
+  });
+
+  it('ужесточение списка не ломает бронь и статусы', () => {
+    expect(findPolicy('POST', '/api/scheduling/appointments')?.roles).toEqual([
+      'USER',
+      'DOCTOR',
+      'ADMIN',
+    ]);
+    expect(findPolicy('PUT', '/api/scheduling/appointments/1/status')?.roles).toEqual([
+      'ADMIN',
+      'DOCTOR',
+    ]);
+    expect(findPolicy('PUT', '/api/scheduling/appointments/1/cancel')?.roles).toEqual([
+      'ADMIN',
+      'DOCTOR',
+    ]);
+  });
 });
 
 describe('allowsRoles', () => {

@@ -2,6 +2,7 @@ import type { Specialization } from '@mp/contracts';
 import { getWebEnv } from '@/shared/config';
 import { getSessionTokens } from '@/shared/config/session-tokens';
 import { createApiClient, type ApiClient } from './client';
+import { getSpecializationsCached } from './catalog-cache';
 import { ApiError } from './errors';
 import { createApi, type Api } from './namespaces';
 
@@ -40,7 +41,7 @@ export async function loadSpecializations(): Promise<
 > {
   try {
     const api = await createServerApi();
-    const items = await api.catalog.getSpecializations();
+    const items = await getSpecializationsCached(api);
     return { items };
   } catch (error) {
     if (error instanceof ApiError) {

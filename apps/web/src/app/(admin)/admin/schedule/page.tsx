@@ -8,6 +8,7 @@ import {
 } from '@mp/contracts';
 import { Alert, Box, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
+import { cachedCatalog, CATALOG_TAGS, getSpecializationsCached } from '@/shared/api/catalog-cache';
 import { AppointmentsTable } from '@/widgets/appointments-table';
 
 export const metadata: Metadata = { title: 'Управление записями — Администрирование' };
@@ -54,8 +55,11 @@ export default async function AdminSchedulePage({
     const api = await createServerApi();
     const [initial, specializations, doctors] = await Promise.all([
       api.scheduling.getAppointments({ offset, limit: LIMIT, ...filters } as AppointmentListQuery),
-      api.catalog.getSpecializations(),
-      api.catalog.getDoctors({ limit: 100 }),
+      // Справочники — серверный кэш (2.6): записи не кэшируем, они меняются часто
+      getSpecializationsCached(api),
+      cachedCatalog(['doctors', 'limit-100'], CATALOG_TAGS.doctors, () =>
+        api.catalog.getDoctors({ limit: 100 }),
+      ),
     ]);
 
     const doctorOptions = doctors.items.map((doctor: DoctorListItem) => ({

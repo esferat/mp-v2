@@ -85,8 +85,13 @@ export class JwtAuthGuard implements CanActivate {
 }
 
 /** Публичность: health-эндпоинты всегда + префиксы из конфига сервиса. */
+/**
+ * Базовые публичные пути: health-эндпоинты и scrape-эндпоинт метрик —
+ * их опрашивают (Prometheus/healthcheck) без токена; остальное — из
+ * AUTH_PUBLIC_PATHS сервиса.
+ */
 export function isPublicPath(path: string, publicPaths: readonly string[] | undefined): boolean {
-  if (path === '/healthz' || path === '/readyz') return true;
+  if (path === '/healthz' || path === '/readyz' || path === '/metrics') return true;
   return (publicPaths ?? []).some((prefix) => path.startsWith(prefix));
 }
 

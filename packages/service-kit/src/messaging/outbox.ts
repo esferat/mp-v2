@@ -8,6 +8,7 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import type { Logger } from 'pino';
+import { setOutboxLagSeconds } from '../metrics/metrics.module';
 import { LOGGER } from '../logger/logger.module';
 import { RabbitService } from './rabbit.service';
 
@@ -192,10 +193,17 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
     try {
       const records = await this.store.claim(this.options.batchSize);
       if (records.length === 0) {
+        // пачек нет — лага нет (AC 0.9: метрика отражает текущее состояние)
+        setOutboxLagSeconds(0);
         this.emptyStreak += 1;
         return;
       }
       this.emptyStreak = 0;
+      // AC 0.9: лаг = возраст старшей записи пачки (сколько событие ждёт публикации)
+      const oldest = records
+        .map((record) => record.createdAt)
+        .reduce((min, createdAt) => (createdAt < min ? createdAt : min));
+      setOutboxLagSeconds((Date.now() - oldest.getTime()) / 1000);
       await this.publishBatch(records);
     } catch (error) {
       this.log.error({ err: error }, 'сбой прохода outbox-релея');

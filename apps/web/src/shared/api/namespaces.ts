@@ -7,6 +7,7 @@ import type {
   CreateDoctorRequest,
   CreateSpecializationRequest,
   DoctorListItem,
+  DoctorListQuery,
   DoctorListResponse,
   DoctorPatientList,
   EnterVisitResultRequest,
@@ -47,9 +48,12 @@ export function createApi(client: ApiClient) {
         client.del<{ ok: true }>(`/catalog/specializations/${encodeURIComponent(id)}`, {
           noRetry: true,
         }),
-      getDoctors: (params?: { search?: string; offset?: number; limit?: number }) => {
+      /** Список врачей: поиск + фильтры специализации/статуса (3.1). */
+      getDoctors: (params?: Partial<DoctorListQuery>) => {
         const query = new URLSearchParams();
         if (params?.search) query.set('search', params.search);
+        if (params?.specId) query.set('specId', params.specId);
+        if (params?.status) query.set('status', params.status);
         if (params?.offset !== undefined) query.set('offset', String(params.offset));
         if (params?.limit !== undefined) query.set('limit', String(params.limit));
         const suffix = query.toString();

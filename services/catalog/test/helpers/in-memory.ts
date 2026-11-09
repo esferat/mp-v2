@@ -110,6 +110,7 @@ export class InMemoryDoctorRepository implements DoctorRepository {
     let items = [...this.rows.values()];
 
     if (query.status) items = items.filter((row) => row.status === query.status);
+    if (query.specId) items = items.filter((row) => row.specializationId === query.specId);
     const search = query.search?.trim().toLowerCase();
     if (search) {
       items = items.filter((row) =>

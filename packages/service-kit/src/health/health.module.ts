@@ -1,4 +1,5 @@
 import { Controller, Get, Module, ServiceUnavailableException } from '@nestjs/common';
+import { MetricsModule } from '../metrics/metrics.module';
 import { HealthRegistry } from './health.registry';
 
 export interface LivenessResponse {
@@ -40,8 +41,11 @@ class HealthController {
 /**
  * Модуль health-эндпоинтов: подключается в app-модуле сервиса,
  * сервис регистрирует свои проверки через HealthRegistry.
+ * Вместе с ним подключается /metrics — scrape-эндпоинт Prometheus (0.9),
+ * чтобы каждый сервис отдавал метрики без отдельной настройки.
  */
 @Module({
+  imports: [MetricsModule],
   controllers: [HealthController],
   providers: [HealthRegistry],
   exports: [HealthRegistry],

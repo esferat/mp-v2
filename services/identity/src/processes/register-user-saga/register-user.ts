@@ -59,13 +59,16 @@ export async function registerUser(
   }
 
   // --- Шаг B: карточка пациента --------------------------------------------
-  const existingCard = await deps.cards.findByUserId(userId);
-  if (existingCard) {
-    // Уже всё есть (повтор submit) — без дублей и без повторного события
-    return { userId, email };
-  }
-
+  // Оба вызова (чтение и запись) — под компенсацией: отказ patient-service
+  // не оставляет «висячего» пользователя, даже если сбой случился на чтении
+  // (сеть/таймаут) — AC 1.4 «отказ patient-service не оставляет висячего».
   try {
+    const existingCard = await deps.cards.findByUserId(userId);
+    if (existingCard) {
+      // Уже всё есть (повтор submit) — без дублей и без повторного события
+      return { userId, email };
+    }
+
     await deps.cards.create({
       userId,
       email,

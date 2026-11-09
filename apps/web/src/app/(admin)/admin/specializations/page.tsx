@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Alert, Box, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
+import { getSpecializationsCached } from '@/shared/api/catalog-cache';
 import { SpecializationsTable } from '@/widgets/specializations-table';
 
 export const metadata: Metadata = { title: 'Специализации — Администрирование' };
@@ -14,7 +15,7 @@ export const metadata: Metadata = { title: 'Специализации — Ад�
 export default async function SpecializationsAdminPage(): Promise<ReactNode> {
   try {
     const api = await createServerApi();
-    const items = await api.catalog.getSpecializations();
+    const items = await getSpecializationsCached(api);
 
     return (
       <Box>

@@ -34,6 +34,12 @@ jobs:
       - name: Генерация контрактов (OpenAPI + Prisma Client)
         run: pnpm gen
 
+      # Изменение контракта без перегенерации = красный билд (0.6/DoD «дрейф ломает CI»)
+      - name: Дрейф OpenAPI (перегенерация + git diff)
+        run: |
+          git add --all packages/contracts/openapi
+          git diff --cached --exit-code -- packages/contracts/openapi
+
       - name: Линт (границы FSD)
         run: pnpm lint
 
@@ -53,6 +59,58 @@ jobs:
           name: coverage
           path: '**/coverage/lcov.info'
           if-no-files-found: ignore
+
+  # TD-36 (AC 5.6/1.1/1.3): e2e-скрипты в отдельном ране — на покрытие не влияют
+  # («отчёт о покрытии не падает из-за e2e»), гонка бронирования повторяется в CI.
+  e2e:
+    name: e2e (compose-сценарии)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.10.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Установка зависимостей
+        run: pnpm install --frozen-lockfile
+
+      # Тема нужна до старта: реалм ссылается на loginTheme mp-portal
+      - name: Сборка темы Keycloak (Keycloakify)
+        run: pnpm --filter @mp/keycloak-theme build
+
+      - name: Поднять стек (миграции-job + health, см. infra/up.sh)
+        run: ./infra/up.sh
+        env:
+          TIMEOUT: '900'
+
+      - name: Seed тестовых пользователей
+        run: node scripts/seed-test-users.mjs
+
+      - name: E2E-скрипты
+        run: |
+          node scripts/e2e-stage2.mjs
+          node scripts/e2e-epic9.mjs
+          node scripts/e2e-reset-password.mjs
+          # Гонка бронирования шлёт 100 запросов параллельно: транзиентный сброс
+          # соединения под бурстом не должен ронять билд. Детерминированные
+          # ошибки (ассерты) упадут и в повторе — баги не маскируются.
+          node scripts/e2e-booking-race.mjs || node scripts/e2e-booking-race.mjs
+
+      - name: Логи окружения (при падении)
+        if: failure()
+        run: docker compose --env-file .env.example -f infra/docker-compose.yml logs --tail=300
+
+      - name: Остановить окружение
+        if: always()
+        run: docker compose --env-file .env.example -f infra/docker-compose.yml down -v
 
   secrets:
     name: gitleaks (секреты)

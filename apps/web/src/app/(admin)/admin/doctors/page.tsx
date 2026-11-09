@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Alert, Box, Stack, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
+import { cachedCatalog, CATALOG_TAGS, getSpecializationsCached } from '@/shared/api/catalog-cache';
 import { DoctorsTable } from '@/widgets/doctors-table';
 import { DoctorControls } from '@/widgets/doctor-controls';
-import type { DoctorListResponse } from '@mp/contracts';
+import type { DoctorListResponse, Specialization } from '@mp/contracts';
 
 export const metadata: Metadata = { title: 'Врачи — Администрирование' };
 
@@ -15,12 +16,20 @@ export const metadata: Metadata = { title: 'Врачи — Администри�
  * Дальнейший поиск/пагинация — клиентский остров (без перезагрузки, AC 3.1).
  */
 async function loadDoctors(): Promise<
-  { list: DoctorListResponse } | { error: string; requestId?: string }
+  | { list: DoctorListResponse; specializations: Pick<Specialization, 'id' | 'name'>[] }
+  | { error: string; requestId?: string }
 > {
   try {
     const api = await createServerApi();
-    const list = await api.catalog.getDoctors({ limit: 10 });
-    return { list };
+    // Справочник нужен фильтру «Специализация» в таблице (3.1, макет);
+    // оба запроса — серверный кэш справочников (2.6)
+    const [list, specializations] = await Promise.all([
+      cachedCatalog(['doctors', 'limit-10'], CATALOG_TAGS.doctors, () =>
+        api.catalog.getDoctors({ limit: 10 }),
+      ),
+      getSpecializationsCached(api),
+    ]);
+    return { list, specializations };
   } catch (error) {
     if (error instanceof ApiError) {
       return {
@@ -54,7 +63,7 @@ export default async function DoctorsAdminPage(): Promise<ReactNode> {
         <Typography variant="h6">Врачи ({result.list.total})</Typography>
         <DoctorControls />
       </Stack>
-      <DoctorsTable initial={result.list} />
+      <DoctorsTable initial={result.list} specializations={result.specializations} />
     </Box>
   );
 }

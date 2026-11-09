@@ -1,6 +1,6 @@
 # Макеты (прототипы) страниц — Этапы 1–2
 
-Прототипы интерфейса для задач Этапа 1 плана ([roadmap.md](../roadmap.md)): аутентификация, оболочка UI, врачи, управление записями, запись к врачу, история; и Этапа 2 — кабинет врача (приёмы, результаты приёма, документы пациентов).
+Прототипы интерфейса для задач Этапа 1 плана ([roadmap.md](../roadmap.md)): аутентификация, оболочка UI, врачи, управление записями, запись к врачу, история; и Этапа 2 — кабинет врача (приёмы, результаты приёма, документы пациентов); подэтапа **2.1** — личный профиль всех ролей (`profile.md`), а также правки формы врача (email, 10.2) и таблицы записей (перенос, 10.3).
 
 ## Состав
 
@@ -10,10 +10,10 @@
 | [auth-login.md](auth-login.md) | Вход | `/auth/login` | 1.1, 1.3 |
 | [auth-signup.md](auth-signup.md) | Регистрация | `/auth/signup` | 1.4 |
 | [doctors-list.md](doctors-list.md) | Список врачей | `/admin/doctors` | 3.1 |
-| [doctor-form.md](doctor-form.md) | Карточка/форма врача | `/admin/doctors/new`, `/admin/doctors/:id` | 3.2, 3.4 |
+| [doctor-form.md](doctor-form.md) | Карточка/форма врача | `/admin/doctors/new`, `/admin/doctors/:id` | 3.2, 3.4, **10.2** (email + приглашение) |
 | — (макета нет) | Справочник специализаций | `/admin/specializations` | 3.3 — страница без макета, собирать по [3.3](../functional-spec.md#33-crud-специализаций--s) и общим правилам ниже |
-| — (макета нет) | Личная карточка пациента | `/cabinet/profile` | 4.2 (Этап 2) — собирать по общим правилам ниже |
-| [appointments.md](appointments.md) | Управление записями | `/admin/schedule` | 5.4 |
+| [profile.md](profile.md) | Личный профиль — все роли | `/cabinet/profile`, `/admin/profile`, `/doctor/profile` | **10.1** + 4.2 (данные пациента) |
+| [appointments.md](appointments.md) | Управление записями | `/admin/schedule` | 5.4, **10.3** (перенос записи) |
 | [booking.md](booking.md) | Запись к врачу (мастер) | `/cabinet/record` | 5.2, 5.3 |
 | [history.md](history.md) | История записей пациента | `/cabinet/history` | 5.5 |
 | [doctor-schedule.md](doctor-schedule.md) | Кабинет врача: приёмы | `/doctor/schedule` | 9.1, 9.2 |

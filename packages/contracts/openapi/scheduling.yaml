@@ -1,0 +1,1097 @@
+openapi: 3.1.0
+info:
+  title: mp-v2 scheduling
+  version: 0.1.0
+  description: "Сгенерировано из Zod-схем packages/contracts. Перегенерация: pnpm
+    gen. Сервис: scheduling, операций: 11."
+paths:
+  /api/scheduling/slots:
+    get:
+      tags:
+        - scheduling
+      summary: Свободные слоты по специализации
+      parameters:
+        - name: specId
+          in: query
+          required: true
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: from
+          in: query
+          required: true
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        - name: to
+          in: query
+          required: true
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        - name: startTime
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            pattern: ^\d{2}:\d{2}$
+        - name: endTime
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            pattern: ^\d{2}:\d{2}$
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SlotList"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/scheduling/appointments:
+    post:
+      tags:
+        - scheduling
+      summary: Забронировать слот (гонка → 409 SLOT_TAKEN)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookAppointmentRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    get:
+      tags:
+        - scheduling
+      summary: Записи с фильтрами (админ)
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            default: 0
+            type: integer
+            minimum: 0
+            maximum: 9007199254740991
+        - name: limit
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            default: 20
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: status
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            enum:
+              - SUBMITTED
+              - APPROVED
+              - DECLINED
+              - CANCELLED
+              - COMPLETED
+        - name: specId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: doctorId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: patientId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: from
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        - name: to
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppointmentListResponse"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/scheduling/appointments/me:
+    get:
+      tags:
+        - scheduling
+      summary: История записей пациента (patientId строго из токена, 5.5)
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            default: 0
+            type: integer
+            minimum: 0
+            maximum: 9007199254740991
+        - name: limit
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            default: 20
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: status
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            enum:
+              - SUBMITTED
+              - APPROVED
+              - DECLINED
+              - CANCELLED
+              - COMPLETED
+        - name: specId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: doctorId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: patientId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: from
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        - name: to
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppointmentListResponse"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/scheduling/appointments/:id/status:
+    put:
+      tags:
+        - scheduling
+      summary: APPROVED / DECLINED (только из SUBMITTED)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetAppointmentStatusRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/scheduling/appointments/:id/cancel:
+    put:
+      tags:
+        - scheduling
+      summary: Отмена записи (из SUBMITTED или APPROVED, 5.4)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelAppointmentRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/scheduling/appointments/doctor:
+    get:
+      tags:
+        - scheduling
+      summary: "Приёмы врача (9.2: doctorId из привязки sub, свои записи)"
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            default: 0
+            type: integer
+            minimum: 0
+            maximum: 9007199254740991
+        - name: limit
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            default: 20
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: status
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            enum:
+              - SUBMITTED
+              - APPROVED
+              - DECLINED
+              - CANCELLED
+              - COMPLETED
+        - name: specId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: doctorId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: patientId
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            minLength: 1
+        - name: from
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        - name: to
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppointmentListResponse"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/scheduling/appointments/doctor/patients:
+    get:
+      tags:
+        - scheduling
+      summary: "Пациенты врача (9.3: distinct из записей)"
+      parameters: []
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoctorPatientList"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/scheduling/appointments/:id/result:
+    post:
+      tags:
+        - scheduling
+      summary: "Внести результат приёма (9.2: APPROVED → COMPLETED)"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnterVisitResultRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisitResult"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    get:
+      tags:
+        - scheduling
+      summary: "Результат приёма (9.2: врач записи или ADMIN)"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisitResult"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    put:
+      tags:
+        - scheduling
+      summary: "Правка результата (9.2: только врач записи)"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVisitResultRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisitResult"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+components:
+  schemas:
+    ApiError:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+        field:
+          type: string
+          minLength: 1
+        requestId:
+          type: string
+          minLength: 1
+      required:
+        - code
+        - message
+    PaginationQuery:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        offset:
+          default: 0
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        limit:
+          default: 20
+          type: integer
+          minimum: 1
+          maximum: 100
+    Ok:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        ok:
+          type: boolean
+          const: true
+      required:
+        - ok
+    SlotList:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: array
+      items:
+        type: object
+        properties:
+          localDate:
+            type: string
+            format: date
+            pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+          start:
+            type: string
+            pattern: ^\d{2}:\d{2}$
+          end:
+            type: string
+            pattern: ^\d{2}:\d{2}$
+          doctorId:
+            type: string
+            minLength: 1
+          doctorName:
+            type: string
+            minLength: 1
+        required:
+          - localDate
+          - start
+          - end
+          - doctorId
+          - doctorName
+    SlotsQuery:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        specId:
+          type: string
+          minLength: 1
+        from:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        to:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        startTime:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+        endTime:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+      required:
+        - specId
+        - from
+        - to
+    BookAppointmentRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        doctorId:
+          type: string
+          minLength: 1
+        patientId:
+          type: string
+          minLength: 1
+        slot:
+          type: object
+          properties:
+            localDate:
+              type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            start:
+              type: string
+              pattern: ^\d{2}:\d{2}$
+          required:
+            - localDate
+            - start
+      required:
+        - doctorId
+        - slot
+    Appointment:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+            - SUBMITTED
+            - APPROVED
+            - DECLINED
+            - CANCELLED
+            - COMPLETED
+        patientId:
+          type: string
+          minLength: 1
+        patientName:
+          type: string
+          minLength: 1
+        doctorId:
+          type: string
+          minLength: 1
+        doctorName:
+          type: string
+          minLength: 1
+        specializationName:
+          type: string
+          minLength: 1
+        slot:
+          type: object
+          properties:
+            localDate:
+              type: string
+              format: date
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            start:
+              type: string
+              pattern: ^\d{2}:\d{2}$
+            end:
+              type: string
+              pattern: ^\d{2}:\d{2}$
+          required:
+            - localDate
+            - start
+            - end
+        declineReason:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        visitResult:
+          type: object
+          properties:
+            conclusion:
+              type: string
+              minLength: 1
+            recommendations:
+              type: string
+              minLength: 1
+          required:
+            - conclusion
+      required:
+        - id
+        - status
+        - patientId
+        - patientName
+        - doctorId
+        - doctorName
+        - specializationName
+        - slot
+        - createdAt
+    AppointmentListResponse:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                minLength: 1
+              status:
+                type: string
+                enum:
+                  - SUBMITTED
+                  - APPROVED
+                  - DECLINED
+                  - CANCELLED
+                  - COMPLETED
+              patientId:
+                type: string
+                minLength: 1
+              patientName:
+                type: string
+                minLength: 1
+              doctorId:
+                type: string
+                minLength: 1
+              doctorName:
+                type: string
+                minLength: 1
+              specializationName:
+                type: string
+                minLength: 1
+              slot:
+                type: object
+                properties:
+                  localDate:
+                    type: string
+                    format: date
+                    pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+                  start:
+                    type: string
+                    pattern: ^\d{2}:\d{2}$
+                  end:
+                    type: string
+                    pattern: ^\d{2}:\d{2}$
+                required:
+                  - localDate
+                  - start
+                  - end
+              declineReason:
+                type: string
+                minLength: 1
+              createdAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+              visitResult:
+                type: object
+                properties:
+                  conclusion:
+                    type: string
+                    minLength: 1
+                  recommendations:
+                    type: string
+                    minLength: 1
+                required:
+                  - conclusion
+            required:
+              - id
+              - status
+              - patientId
+              - patientName
+              - doctorId
+              - doctorName
+              - specializationName
+              - slot
+              - createdAt
+        total:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - items
+        - total
+    AppointmentListQuery:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        offset:
+          default: 0
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        limit:
+          default: 20
+          type: integer
+          minimum: 1
+          maximum: 100
+        status:
+          type: string
+          enum:
+            - SUBMITTED
+            - APPROVED
+            - DECLINED
+            - CANCELLED
+            - COMPLETED
+        specId:
+          type: string
+          minLength: 1
+        doctorId:
+          type: string
+          minLength: 1
+        patientId:
+          type: string
+          minLength: 1
+        from:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        to:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+    SetAppointmentStatusRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - APPROVED
+            - DECLINED
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+      required:
+        - status
+    CancelAppointmentRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+    DoctorPatientList:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              patientId:
+                type: string
+                minLength: 1
+              patientName:
+                type: string
+                minLength: 1
+              lastVisit:
+                type: string
+                format: date
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+            required:
+              - patientId
+              - patientName
+        total:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - items
+        - total
+    EnterVisitResultRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        conclusion:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        recommendations:
+          type: string
+          maxLength: 4000
+      required:
+        - conclusion
+    VisitResult:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        appointmentId:
+          type: string
+          minLength: 1
+        conclusion:
+          type: string
+          minLength: 1
+        recommendations:
+          type: string
+          minLength: 1
+        createdBy:
+          type: string
+          minLength: 1
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - appointmentId
+        - conclusion
+        - createdBy
+        - updatedAt
+    UpdateVisitResultRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        conclusion:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        recommendations:
+          type: string
+          maxLength: 4000
+      required:
+        - conclusion

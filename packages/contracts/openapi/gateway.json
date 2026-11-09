@@ -3,7 +3,7 @@
   "info": {
     "title": "mp-v2 gateway",
     "version": "0.1.0",
-    "description": "Сгенерировано из Zod-схем packages/contracts. Не редактировать вручную: pnpm gen."
+    "description": "Сгенерировано из Zod-схем packages/contracts. Перегенерация: pnpm gen."
   },
   "paths": {
     "/api/catalog/doctors": {
@@ -59,11 +59,21 @@
                 "INACTIVE"
               ]
             }
+          },
+          {
+            "name": "specId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -122,7 +132,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -162,7 +172,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -192,7 +202,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -260,7 +270,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -300,7 +310,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -330,7 +340,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -381,7 +391,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -443,7 +453,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -483,7 +493,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -513,7 +523,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -617,7 +627,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -681,7 +691,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -721,7 +731,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -833,7 +843,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -977,7 +987,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1047,7 +1057,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1087,7 +1097,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1127,7 +1137,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1167,7 +1177,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1281,7 +1291,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1332,7 +1342,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1402,7 +1412,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1442,7 +1452,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1470,7 +1480,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1538,7 +1548,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1578,7 +1588,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1609,7 +1619,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1649,7 +1659,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1680,7 +1690,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1720,7 +1730,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1750,7 +1760,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1810,7 +1820,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1878,7 +1888,7 @@
         },
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -1918,7 +1928,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1975,7 +1985,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -2050,7 +2060,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -2101,7 +2111,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -2141,7 +2151,7 @@
             }
           },
           "409": {
-            "description": "Конфликт (слот занят, дубль, недопустимый переход)",
+            "description": "Конфликт (запись занята, дубликат, уже обработано и т.п.)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2171,7 +2181,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -2229,7 +2239,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Успех",
+            "description": "Успех:",
             "content": {
               "application/json": {
                 "schema": {
@@ -2330,129 +2340,6 @@
         "required": [
           "ok"
         ]
-      },
-      "DoctorListItem": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "userId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 1
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "firstName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "lastName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "middleName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "specializationId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "specializationName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "INACTIVE"
-            ]
-          },
-          "photoUrl": {
-            "type": "string",
-            "format": "uri"
-          },
-          "schedule": {
-            "type": "object",
-            "properties": {
-              "startTime": {
-                "type": "string",
-                "pattern": "^\\d{2}:\\d{2}$"
-              },
-              "endTime": {
-                "type": "string",
-                "pattern": "^\\d{2}:\\d{2}$"
-              },
-              "durationMinutes": {
-                "type": "integer",
-                "minimum": 5,
-                "maximum": 30
-              },
-              "workDays": {
-                "minItems": 1,
-                "type": "array",
-                "items": {
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 7
-                }
-              }
-            },
-            "required": [
-              "startTime",
-              "endTime",
-              "durationMinutes",
-              "workDays"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "firstName",
-          "lastName",
-          "specializationId",
-          "specializationName",
-          "status",
-          "schedule"
-        ]
-      },
-      "DoctorListQuery": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "offset": {
-            "default": 0,
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          },
-          "limit": {
-            "default": 20,
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100
-          },
-          "search": {
-            "type": "string",
-            "minLength": 1
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "INACTIVE"
-            ]
-          }
-        }
       },
       "DoctorListResponse": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2563,6 +2450,133 @@
         "required": [
           "items",
           "total"
+        ]
+      },
+      "DoctorListQuery": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "offset": {
+            "default": 0,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "default": 20,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "search": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          },
+          "specId": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "DoctorListItem": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "userId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "middleName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "specializationId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "specializationName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          },
+          "photoUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "schedule": {
+            "type": "object",
+            "properties": {
+              "startTime": {
+                "type": "string",
+                "pattern": "^\\d{2}:\\d{2}$"
+              },
+              "endTime": {
+                "type": "string",
+                "pattern": "^\\d{2}:\\d{2}$"
+              },
+              "durationMinutes": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 30
+              },
+              "workDays": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7
+                }
+              }
+            },
+            "required": [
+              "startTime",
+              "endTime",
+              "durationMinutes",
+              "workDays"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "specializationId",
+          "specializationName",
+          "status",
+          "schedule"
         ]
       },
       "CreateDoctorRequest": {
@@ -2750,39 +2764,6 @@
           "name"
         ]
       },
-      "SlotsQuery": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "specId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "from": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          },
-          "to": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          },
-          "startTime": {
-            "type": "string",
-            "pattern": "^\\d{2}:\\d{2}$"
-          },
-          "endTime": {
-            "type": "string",
-            "pattern": "^\\d{2}:\\d{2}$"
-          }
-        },
-        "required": [
-          "specId",
-          "from",
-          "to"
-        ]
-      },
       "SlotList": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "array",
@@ -2819,6 +2800,39 @@
             "doctorName"
           ]
         }
+      },
+      "SlotsQuery": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "specId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "from": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "to": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "startTime": {
+            "type": "string",
+            "pattern": "^\\d{2}:\\d{2}$"
+          },
+          "endTime": {
+            "type": "string",
+            "pattern": "^\\d{2}:\\d{2}$"
+          }
+        },
+        "required": [
+          "specId",
+          "from",
+          "to"
+        ]
       },
       "BookAppointmentRequest": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2955,56 +2969,6 @@
           "createdAt"
         ]
       },
-      "AppointmentListQuery": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "offset": {
-            "default": 0,
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          },
-          "limit": {
-            "default": 20,
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "SUBMITTED",
-              "APPROVED",
-              "DECLINED",
-              "CANCELLED",
-              "COMPLETED"
-            ]
-          },
-          "specId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "doctorId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "patientId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "from": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          },
-          "to": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          }
-        }
-      },
       "AppointmentListResponse": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -3121,6 +3085,56 @@
           "total"
         ]
       },
+      "AppointmentListQuery": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "offset": {
+            "default": 0,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "default": 20,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUBMITTED",
+              "APPROVED",
+              "DECLINED",
+              "CANCELLED",
+              "COMPLETED"
+            ]
+          },
+          "specId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "doctorId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "patientId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "from": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "to": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          }
+        }
+      },
       "SetAppointmentStatusRequest": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -3153,25 +3167,47 @@
           }
         }
       },
-      "EnterVisitResultRequest": {
+      "DoctorPatientList": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
-          "conclusion": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 4000
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "patientId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "patientName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "lastVisit": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                }
+              },
+              "required": [
+                "patientId",
+                "patientName"
+              ]
+            }
           },
-          "recommendations": {
-            "type": "string",
-            "maxLength": 4000
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [
-          "conclusion"
+          "items",
+          "total"
         ]
       },
-      "UpdateVisitResultRequest": {
+      "EnterVisitResultRequest": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
@@ -3222,110 +3258,22 @@
           "updatedAt"
         ]
       },
-      "DoctorPatient": {
+      "UpdateVisitResultRequest": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
-          "patientId": {
+          "conclusion": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 4000
           },
-          "patientName": {
+          "recommendations": {
             "type": "string",
-            "minLength": 1
-          },
-          "lastVisit": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            "maxLength": 4000
           }
         },
         "required": [
-          "patientId",
-          "patientName"
-        ]
-      },
-      "DoctorPatientList": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "patientId": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "patientName": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "lastVisit": {
-                  "type": "string",
-                  "format": "date",
-                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-                }
-              },
-              "required": [
-                "patientId",
-                "patientName"
-              ]
-            }
-          },
-          "total": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          }
-        },
-        "required": [
-          "items",
-          "total"
-        ]
-      },
-      "DoctorRelationQuery": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "patientId": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "userId",
-          "patientId"
-        ]
-      },
-      "DoctorRelationResponse": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "related": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "related"
-        ]
-      },
-      "DoctorByUserResponse": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "doctorId": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "doctorId"
+          "conclusion"
         ]
       },
       "RegisterRequest": {
@@ -3534,48 +3482,6 @@
           "registeredAt"
         ]
       },
-      "CreatePatientRequest": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-          },
-          "firstName": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 100
-          },
-          "lastName": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 100
-          },
-          "middleName": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 100
-          },
-          "birthDate": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          }
-        },
-        "required": [
-          "userId",
-          "email",
-          "firstName",
-          "lastName",
-          "birthDate"
-        ]
-      },
       "UpdatePatientRequest": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -3615,83 +3521,6 @@
           "firstName",
           "lastName",
           "birthDate"
-        ]
-      },
-      "PatientListQuery": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "offset": {
-            "default": 0,
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          },
-          "limit": {
-            "default": 20,
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100
-          },
-          "search": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          }
-        }
-      },
-      "PatientListItem": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "userId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "firstName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "lastName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "middleName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "birthDate": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-          },
-          "registrationDate": {
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          },
-          "photoUrl": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        "required": [
-          "id",
-          "userId",
-          "firstName",
-          "lastName",
-          "birthDate",
-          "email",
-          "registrationDate"
         ]
       },
       "PatientListResponse": {
@@ -3765,131 +3594,28 @@
           "total"
         ]
       },
-      "UploadFileResponse": {
+      "PatientListQuery": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
-          "key": {
-            "type": "string",
-            "minLength": 1
-          },
-          "bucket": {
-            "type": "string",
-            "minLength": 1
-          },
-          "size": {
+          "offset": {
+            "default": 0,
             "type": "integer",
             "minimum": 0,
             "maximum": 9007199254740991
           },
-          "mime": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "key",
-          "bucket",
-          "size",
-          "mime"
-        ]
-      },
-      "FileDownload": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "format": "uri"
-          },
-          "expiresInSeconds": {
+          "limit": {
+            "default": 20,
             "type": "integer",
             "minimum": 1,
-            "maximum": 9007199254740991
+            "maximum": 100
+          },
+          "search": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
           }
-        },
-        "required": [
-          "url",
-          "expiresInSeconds"
-        ]
-      },
-      "FileMeta": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "minLength": 1
-          },
-          "ownerType": {
-            "type": "string",
-            "enum": [
-              "PATIENT",
-              "DOCTOR"
-            ]
-          },
-          "ownerId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "mime": {
-            "type": "string",
-            "minLength": 1
-          },
-          "size": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          },
-          "uploadedBy": {
-            "type": "string",
-            "minLength": 1
-          },
-          "category": {
-            "type": "string",
-            "enum": [
-              "ANALYSIS",
-              "REFERRAL",
-              "DISCHARGE",
-              "OTHER"
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-          }
-        },
-        "required": [
-          "key",
-          "ownerType",
-          "ownerId",
-          "mime",
-          "size",
-          "uploadedBy",
-          "createdAt"
-        ]
-      },
-      "FileListQuery": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "ownerType": {
-            "type": "string",
-            "enum": [
-              "PATIENT",
-              "DOCTOR"
-            ]
-          },
-          "ownerId": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "ownerType",
-          "ownerId"
-        ]
+        }
       },
       "FileListResponse": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -3963,6 +3689,75 @@
         "required": [
           "items",
           "total"
+        ]
+      },
+      "FileListQuery": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "ownerType": {
+            "type": "string",
+            "enum": [
+              "PATIENT",
+              "DOCTOR"
+            ]
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "ownerType",
+          "ownerId"
+        ]
+      },
+      "UploadFileResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bucket": {
+            "type": "string",
+            "minLength": 1
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "mime": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "key",
+          "bucket",
+          "size",
+          "mime"
+        ]
+      },
+      "FileDownload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "url",
+          "expiresInSeconds"
         ]
       }
     }

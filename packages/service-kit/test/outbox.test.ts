@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { renderMetrics } from '../src/metrics/metrics.module';
 import {
   OutboxRelay,
   OutboxService,
@@ -133,6 +134,23 @@ describe('OutboxRelay.tick', () => {
     expect(rabbit.published[0]).toMatchObject({ routingKey: 'doctor.created.v1' });
     expect(store.rows[0]?.status).toBe('PUBLISHED');
     expect(store.claimCalls).toBe(1);
+  });
+
+  it('обновляет метрику лага outbox_lag_seconds (0.9 AC)', async () => {
+    const store = new FakeStore();
+    const rabbit = new FakeRabbit();
+    await store.enqueue('doctor.created.v1', { eventId: 'e-lag' });
+    // «простаившая» запись: лаг = её возраст в секундах
+    store.rows[0]!.createdAt = new Date(Date.now() - 3000);
+
+    await makeRelay(store, rabbit).tick();
+    // значение может быть ровно «3» (тик в пределах одной миллисекунды)
+    expect(await renderMetrics()).toMatch(/outbox_lag_seconds 3(\.\d+)?\n/);
+
+    // очередь пуста → лаг сбрасывается в 0 (метрика отражает текущее состояние)
+    const empty = new FakeStore();
+    await makeRelay(empty, rabbit).tick();
+    expect(await renderMetrics()).toMatch(/outbox_lag_seconds 0\n/);
   });
 
   it('при сбое брокера ставит отложенный повтор, а не теряет событие', async () => {

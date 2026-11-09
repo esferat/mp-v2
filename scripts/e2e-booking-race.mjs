@@ -19,11 +19,18 @@ function fail(message) {
 }
 
 async function req(url, init = {}) {
-  const res = await fetch(url, {
-    ...init,
-    headers: { 'content-type': 'application/json', ...(init.headers ?? {}) },
-  });
-  return res;
+  try {
+    return await fetch(url, {
+      ...init,
+      headers: { 'content-type': 'application/json', ...(init.headers ?? {}) },
+    });
+  } catch (error) {
+    // Диагностика транзиентных сбоев: падаем с указанием эндпоинта (в CI это
+    // тоже должно быть видно в логе, а не «fetch failed» без контекста)
+    const cause = error && typeof error === 'object' ? error.cause : undefined;
+    const code = cause && typeof cause === 'object' ? cause.code : undefined;
+    fail(`сетевой сбой: ${init.method ?? 'GET'} ${url} — ${code ?? String(error)}`);
+  }
 }
 
 async function token(username, password) {

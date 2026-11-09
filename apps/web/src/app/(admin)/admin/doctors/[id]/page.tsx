@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { DoctorListItem } from '@mp/contracts';
 import { Alert, Box, Stack, Typography } from '@/shared/ui';
 import { ApiError, createServerApi, loadSpecializations } from '@/shared/api';
+import { cachedCatalog, CATALOG_TAGS } from '@/shared/api/catalog-cache';
 import { DoctorForm } from '@/features/doctor-form';
 import { DoctorPhoto } from '@/widgets/doctor-photo';
 
@@ -14,7 +15,12 @@ type LoadResult<T> = { value: T } | { error: string; requestId?: string } | null
 async function loadDoctor(id: string): Promise<LoadResult<DoctorListItem>> {
   try {
     const api = await createServerApi();
-    return { value: await api.catalog.getDoctor(id) };
+    // Карточка врача — тоже справочник: серверный кэш с тегом (2.6),
+    // правки через BFF сбрасывают тег сразу
+    const value = await cachedCatalog(['doctor', id], CATALOG_TAGS.doctors, () =>
+      api.catalog.getDoctor(id),
+    );
+    return { value };
   } catch (error) {
     // 404 — страница not-found (макет: «Врач не найден»)
     if (error instanceof ApiError && error.status === 404) return null;

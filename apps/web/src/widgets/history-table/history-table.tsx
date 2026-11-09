@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { AppointmentListResponse, Specialization } from '@mp/contracts';
+import type { Appointment, AppointmentListResponse, Specialization } from '@mp/contracts';
 import {
   Box,
   DataTable,
   MpAlert,
+  MpButton,
   MpSelect,
   MpStatusBadge,
   PaginationBar,
@@ -14,11 +15,13 @@ import {
 import { formatSlot, usePagination } from '@/shared/lib';
 import { browserApi } from '@/shared/api/browser';
 import { toApiError } from '@/shared/api/errors';
+import { VisitResultDialog } from '@/features/visit-result-dialog';
 
 /**
  * История записей пациента (5.5, design/history.md): только СВОИ записи
  * (patientId сервер берёт из токена), фильтры статуса/специализации в URL,
  * серверная пагинация по 10, статусы — бейджи из mp-ui-kit.
+ * Завершённые приёмы показывают результат read-only (5.5/9.2 AC).
  */
 
 const LIMIT = 10;
@@ -46,6 +49,8 @@ export function HistoryTable({
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  /** Открытый результат приёма (просмотр read-only, 5.5 AC). */
+  const [visitResult, setVisitResult] = useState<Appointment | null>(null);
 
   const pagination = usePagination({ limit: LIMIT, total: data.total });
   const { offset } = pagination;
@@ -134,6 +139,19 @@ export function HistoryTable({
             header: 'Причина отказа',
             render: (item) => item.declineReason ?? '—',
           },
+          {
+            key: 'visitResult',
+            header: 'Результат приёма',
+            // Данные уже в списке API (без отдельного запроса) — только просмотра
+            render: (item) =>
+              item.visitResult ? (
+                <MpButton size="small" onClick={() => setVisitResult(item)}>
+                  Посмотреть
+                </MpButton>
+              ) : (
+                '—'
+              ),
+          },
         ]}
         rows={data.items}
         rowKey={(item) => item.id}
@@ -151,6 +169,14 @@ export function HistoryTable({
           onPageChange={(page) => pagination.setPage(page)}
         />
       ) : null}
+
+      {/* Результат приёма — только чтение: правка пациенту недоступна (5.5/9.2) */}
+      <VisitResultDialog
+        appointment={visitResult}
+        open={visitResult !== null}
+        onClose={() => setVisitResult(null)}
+        viewOnly
+      />
     </Box>
   );
 }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { DoctorListResponse } from '@mp/contracts';
 import { DoctorsTable } from '../src/widgets/doctors-table';
 
@@ -42,9 +42,25 @@ const initial: DoctorListResponse = {
   total: 2,
 };
 
+const specializations = [
+  { id: 'sp-1', name: 'Терапевт' },
+  { id: 'sp-2', name: 'Кардиолог' },
+];
+
+/** Рендер с SSR-данными и справочником фильтров (3.1). */
+function renderTable(list: DoctorListResponse = initial): void {
+  render(<DoctorsTable initial={list} specializations={specializations} />);
+}
+
+/** Открыть MUI-Select и выбрать опцию (MUI рендерит список в портале). */
+async function selectOption(label: string, option: string): Promise<void> {
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: label }));
+  fireEvent.click(await screen.findByRole('option', { name: option }));
+}
+
 describe('DoctorsTable (3.1: таблица, поиск без перезагрузки)', () => {
   it('рендерит SSR-данные: врачи, специализации, статусы', () => {
-    render(<DoctorsTable initial={initial} />);
+    renderTable();
 
     expect(screen.getByText('Иванов Имя')).toBeTruthy();
     expect(screen.getByText('Петров Имя')).toBeTruthy();
@@ -55,7 +71,7 @@ describe('DoctorsTable (3.1: таблица, поиск без перезагр�
   it('поиск дёргает BFF (shared/api) с debounce, а не перезагружает страницу', async () => {
     getDoctors.mockResolvedValue({ items: [doctor('d-9', 'Сидоров')], total: 1 });
 
-    render(<DoctorsTable initial={initial} />);
+    renderTable();
     fireEvent.change(screen.getByLabelText('Поиск по ФИО'), {
       target: { value: 'сидоров' },
     });
@@ -71,7 +87,7 @@ describe('DoctorsTable (3.1: таблица, поиск без перезагр�
   it('пустой результат поиска → empty-state «Ничего не найдено»', async () => {
     getDoctors.mockResolvedValue({ items: [], total: 0 });
 
-    render(<DoctorsTable initial={initial} />);
+    renderTable();
     fireEvent.change(screen.getByLabelText('Поиск по ФИО'), {
       target: { value: 'никого' },
     });
@@ -87,7 +103,7 @@ describe('DoctorsTable (3.1: таблица, поиск без перезагр�
       new ApiError('Сервис недоступен', { code: 'BAD_GATEWAY', status: 502, requestId: 'req-77' }),
     );
 
-    render(<DoctorsTable initial={initial} />);
+    renderTable();
     fireEvent.change(screen.getByLabelText('Поиск по ФИО'), {
       target: { value: 'x' },
     });
@@ -96,8 +112,45 @@ describe('DoctorsTable (3.1: таблица, поиск без перезагр�
   });
 
   it('пустой стартовый список → empty-state с действием (без белого экрана)', () => {
-    render(<DoctorsTable initial={{ items: [], total: 0 }} />);
+    renderTable({ items: [], total: 0 });
     expect(screen.getByText('Врачей пока нет')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Создать врача' })).toBeTruthy();
+  });
+});
+
+describe('DoctorsTable (3.1: фильтры «специализация/статус» из макета)', () => {
+  it('фильтр специализации уходит в запрос BFF (specId)', async () => {
+    getDoctors.mockResolvedValue({ items: [doctor('d-3', 'Кардиологов')], total: 1 });
+
+    renderTable();
+    await selectOption('Специализация', 'Кардиолог');
+
+    await waitFor(
+      () => expect(getDoctors).toHaveBeenCalledWith(expect.objectContaining({ specId: 'sp-2' })),
+      { timeout: 2000 },
+    );
+    await waitFor(() => expect(screen.getByText('Кардиологов Имя')).toBeTruthy());
+  });
+
+  it('фильтр статуса уходит в запрос BFF (status)', async () => {
+    getDoctors.mockResolvedValue({ items: [], total: 0 });
+
+    renderTable();
+    await selectOption('Статус', 'Архив');
+
+    await waitFor(
+      () =>
+        expect(getDoctors).toHaveBeenCalledWith(expect.objectContaining({ status: 'INACTIVE' })),
+      { timeout: 2000 },
+    );
+    // пустой отфильтрованный список — не «Врачей пока нет», а «ничего не найдено»
+    await waitFor(() => expect(screen.getByText('Ничего не найдено')).toBeTruthy(), {
+      timeout: 2000,
+    });
+  });
+
+  it('без фильтров SSR-страница не перезапрашивается (AC 2.6: без лишних вызовов)', () => {
+    renderTable();
+    expect(getDoctors).not.toHaveBeenCalled();
   });
 });

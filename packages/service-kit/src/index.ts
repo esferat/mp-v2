@@ -30,11 +30,17 @@ export {
 } from './tracing/trace-id.middleware';
 export type { TraceIdMiddlewareFn } from './tracing/trace-id.middleware';
 
-// Health
+// Health + метрики (наблюдаемость: /healthz, /readyz, /metrics — 0.7/0.9)
 export { HealthRegistry } from './health/health.registry';
 export type { HealthCheck, HealthCheckResult } from './health/health.registry';
 export { HealthModule } from './health/health.module';
 export type { LivenessResponse, ReadinessResponse } from './health/health.module';
+export {
+  MetricsModule,
+  outboxLagSeconds,
+  renderMetrics,
+  setOutboxLagSeconds,
+} from './metrics/metrics.module';
 
 // Сообщения: RabbitMQ + outbox/inbox
 export { RABBIT_CONFIG, RabbitService } from './messaging/rabbit.service';

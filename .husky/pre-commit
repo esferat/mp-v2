@@ -1,0 +1,9 @@
+# Pre-commit (0.1: линт/формат только затронутых файлов; полный typecheck — в CI).
+# Диспетчер .husky/_/h запускает этот файл через `sh -e`, поэтому при ошибке коммит блокируется.
+lint-staged
+
+# Секрет-сканер (0.1): в CI обязателен (.github/workflows/ci.yml → job secrets),
+# локально — при установленном gitleaks. v9+ команда называется `gitleaks git --staged`.
+if command -v gitleaks >/dev/null 2>&1; then
+	gitleaks protect --staged --redact
+fi

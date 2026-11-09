@@ -23,6 +23,8 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
   // Health-эндпоинты контейнера — всегда публичны (healthcheck compose)
   { path: '/healthz', roles: null, comment: 'liveness контейнера' },
   { path: '/readyz', roles: null, comment: 'readiness контейнера' },
+  // Метрики процесса — scrape Prometheus без токена (0.9)
+  { path: '/metrics', roles: null, comment: 'scrape Prometheus' },
 
   // Регистрация/вход — до входа в систему, поэтому публичные (жёсткий rate-limit)
   { path: '/api/auth', roles: null, comment: 'регистрация/служебные — до входа' },
@@ -74,6 +76,30 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
   // статусы — админ/врач; результат приёма — врач/админ
   { methods: ['POST'], path: '/api/scheduling/appointments', roles: ['USER', 'DOCTOR', 'ADMIN'] },
   { methods: ['PUT', 'PATCH'], path: '/api/scheduling/appointments', roles: ['ADMIN', 'DOCTOR'] },
+  // 9.1 AC: расписание врача — только DOCTOR/ADMIN; 403 обязан выдать И gateway,
+  // И сервис (защита в глубину). Путь длиннее общего — выигрывает по префиксу.
+  {
+    methods: ['GET'],
+    path: '/api/scheduling/appointments/doctor',
+    roles: ['DOCTOR', 'ADMIN'],
+    comment: '9.1 AC: USER → 403 на gateway',
+  },
+  // Своя история (5.5): patientId берётся из токена в сервисе, поэтому роль не режем
+  {
+    methods: ['GET'],
+    path: '/api/scheduling/appointments/me',
+    roles: ['ADMIN', 'USER', 'DOCTOR'],
+    comment: '5.5: только своя история',
+  },
+  // Список ВСЕХ записей (5.4) — только админ: сервис прав не проверяет, значит
+  // рубеж обязан быть на шлюзе (1.2 AC: «чужая роль → 403»). Без этого любой
+  // USER читал бы чужие записи через прямой вызов gateway.
+  {
+    methods: ['GET'],
+    path: '/api/scheduling/appointments',
+    roles: ['ADMIN'],
+    comment: '5.4/1.2: список всех записей — админ',
+  },
   { path: '/api/scheduling/appointments', roles: ['ADMIN', 'USER', 'DOCTOR'] },
   { path: '/api/scheduling', roles: ['ADMIN', 'USER', 'DOCTOR'], comment: 'слоты читают все роли' },
 

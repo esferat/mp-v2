@@ -22,6 +22,10 @@ import { toApiError } from '@/shared/api/errors';
  * - APPROVED → «Внести результат» (POST, статус уходит в COMPLETED);
  * - COMPLETED → «Посмотреть» (read-only), кнопка «Изправить» → PUT.
  *
+ * `viewOnly` — просмотр без кнопки правки: так результат читает пациент в
+ * истории (5.5/9.2 AC «запись COMPLETED — с результатом read-only»), где PUT
+ * всё равно закончится 403.
+ *
  * Заключение обязательно (≤ 4000) — клиентское зеркало доменной валидации
  * (истина — сервер); двойной submit заблокирован синхронным ref (как в формах).
  * 409 (запись уже обработана/не APPROVED) → тост + закрытие + обновление списка.
@@ -36,12 +40,15 @@ export function VisitResultDialog({
   open,
   onClose,
   onChanged,
+  viewOnly = false,
 }: {
   appointment: Appointment | null;
   open: boolean;
   onClose: () => void;
   /** Вызывается после успешного внесения/правки (строка обновляется). */
-  onChanged: () => void;
+  onChanged?: () => void;
+  /** Только просмотр: кнопка «Изправить» скрыта, поля всегда read-only. */
+  viewOnly?: boolean;
 }): React.JSX.Element {
   const toast = useToast();
 
@@ -59,8 +66,8 @@ export function VisitResultDialog({
     setConclusion(appointment.visitResult?.conclusion ?? '');
     setRecommendations(appointment.visitResult?.recommendations ?? '');
     setError(null);
-    setMode(appointment.status === 'COMPLETED' ? 'read' : 'enter');
-  }, [appointment]);
+    setMode(viewOnly || appointment.status === 'COMPLETED' ? 'read' : 'enter');
+  }, [appointment, viewOnly]);
 
   // Нормальная ссылка для замыканий save/close (appointment может смениться)
   const current = appointment;
@@ -105,14 +112,14 @@ export function VisitResultDialog({
         toast.success('Результат обновлён');
       }
       onClose();
-      onChanged();
+      onChanged?.();
     } catch (caught) {
       const apiError = toApiError(caught);
       if (apiError.status === 409) {
         // Запись уже обработана другим запросом / не в APPROVED
         toast.error('Запись уже обработана или недоступна', apiError.requestId);
         onClose();
-        onChanged();
+        onChanged?.();
       } else if (apiError.status === 403) {
         toast.error('Запись назначена другому врачу', apiError.requestId);
         onClose();
@@ -132,7 +139,9 @@ export function VisitResultDialog({
     <MpDialog open={open} title="Результат приёма" onClose={close} maxWidth="md" fullWidth>
       <MpDialogContent>
         <Stack spacing={1} sx={{ mb: 2 }}>
-          <Typography variant="body2">Пациент: {appointment.patientName}</Typography>
+          {viewOnly ? null : (
+            <Typography variant="body2">Пациент: {appointment.patientName}</Typography>
+          )}
           <Typography variant="body2" color="text.secondary">
             {`Приём: ${formatSlot(appointment.slot.localDate, appointment.slot.start)} · ${appointment.specializationName}`}
           </Typography>
@@ -187,9 +196,11 @@ export function VisitResultDialog({
           {readOnly ? 'Закрыть' : 'Отмена'}
         </MpButton>
         {readOnly ? (
-          <MpButton variant="outlined" onClick={() => setMode('edit')}>
-            Изправить
-          </MpButton>
+          viewOnly ? null : (
+            <MpButton variant="outlined" onClick={() => setMode('edit')}>
+              Изправить
+            </MpButton>
+          )
         ) : (
           <MpButton variant="contained" loading={saving} onClick={() => void save()}>
             {current.status === 'APPROVED' ? 'Сохранить и завершить приём' : 'Сохранить'}

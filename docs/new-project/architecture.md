@@ -182,7 +182,7 @@
 | `user.registered.v1` | identity | notification | userId, email, locale |
 | `user.role-changed.v1` | identity | notification, audit | userId, roles |
 | `patient.created.v1` / `patient.updated.v1` | patient | scheduling (денализация), audit | patientId, ФИО, birthDate |
-| `doctor.created.v1` / `doctor.updated.v1` / `doctor.deleted.v1` | catalog | scheduling (копия расписания; при удалении — удаление копии), web (revalidate ISR) | doctorId, status, schedule, spec |
+| `doctor.created.v1` / `doctor.updated.v1` / `doctor.deleted.v1` | catalog | scheduling (копия расписания; при удалении — удаление копии), web (revalidate ISR) | doctorId, **userId**, status, schedule, spec (без `email` — PII, см. 10.2) |
 | `specialization.changed.v1` | catalog | web (revalidate) | specId, name |
 | `document.uploaded.v1` | file | notification, audit | key, bucket, ownerId, mime, size, category, uploadedBy |
 | `document.deleted.v1` | file | audit | key, ownerId |
@@ -190,9 +190,10 @@
 | `appointment.approved.v1` | scheduling | notification, **report** (проекция: **+1**) | то же + статус |
 | `appointment.declined.v1` | scheduling | notification, audit | то же + причина; **на счётчик проекции не влияет** (переход только из `SUBMITTED`) |
 | `appointment.cancelled.v1` | scheduling | notification, **report** (проекция: **−1**, только если запись была `APPROVED`) | appointmentId, previousStatus |
+| `appointment.rescheduled.v1` | scheduling | notification («запись перенесена», Этап 3), audit; **report — не подключается** (счётчик не меняется) | appointmentId, старый/новый слот, doctorId (был/стал), patientId, инициатор |
 | `appointment.completed.v1` | scheduling | notification, audit | appointmentId, patientId, doctorId, ФИО (результат приёма внесён) |
 
-**Статусная машина и правила проекции:** каноническая таблица переходов (`SUBMITTED → APPROVED | DECLINED`, `SUBMITTED/APPROVED → CANCELLED`, `APPROVED → COMPLETED`) и правило счётчиков отчёта (**+1** по `APPROVED`, **−1** по `CANCELLED` из `APPROVED`, остальные переходы счётчик не меняют) — [functional-spec «Статусная машина записи (канон)»](functional-spec.md#статусная-машина-записи-канон). Правила меняются только там, с синхронизацией каталога событий выше.
+**Статусная машина и правила проекции:** каноническая таблица переходов (`SUBMITTED → APPROVED | DECLINED`, `SUBMITTED/APPROVED → CANCELLED`, `APPROVED → COMPLETED`, **перенос** слота/врача из `SUBMITTED`/`APPROVED` без смены статуса) и правило счётчиков отчёта (**+1** по `APPROVED`, **−1** по `CANCELLED` из `APPROVED`, остальные переходы и перенос счётчик не меняют) — [functional-spec «Статусная машина записи (канон)»](functional-spec.md#статусная-машина-записи-канон). Правила меняются только там, с синхронизацией каталога событий выше.
 
 Схемы полезной нагрузки — Zod в `packages/contracts/events`, версионируются; несовместимое изменение = новая версия routing key.
 
@@ -243,6 +244,13 @@
 2. `file-service` → внутренний вызов `scheduling` (связь «врач–пациент»: есть приём `APPROVED`/`COMPLETED`) — без связи → **403**.
 3. Валидация (магические байты, ≤ 5 МБ) → MinIO → реестр (`category`, `uploadedBy`) → событие `document.uploaded.v1`.
 4. Скачивание: `GET /api/files/:key` → проверка: владелец, `ADMIN` **или** врач с подтверждённой связью → presigned URL, TTL 5 минут.
+
+### 7.9 Перенос записи на другого врача / на другое время (админ)
+1. Браузер → BFF `web` → `PUT /api/scheduling/appointments/:id/reschedule` `{doctorId?, localDate, start, reason?}` (guard `ADMIN`) → gateway → `scheduling`.
+2. Проверки: запись в `SUBMITTED`/`APPROVED` (иначе **409**), врач активен и есть в копии расписания (5.1), новая дата не в прошлом.
+3. Транзакция: `UPDATE` записи (слот, врач, денализованные ФИО/специализация) + строка `outbox` одним commit; `UNIQUE (doctorId, localDate, start)` → конфликт → **409 SLOT_TAKEN**.
+4. Событие `appointment.rescheduled.v1` → `notification` («запись перенесена», Этап 3) и `audit`; **проекция отчёта не меняется** — посещение одно.
+5. Пациент видит новое время в истории (5.5): запись одна, дублей и потери истории нет.
 
 ## 8. Аутентификация и авторизация
 

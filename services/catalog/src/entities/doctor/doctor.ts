@@ -31,13 +31,18 @@ export interface DoctorListItem {
   readonly schedule: DoctorSchedule;
 }
 
-/** Запрос страницы списка (3.1): поиск по ФИО + пагинация offset/limit. */
+/**
+ * Запрос страницы списка (3.1): поиск по ФИО, фильтры специализации/статуса,
+ * пагинация offset/limit.
+ */
 export interface DoctorListQuery {
   offset: number;
   limit: number;
   /** Подстрока ФИО (без учёта регистра). */
   search?: string;
   status?: DoctorStatus;
+  /** Фильтр по специализации (макет design/doctors-list.md). */
+  specId?: string;
 }
 
 /** Данные создания врача (3.2): DTO после Zod, до Prisma. */

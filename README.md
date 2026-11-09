@@ -126,6 +126,7 @@ docker compose --env-file .env.example -f infra/docker-compose.yml down -v      
 | PostgreSQL             | 5432         | по одной БД на сервис (`db_*`)                                                                           |
 | RabbitMQ               | 5672 / 15672 | AMQP / Management                                                                                        |
 | Elasticsearch / Kibana | 9200 / 5601  | логи pino → Filebeat → Kibana                                                                            |
+| Prometheus             | 9090         | scrape `/metrics` всех сервисов: `outbox_lag_seconds`, метрики процесса                                  |
 | Mailpit                | 8025 / 1025  | dev-почта: UI / SMTP                                                                                     |
 
 ### Проверка после запуска

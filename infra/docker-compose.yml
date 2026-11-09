@@ -673,6 +673,31 @@ services:
         curl -s "$$ES/_ilm/policy" | head -c 400; echo
         curl -s "$$ES/_index_template" | head -c 400; echo
 
+  # --------------------------------------------------------------------------
+  # Prometheus: scrape /metrics всех сервисов (0.9 — лаг outbox и метрики
+  # процесса; алерты/дашборды — этап 5, 8.6, здесь только сбор).
+  # --------------------------------------------------------------------------
+  prometheus:
+    logging: *default-logging
+    image: prom/prometheus:v2.53.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    ports:
+      - '${PROMETHEUS_PORT:-9090}:9090'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    healthcheck:
+      # в образе busybox есть wget; /-/ready отвечает после применения конфига
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:9090/-/ready']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
 # ============================================================================
 # Тома: именованные (не анонимные), имена фиксированы — переживают
 # `docker compose restart`, `down` (без -v) и `down && up`.
@@ -690,6 +715,8 @@ volumes:
     name: mp-v2_esdata
   filebeatdata:
     name: mp-v2_filebeatdata
+  prometheusdata:
+    name: mp-v2_prometheusdata
 
 # ============================================================================
 # ВСЕ сервисы определены: web, gateway, identity, catalog, patient, file,

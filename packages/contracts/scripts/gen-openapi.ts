@@ -1,22 +1,33 @@
 /**
- * Генерация OpenAPI из Zod-реестра (0.6): Zod — единственный источник истины,
- * openapi/gateway.json — артефакт для документации и CI-сверки (дрейф контракта
- * ловится diff'ом закоммиченного файла).
+ * Генерация OpenAPI из Zod-схем (0.6): Zod — источник истины для контрактов,
+ * файлы в `openapi/` — производные и проверяются в CI на дрейф.
  *
- * Запуск: pnpm gen (в каталоге packages/contracts).
+ * Выход:
+ * - `openapi/gateway.json` — агрегат всего, что отдаёт gateway;
+ * - `openapi/<service>.yaml` — по-сервисные спецификации (0.6: чек-лист
+ *   «OpenAPI-спецификации сервисов в contracts/openapi/<service>.yaml»).
+ *
+ * Запуск: pnpm gen (входит в корневой `pnpm gen`).
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
+import { stringify } from 'yaml';
 import { apiRoutes, apiSchemas } from '../src/api/registry';
 
 type Json = Record<string, unknown>;
+type Route = (typeof apiRoutes)[number];
+
+/** Общие схемы попадают в каждую по-сервисную спецификацию (ошибки/пагинация). */
+const SHARED_SCHEMAS = ['ApiError', 'PaginationQuery', 'Ok'] as const;
+
+const DESCRIPTION = 'Сгенерировано из Zod-схем packages/contracts. Перегенерация: pnpm gen.';
 
 function toJsonSchema(schema: z.ZodType, name: string): Json {
   try {
     return z.toJSONSchema(schema, { io: 'input', target: 'draft-2020-12' }) as Json;
   } catch (error) {
-    console.warn(`[gen-openapi] схема ${name} не сериализована:`, String(error));
+    console.warn(`[gen-openapi] схема ${name} не сериализуется:`, String(error));
     return { type: 'object' };
   }
 }
@@ -33,7 +44,7 @@ function pathParams(path: string): string[] {
   return [...path.matchAll(/:([A-Za-z0-9_]+)/g)].map((m) => m[1] as string);
 }
 
-function buildParameters(route: (typeof apiRoutes)[number]): Json[] {
+function buildParameters(route: Route): Json[] {
   const params: Json[] = pathParams(route.path).map((name) => ({
     name,
     in: 'path',
@@ -59,15 +70,15 @@ function buildParameters(route: (typeof apiRoutes)[number]): Json[] {
   return params;
 }
 
-function buildPaths(): Json {
+function buildPaths(routes: Route[]): Json {
   const paths: Json = {};
-  for (const route of apiRoutes) {
+  for (const route of routes) {
     const item = (paths[route.path] ??= {}) as Json;
     const isArray = route.response.startsWith('array:');
     const responseName = isArray ? route.response.slice('array:'.length) : route.response;
     const responses: Json = {
       '200': {
-        description: 'Успех',
+        description: 'Успех:',
         content: {
           'application/json': {
             schema: isArray ? { type: 'array', items: ref(responseName) } : ref(responseName),
@@ -89,7 +100,7 @@ function buildPaths(): Json {
     };
     if (route.method === 'post' || route.method === 'put') {
       responses['409'] = {
-        description: 'Конфликт (слот занят, дубль, недопустимый переход)',
+        description: 'Конфликт (запись занята, дубликат, уже обработано и т.п.)',
         content: { 'application/json': { schema: ref('ApiError') } },
       };
     }
@@ -112,29 +123,55 @@ function buildPaths(): Json {
   return paths;
 }
 
-function main(): void {
-  const components: Record<string, Json> = {};
-  for (const [name, schema] of Object.entries(apiSchemas)) {
-    components[name] = toJsonSchema(schema, name);
+/** Документ для набора маршрутов: только используемые этим набором схемы. */
+function buildDoc(routes: Route[], title: string, description: string): Json {
+  const names = new Set<string>(SHARED_SCHEMAS);
+  for (const route of routes) {
+    if (route.body) names.add(route.body);
+    const response = route.response.startsWith('array:')
+      ? route.response.slice('array:'.length)
+      : route.response;
+    names.add(response);
+    if (route.query) names.add(route.query);
   }
 
-  const doc = {
+  const components: Record<string, Json> = {};
+  for (const name of names) {
+    const schema = apiSchemas[name as keyof typeof apiSchemas];
+    if (schema) components[name] = toJsonSchema(schema as z.ZodType, name);
+  }
+
+  return {
     openapi: '3.1.0',
-    info: {
-      title: 'mp-v2 gateway',
-      version: '0.1.0',
-      description:
-        'Сгенерировано из Zod-схем packages/contracts. Не редактировать вручную: pnpm gen.',
-    },
-    paths: buildPaths(),
+    info: { title, version: '0.1.0', description },
+    paths: buildPaths(routes),
     components: { schemas: components },
   };
+}
 
+function main(): void {
   const outDir = join(process.cwd(), 'openapi');
   mkdirSync(outDir, { recursive: true });
-  const outFile = join(outDir, 'gateway.json');
-  writeFileSync(outFile, `${JSON.stringify(doc, null, 2)}\n`, 'utf8');
-  console.log(`[gen-openapi] записан ${outFile} (схем: ${Object.keys(components).length})`);
+
+  // Агрегат: всё, что отдаёт gateway (был и остаётся точкой входа для обзора)
+  const aggregate = buildDoc(apiRoutes, 'mp-v2 gateway', DESCRIPTION);
+  const aggregateFile = join(outDir, 'gateway.json');
+  writeFileSync(aggregateFile, `${JSON.stringify(aggregate, null, 2)}\n`, 'utf8');
+  console.log(`[gen-openapi] записан ${aggregateFile} (схем: ${Object.keys(apiSchemas).length})`);
+
+  // По-сервисные спецификации (0.6): contracts/openapi/<service>.yaml
+  const tags = [...new Set(apiRoutes.map((route) => route.tag))].sort();
+  for (const tag of tags) {
+    const routes = apiRoutes.filter((route) => route.tag === tag);
+    const doc = buildDoc(
+      routes,
+      `mp-v2 ${tag}`,
+      `${DESCRIPTION} Сервис: ${tag}, операций: ${routes.length}.`,
+    );
+    const file = join(outDir, `${tag}.yaml`);
+    writeFileSync(file, stringify(doc), 'utf8');
+    console.log(`[gen-openapi] записан ${file} (операций: ${routes.length})`);
+  }
 }
 
 main();

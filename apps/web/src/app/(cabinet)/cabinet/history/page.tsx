@@ -4,6 +4,7 @@ import type { AppointmentStatus } from '@mp/contracts';
 import { appointmentStatusSchema } from '@mp/contracts';
 import { Alert, Box, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
+import { getSpecializationsCached } from '@/shared/api/catalog-cache';
 import { HistoryTable } from '@/widgets/history-table';
 
 export const metadata: Metadata = { title: 'История приёмов — Кабинет' };
@@ -42,7 +43,7 @@ export default async function HistoryPage({
     const api = await createServerApi();
     const [initial, specializations] = await Promise.all([
       api.scheduling.getMyAppointments({ offset, limit: LIMIT, ...filters }),
-      api.catalog.getSpecializations(),
+      getSpecializationsCached(api),
     ]);
 
     return (

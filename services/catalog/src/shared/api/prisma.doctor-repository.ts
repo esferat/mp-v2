@@ -154,11 +154,15 @@ function isRecordMissing(error: unknown): boolean {
   );
 }
 
-/** Фильтры: поиск по ФИО (без учёта регистра), статус. */
-function buildWhere(query: DoctorListQuery): Prisma.DoctorWhereInput {
+/**
+ * Фильтры списка врачей (3.1): поиск по ФИО (без учёта регистра), статус,
+ * специализация. Экспортируется для unit-теста — Prisma-WHERE проверяется без БД.
+ */
+export function buildWhere(query: DoctorListQuery): Prisma.DoctorWhereInput {
   const where: Prisma.DoctorWhereInput = {};
 
   if (query.status) where.status = query.status;
+  if (query.specId) where.specializationId = query.specId;
 
   const search = query.search?.trim();
   if (search) {

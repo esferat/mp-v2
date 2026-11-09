@@ -1,80 +1,126 @@
 'use client';
 
-import { useState } from 'react';
-import type { DoctorListItem, DoctorListResponse } from '@mp/contracts';
+import { useEffect, useState } from 'react';
+import type {
+  DoctorListItem,
+  DoctorListResponse,
+  DoctorStatus,
+  Specialization,
+} from '@mp/contracts';
 import {
   Alert,
   Box,
   DataTable,
   MpTextField,
+  MpSelect,
   LinkButton,
   MpAvatar,
   PaginationBar,
   Stack,
   StatusBadge,
 } from '@/shared/ui';
-import { useDoctorsSearch, fetchDoctorsPage } from '@/features/search-doctors';
+import { useDoctorsSearch, type DoctorsFilters } from '@/features/search-doctors';
 import { usePagination } from '@/shared/lib';
-import { toApiError } from '@/shared/api/errors';
+
+const LIMIT = 10;
+
+/** Статусы для фильтра (3.1, макет design/doctors-list.md: «специализация/статус»). */
+const STATUS_OPTIONS = [
+  { value: 'ACTIVE', label: 'Активен' },
+  { value: 'INACTIVE', label: 'Архив' },
+];
 
 /**
- * Таблица врачей (3.1: widgets/doctors-table): SSR-данные как стартовое
- * состояние, поиск — debounce в BFF без перезагрузки (AC), пагинация —
- * хук 2.5 (номер страницы в URL, восстановление после F5).
+ * Таблица врачей (3.1, widgets/doctors-table): SSR-данные приходят сверху,
+ * поиск/фильтры/пагинация идут одним путём — debounce-запрос хука в BFF
+ * ('/api/bff/catalog/doctors'), состояния loading/error единые (2.4/3.1 AC).
+ * Номер страницы живёт в URL — F5 восстанавливает состояние (AC 2.5).
  */
-export function DoctorsTable({ initial }: { initial: DoctorListResponse }): React.JSX.Element {
-  const [pageData, setPageData] = useState<DoctorListResponse>(initial);
-  const [pageLoading, setPageLoading] = useState(false);
-  const [pageError, setPageError] = useState<string | null>(null);
+export function DoctorsTable({
+  initial,
+  specializations,
+}: {
+  initial: DoctorListResponse;
+  /** Справочник для фильтра «Специализация»: загружает SSR-страница (live). */
+  specializations: Pick<Specialization, 'id' | 'name'>[];
+}): React.JSX.Element {
+  const [filters, setFilters] = useState<DoctorsFilters>({});
+  /**
+   * total живёт отдельно: page/offset приходят из URL и не зависят от total —
+   * это разрывает цикл «offset → запрос → total → pagination».
+   */
+  const [total, setTotal] = useState(initial.total);
 
-  const searchState = useDoctorsSearch({ offset: 0, limit: 10 });
-  const pagination = usePagination({ limit: 10, total: pageData.total });
+  const pagination = usePagination({ limit: LIMIT, total });
+  const searchState = useDoctorsSearch({
+    offset: pagination.offset,
+    limit: LIMIT,
+    filters,
+  });
 
-  // Поиск активен → данные из поискового хука; иначе — данные страницы (SSR/пагинация)
+  // Данные: ответ хука (поиск/фильтры/страница) либо SSR-первая страница
+  const view = searchState.result ?? initial;
   const searchActive = searchState.search.trim().length > 0;
-  const view = searchActive && searchState.result ? searchState.result : pageData;
-  const loading = searchActive ? searchState.loading : pageLoading;
-  const error = searchActive ? searchState.error : pageError;
-  const requestId = searchActive ? searchState.requestId : undefined;
+  const filtered = searchActive || Boolean(filters.specId ?? filters.status);
+  const error = searchState.error;
 
-  async function changePage(nextPage: number): Promise<void> {
-    pagination.setPage(nextPage);
-    setPageLoading(true);
-    setPageError(null);
-    try {
-      const response = await fetchDoctorsPage({
-        ...(searchActive ? { search: searchState.search.trim() } : {}),
-        offset: nextPage * pagination.limit,
-        limit: pagination.limit,
-      });
-      setPageData(response);
-    } catch (caught) {
-      setPageError(toApiError(caught).message);
-    } finally {
-      setPageLoading(false);
-    }
+  useEffect(() => {
+    setTotal(view.total);
+  }, [view.total]);
+
+  /** Смена фильтра всегда начинает с первой страницы (3.1). */
+  function changeFilter(key: keyof DoctorsFilters, value: string): void {
+    setFilters((prev) => ({
+      ...prev,
+      ...(key === 'status'
+        ? { status: (value || undefined) as DoctorStatus | undefined }
+        : { specId: value || undefined }),
+    }));
+    if (pagination.page !== 0) pagination.setPage(0);
   }
 
   return (
     <Box>
-      <Box sx={{ mb: 2, maxWidth: 420 }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{ mb: 2, maxWidth: 720, alignItems: { sm: 'flex-end' } }}
+      >
         <MpTextField
           label="Поиск по ФИО"
           name="doctor-search"
           size="small"
           value={searchState.search}
           onChange={(event) => searchState.setSearch(event.target.value)}
-          placeholder="Фамилия, имя или отчество"
+          placeholder="Иванов, Петров или Сидоров"
           error={searchState.error !== null && searchActive}
           {...(searchActive && searchState.error
-            ? { helperText: `${searchState.error}${requestId ? ` (requestId: ${requestId})` : ''}` }
+            ? { helperText: `${searchState.error}${requestIdText(searchState.requestId)}` }
             : {})}
+          sx={{ minWidth: 240 }}
         />
-      </Box>
+        <MpSelect
+          label="Специализация"
+          placeholder="Все"
+          value={filters.specId ?? ''}
+          options={specializations.map((spec) => ({ value: spec.id, label: spec.name }))}
+          onChange={(event) => changeFilter('specId', event.target.value)}
+          sx={{ minWidth: 200 }}
+        />
+        <MpSelect
+          label="Статус"
+          placeholder="Все"
+          value={filters.status ?? ''}
+          options={STATUS_OPTIONS}
+          onChange={(event) => changeFilter('status', event.target.value)}
+          sx={{ minWidth: 150 }}
+        />
+      </Stack>
 
-      {pageError && !searchActive ? (
+      {error && !searchActive ? (
         <Alert severity="error" role="alert" sx={{ mb: 2 }}>
-          {pageError}
+          {error}
+          {requestIdText(searchState.requestId)}
         </Alert>
       ) : null}
 
@@ -117,26 +163,29 @@ export function DoctorsTable({ initial }: { initial: DoctorListResponse }): Reac
         ]}
         rows={view.items}
         rowKey={(doctor) => doctor.id}
-        loading={loading}
+        loading={searchState.loading}
         {...(error && !searchActive ? { error } : {})}
-        emptyTitle={searchActive ? 'Ничего не найдено' : 'Врачей пока нет'}
+        emptyTitle={filtered ? 'Ничего не найдено' : 'Врачей пока нет'}
         emptyDescription={
-          searchActive
-            ? 'Измените запрос поиска'
+          filtered
+            ? 'Измените запрос поиска или фильтры'
             : 'Создайте первого врача, чтобы он появился в записи на приём'
         }
-        emptyActionLabel={searchActive ? undefined : 'Создать врача'}
-        emptyActionHref={searchActive ? undefined : '/admin/doctors/new'}
+        emptyActionLabel={filtered ? undefined : 'Создать врача'}
+        emptyActionHref={filtered ? undefined : '/admin/doctors/new'}
       />
 
       {view.total > 0 ? (
         <PaginationBar
           meta={{ ...pagination, total: view.total }}
-          onPageChange={(page) => {
-            void changePage(page);
-          }}
+          onPageChange={(page) => pagination.setPage(page)}
         />
       ) : null}
     </Box>
   );
+}
+
+/** requestId в подписи ошибки (2.3/2.4: поддержка ищет его в ответе). */
+function requestIdText(requestId?: string): string {
+  return requestId ? ` (requestId: ${requestId})` : '';
 }
