@@ -14,8 +14,10 @@ mp-v2/
 │   ├── catalog/              # врачи и специализации (эталон структуры сервиса)
 │   ├── patient/ file/ scheduling/ report/ notification/
 ├── packages/
-│   ├── contracts/            # Zod-схемы событий и DTO, routing keys, OpenAPI (codegen)
+│   ├── contracts/            # OpenAPI-контракты + схемы событий (Zod) + генерируемые TS-типы
 │   ├── service-kit/          # переиспользуемая инфраструктура: pino, trace-id, health, outbox/inbox, RabbitMQ
+│   ├── storage/              # presigned-клиент MinIO/S3
+│   ├── mp-ui-kit/            # дизайн-система: компоненты Mp* (Material UI), тема и токены, Storybook
 │   ├── eslint-config-fsd/    # общий ESLint-пресет: границы Feature-Sliced Design
 │   └── tsconfig/             # общие пресеты TypeScript
 ├── scripts/

@@ -1,0 +1,22 @@
+# Зависимости
+node_modules/
+
+# Сборка
+dist/
+storybook-static/
+*.tgz
+
+# Логи и кэш
+*.log
+npm-debug.log*
+.vite/
+.cache/
+
+# Редакторы и ОС
+.idea/
+.vscode/
+*.local
+.DS_Store
+Thumbs.db
+
+*storybook.log

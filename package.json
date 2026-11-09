@@ -9,10 +9,10 @@
   "scripts": {
     "lint": "pnpm -r --no-bail run lint",
     "lint:fix": "pnpm -r --no-bail run lint:fix",
-    "typecheck": "pnpm run gen && pnpm -r --no-bail run typecheck",
+    "typecheck": "pnpm run gen && pnpm --filter mp-ui-kit build && pnpm -r --no-bail run typecheck",
     "test": "pnpm -r --no-bail run test",
     "test:coverage": "pnpm -r --no-bail run test:coverage",
-    "build": "pnpm run gen && pnpm -r run build",
+    "build": "pnpm run gen && pnpm --filter mp-ui-kit build && pnpm -r run build",
     "gen": "pnpm --filter @mp/contracts gen && pnpm -r --filter \"./services/*\" run gen",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

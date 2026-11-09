@@ -16,6 +16,5 @@ packages/contracts/compat/
 build_keycloak/
 packages/keycloak-theme/public/
 docs/
-mp-ui-kit/
 medicalportal/
 medical-portal-admin-frontend/
