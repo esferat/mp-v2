@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет · Карточка / форма врача</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .crumbs { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+  .act-bar { display: flex; align-items: end; gap: 8px; flex-wrap: wrap; }
+  .days { display: flex; gap: 6px; flex-wrap: wrap; }
+  .day { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border: 1px solid var(--neutral-300); border-radius: var(--r-md); font-size: 12px; background: var(--surface); }
+  .day.on { background: var(--brand-50); border-color: var(--brand-600); color: var(--brand-800); font-weight: 600; }
+  .slot { display: inline-flex; height: 28px; padding: 0 10px; align-items: center; border-radius: 14px; border: 1px solid var(--neutral-300); font-size: 12px; margin: 0 6px 6px 0; background: var(--surface); }
+  .slot.busy { background: var(--neutral-100); color: var(--neutral-400); text-decoration: line-through; border-style: dashed; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <span class="page-name">Карточка / форма врача</span>
+  <span class="meta">/admin/doctors/new · /admin/doctors/:id · Задачи 3.2 (+3.3, 3.4, 10.2) · роль ADMIN</span>
+</div>
+<div class="legend">
+  <span>Бейджи <span class="comp">Mp*</span> — компоненты mp-ui-kit</span>
+  <span>Вёрстка: <b>app/(admin)/admin/doctors/[id]/page.tsx</b> → widgets/doctor-controls → features/create-doctor / update-doctor</span>
+</div>
+
+<div class="frame">
+  <header class="appbar">
+    <div class="logo">МП</div>
+    <div class="brand">Медицинский портал<small>MP Admin-Panel · ADMIN</small></div>
+    <div class="spacer"></div>
+    <div class="actions">
+      <span class="avatar">ИИ</span><button class="btn btn-text btn-sm">Выйти</button>
+      <span class="comp">MpAppBar</span>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="sidebar">
+      <div class="group-title">Управление</div>
+      <a class="nav-item active" href="#"><span class="icon">🩺</span> Врачи</a>
+      <a class="nav-item" href="#"><span class="icon">👥</span> Пациенты</a>
+      <a class="nav-item" href="#"><span class="icon">🗓️</span> Записи</a>
+      <a class="nav-item" href="#"><span class="icon">🧩</span> Специализации</a>
+      <a class="nav-item" href="#"><span class="icon">📊</span> Отчёты</a>
+      <a class="nav-item" href="#"><span class="icon">👤</span> Мой профиль</a>
+      <span class="comp">MpNavDrawer</span>
+    </nav>
+
+    <main class="main">
+      <div class="page-header">
+        <div>
+          <div class="crumbs">‹ Врачи / <b style="color:var(--text)">Иванов Иван Иванович</b></div>
+          <div class="sub" style="margin-top:4px">id: 64de63… · создан 14.01.2025</div>
+        </div>
+        <div class="act-bar">
+          <button class="btn btn-danger">Архивировать</button>
+          <button class="btn btn-contained">Сохранить</button>
+          <span class="comp">MpButton</span>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="row">
+          <!-- ================= ФОТО ================= -->
+          <section class="card" style="max-width:260px">
+            <h2>ФОТО</h2>
+            <div style="text-align:center">
+              <span class="avatar xl">ИИ</span>
+              <div style="margin-top:12px"><button class="btn btn-outlined btn-sm">Заменить фото</button></div>
+              <div class="helper" style="margin-top:6px">JPEG/PNG/WebP · ≤ 5 МБ · кроп react-easy-crop в модалке (3.4)</div>
+              <div style="margin-top:8px"><span class="comp">image-cropper</span> <span class="comp">MpAvatar</span></div>
+            </div>
+          </section>
+
+          <!-- ================= ОБЩАЯ ИНФОРМАЦИЯ ================= -->
+          <section class="card" style="flex:2">
+            <h2>ОСНОВНАЯ ИНФОРМАЦИЯ</h2>
+            <div class="form-row">
+              <div class="field"><label>Фамилия <span class="req">*</span></label><div class="control filled">Иванов</div></div>
+              <div class="field"><label>Имя <span class="req">*</span></label><div class="control filled">Иван</div></div>
+              <div class="field"><label>Отчество</label><div class="control filled">Иванович</div></div>
+            </div>
+            <div class="form-row" style="margin-top:12px">
+              <div class="field"><label>Специализация <span class="req">*</span></label><div class="control filled select">Хирург</div></div>
+              <div class="field"><label>Статус</label><div class="control filled select">Активен</div></div>
+              <div class="field"><label>Email <span class="req">*</span> (10.2)</label><div class="control filled">ivanov@clinic.local</div><div class="helper">уникальность — ед. функция в identity (409 при дубле)</div></div>
+            </div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+              <span class="chip brand">✓ Создать учётную запись</span>
+              <span class="helper">Letter - приглашение с 12-часовой ссылкой установки пароля — после сохранения (10.2)</span>
+            </div>
+          </section>
+        </div>
+
+        <!-- ================= РАСПИСАНИЕ ================= -->
+        <section class="card">
+          <h2>РАСПИСАНИЕ <span class="comp" style="float:right">MpCheckbox ×7 · MpSelect</span></h2>
+          <div class="form-row2">
+            <div class="field"><label>Рабочий период</label><div style="display:flex;gap:8px;align-items:center">
+              <div class="control filled">09:00</div>–<div class="control filled">18:00</div>
+            </div></div>
+            <div class="field"><label>Длительность приёма</label><div class="control filled select">30 мин</div></div>
+          </div>
+          <div style="margin-top:14px">
+            <label style="font-size:12px;font-weight:600">Рабочие дни</label>
+            <div class="days" style="margin-top:6px">
+              <span class="day on">☑ Пн</span><span class="day on">☑ Вт</span><span class="day on">☑ Ср</span>
+              <span class="day on">☑ Чт</span><span class="day on">☑ Пт</span><span class="day">☐ Сб</span><span class="day">☐ Вс</span>
+            </div>
+          </div>
+          <div class="alert info" style="margin-top:14px">
+            <span>⏱</span><div>Превью слотов: Пн 09:00 · 09:30 · 10:00 · … · 17:30 — <b>18 окон/день</b> (живой пересчёт: период кратен длительности)</div>
+          </div>
+          <div class="helper" style="margin-top:8px">Валидация — в <b>entities/schedule</b> (по 3.2: период кратен длительности, start &lt; end, 5–240 мин, ≥ 1 день → <b>400</b> на поле, не 500)</div>
+        </section>
+
+        <!-- ================= СВОБОДНЫЕ СЛОТЫ ================= -->
+        <section class="card">
+          <h2>СВОБОДНЫЕ СЛОТЫ (только для существующего врача) <span class="comp" style="float:right">MpChip</span></h2>
+          <div style="margin-top:8px">
+            <span style="font-size:12px;font-weight:600">05.11:</span>
+            <span class="slot">09:00</span><span class="slot">09:30</span><span class="slot">10:00</span><span class="slot">13:00</span>
+            <span class="slot busy">10:30</span><span class="slot busy">11:30</span><span class="slot busy">12:00</span>
+          </div>
+          <div class="helper" style="margin-top:8px">занятые — серые с зачёркизом (GET /api/scheduling/slots?doctorId&…); только после сохранения</div>
+        </section>
+
+        <!-- ================= СОСТОЯНИЯ ================= -->
+        <h2 style="font-size:15px;margin:8px 0 0">Состояния / dialogs</h2>
+        <div class="grid-2">
+          <div class="state-card"><div class="state-title">ошибка валидации (400)</div><div class="state-body">
+            <div class="field error"><label>Рабочий период</label><div class="control filled">09:00</div><div class="helper">Период (585 мин) не кратен длительности 35 мин</div></div>
+          </div></div>
+          <div class="state-card"><div class="state-title">email занят (409)</div><div class="state-body">
+            <div class="field error"><label>Email</label><div class="control filled">petrov@example.com</div><div class="helper">Пользователь существует — Привязать (10.2) / Доки</div></div>
+          </div></div>
+          <div class="state-card"><div class="state-title">приглашение отправлено</div><div class="state-body">
+            <div class="alert success"><b>Приглашение отправлено на ivanov@clinic.local</b><div style="font-size:12px">срок ссылки — 12 ч · повтор — кнопка «Отправить ещё» (скрыта после активации)</div></div>
+          </div></div>
+          <div class="state-card"><div class="state-title">архивирование / 404</div><div class="state-body">
+            <div class="alert warning"><b>Врач исчезнет из записи — история сохранится</b><div style="font-size:12px">status=INACTIVE (Dialog-подтверждение)</div></div>
+            <div class="helper" style="margin-top:8px">404 → «Врач не найден» + кнопка «К списку» / не сохранены — Dialog (Уйти/Остаться)</div>
+          </div></div>
+        </div>
+
+        <!-- ================= КАРТА КОМПОНЕНТОВ ================= -->
+        <h2 style="font-size:15px;margin:8px 0 0">Соответствие компонентов mp-ui-kit</h2>
+        <div class="card">
+          <table class="map-table">
+            <tr><th>Блок</th><th>Компонент</th><th>Props / примечание</th></tr>
+            <tr><td>Хлебные крошки</td><td><span class="comp"> MpBreadcrumb/IconButton</span> + typography h5</td><td>имя врача — из get-doctor; 404 — страница ошибки</td></tr>
+            <tr><td>Основная информация</td><td><span class="comp">MpTextField ×5</span> <span class="comp">MpAutocomplete</span> <span class="comp">MpSelect</span> <span class="comp">MpCheckbox</span></td><td>Zod-схема контракта; email + чекбокс createUser — 10.2</td></tr>
+            <tr><td>Расписание</td><td><span class="comp">MpCheckbox ×7</span> <span class="comp">MpSelect</span></td><td>алиас FormArray (react-hook-form); живой пересчёт слотов на клиенте — подтверждение на сервере</td></tr>
+            <tr><td>Слоты</td><td><span class="comp">MpChip</span> (занятые disabled)</td><td>GET slots — только после сохранения</td></tr>
+            <tr><td>Фото</td><td><span class="comp">image-cropper</span></td><td>→ file-service features/upload-doctor-photo (3.4)</td></tr>
+            <tr><td>Сохранение</td><td><span class="comp">MpButton</span></td><td>двойной клик blocked; успех → список + тост; 409/400 → на поля</td></tr>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="mock-note">
+  <a href="index.html">← ко всем макетам</a> · спецификация: <a href="../doctor-form.md">../doctor-form.md</a> ·
+  PUT обновляет строго по :id (сверка с телом → 400); одна форма для создания и редактирования
+</div>
+
+</body>
+</html>

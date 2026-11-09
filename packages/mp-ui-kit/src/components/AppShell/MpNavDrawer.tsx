@@ -5,6 +5,7 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import type { ReactNode } from 'react';
@@ -46,9 +47,25 @@ export interface MpNavItem {
   onClick?: () => void;
 }
 
-export interface MpNavDrawerProps {
-  /** Пункты меню (для ADMIN/USER — разные массивы). */
+/**
+ * Секция меню (макет layout.md: группы ADMIN/USER/DOCTOR с разделителем).
+ * В свёрнутом режиме (`mini`) заголовки и разделители скрываются.
+ */
+export interface MpNavSection {
+  /** Стабильный id секции. */
+  id: string;
+  /** Заголовок секции (например, «Администрирование»). */
+  label?: ReactNode;
+  /** Пункты секции. */
   items: ReadonlyArray<MpNavItem>;
+}
+
+/** Пункт меню или секция пунктов. */
+export type MpNavEntry = MpNavItem | MpNavSection;
+
+export interface MpNavDrawerProps {
+  /** Пункты меню (для ADMIN/USER/DOCTOR — разные массивы; можно секциями). */
+  items: ReadonlyArray<MpNavEntry>;
   /** id выбранного пункта. */
   selectedId?: string;
   /** Постоянная боковая панель (desktop) или временная (mobile). @default 'permanent' */
@@ -75,13 +92,22 @@ export interface MpNavDrawerProps {
   onToggleCollapse?: () => void;
 }
 
+/** Приводит смешанный список пунктов/секций к единому списку секций. */
+function toSections(items: ReadonlyArray<MpNavEntry>): ReadonlyArray<MpNavSection> {
+  return items.map((entry) => ('items' in entry ? entry : { id: entry.id, items: [entry] }));
+}
+
 /**
  * Боковое меню оболочки (layout.md): ширина 240px, свёрнутый режим — 72px.
- * Под постоянную шапку подставляет `Toolbar`-отступ.
+ * Под постоянную шапку подставляет `Toolbar`-отступ; секции разделяются
+ * подписью и `Divider` (в `mini` — только иконки + тултипы).
  *
  * @example
  * <MpNavDrawer
- *   items={adminMenu}
+ *   items={[
+ *     { id: 'admin', label: 'Администрирование', items: adminMenu },
+ *     { id: 'patient', label: 'Пациент', items: userMenu },
+ *   ]}
  *   selectedId="schedule"
  *   variant="persistent"
  *   open={open}
@@ -101,6 +127,44 @@ export function MpNavDrawer({
   onToggleCollapse,
 }: MpNavDrawerProps) {
   const effectiveWidth = mini ? mpTokens.layout.sidebarMini : width;
+  const sections = toSections(items);
+
+  const renderItem = (item: MpNavItem) => {
+    const selected = item.id === selectedId;
+
+    const button = (
+      <ListItemButton
+        key={item.id}
+        selected={selected}
+        disabled={item.disabled}
+        onClick={() => {
+          onSelect?.(item.id);
+          item.onClick?.();
+        }}
+        aria-current={selected ? 'page' : undefined}
+        sx={{ justifyContent: mini ? 'center' : 'flex-start', px: mini ? 0 : 1.5 }}
+      >
+        {item.icon ? (
+          <ListItemIcon
+            sx={{ minWidth: mini ? 0 : 36, mr: mini ? 0 : 1.5, justifyContent: 'center' }}
+          >
+            {item.icon}
+          </ListItemIcon>
+        ) : null}
+        {mini ? null : (
+          <ListItemText primary={item.label} slotProps={{ primary: { noWrap: true } }} />
+        )}
+      </ListItemButton>
+    );
+
+    return mini ? (
+      <Tooltip key={item.id} title={String(item.label)} placement="right">
+        {button}
+      </Tooltip>
+    ) : (
+      button
+    );
+  };
 
   return (
     <Drawer
@@ -121,44 +185,33 @@ export function MpNavDrawer({
     >
       {/* Отступ под фиксированной шапкой */}
       <Toolbar disableGutters sx={{ minHeight: headerHeight, px: 1.5 }} />
-      <List sx={{ px: 1, py: 1, gap: 0.5, display: 'flex', flexDirection: 'column' }}>
-        {items.map((item) => {
-          const selected = item.id === selectedId;
-
-          const button = (
-            <ListItemButton
-              key={item.id}
-              selected={selected}
-              disabled={item.disabled}
-              onClick={() => {
-                onSelect?.(item.id);
-                item.onClick?.();
+      {sections.map((section, index) => (
+        <Box key={section.id}>
+          {index > 0 ? <Divider sx={{ my: 1 }} /> : null}
+          {section.label && !mini ? (
+            <ListSubheader
+              disableSticky
+              sx={{
+                bgcolor: 'transparent',
+                lineHeight: 1.4,
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: 'text.secondary',
+                px: 1.5,
+                pt: 0.5,
+                pb: 0.5,
               }}
-              aria-current={selected ? 'page' : undefined}
-              sx={{ justifyContent: mini ? 'center' : 'flex-start', px: mini ? 0 : 1.5 }}
             >
-              {item.icon ? (
-                <ListItemIcon
-                  sx={{ minWidth: mini ? 0 : 36, mr: mini ? 0 : 1.5, justifyContent: 'center' }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-              ) : null}
-              {mini ? null : (
-                <ListItemText primary={item.label} slotProps={{ primary: { noWrap: true } }} />
-              )}
-            </ListItemButton>
-          );
-
-          return mini ? (
-            <Tooltip key={item.id} title={String(item.label)} placement="right">
-              {button}
-            </Tooltip>
-          ) : (
-            button
-          );
-        })}
-      </List>
+              {section.label}
+            </ListSubheader>
+          ) : null}
+          <List sx={{ px: 1, py: 0.5, gap: 0.5, display: 'flex', flexDirection: 'column' }}>
+            {section.items.map(renderItem)}
+          </List>
+        </Box>
+      ))}
       <Box sx={{ flexGrow: 1 }} />
       {onToggleCollapse ? (
         <>

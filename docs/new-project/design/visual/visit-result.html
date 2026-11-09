@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет · Диалог «Результат приёма»</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .counter { text-align: right; font-size: 11px; color: var(--text-secondary); }
+  textarea-like {
+    min-height: 110px; border: 1px solid var(--neutral-300); border-radius: 8px;
+    padding: 12px; font-family: var(--font); display: block; white-space: pre-wrap; background: var(--surface);
+  }
+  .ctx-row { display: grid; grid-template-columns: 90px 1fr; gap: 4px 12px; font-size: 13px; padding: 12px 16px; }
+  .ctx-row .k { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <span class="page-name">Диалог «Результат приёма»</span>
+  <span class="meta">Из /doctor/schedule: строка APPROVED → «Внести результат»; COMPLETED → «Посмотреть» · Задача 9.2 · роль DOCTOR · макет visit-result.md</span>
+</div>
+<div class="legend">
+  <span>Бейджи <span class="comp">Mp*</span> — компоненты mp-ui-kit</span>
+  <span>Вёрстка: <b>widgets/visit-result-dialog</b> → <b>features/enter-visit-result</b> (срез MVC: dialog → use-case)</span>
+</div>
+
+<!-- ============ ВАРИАНТ A: Внесение результата (edit) ============ -->
+<div class="backdrop" style="margin:auto;padding:24px">
+  <div class="dialog">
+    <div class="dialog-title">Результат приёма
+      <span style="float:right; font-size:12px; color:var(--text-secondary)">05.11 · 09:00 · Хирург — редир. /doctor/schedule</span>
+    </div>
+    <div class="ctx-row">
+      <span class="k">Пациент</span><span><b>Иванов П. П.</b> · 12.03.1985</span>
+    </div>
+    <div class="dialog-content">
+      <span class="comp">MpTextField (multiline) ×2</span>
+      <div class="field"><label>Заключение <span class="req">*</span> (обязательно, ≤ 4000)</label>
+        <textarea-like contenteditable="true">Острый аппендицит. Выполнена аппендэктомия лапароскопически, состояние удовлетворительное. Шов косметический, сухой.
+</textarea-like>
+        <span class="counter">118 / 4000</span>
+      </div>
+      <div class="field"><label>Рекомендации (опционально, ≤ 4000)</label>
+        <textarea-like contenteditable="true" style="min-height:80px">Щадящий режим питания 5–7 дней. Контрольный осмотр через 14 дней, снять швы 19.11.
+</textarea-like>
+        <span class="counter">98 / 4000</span>
+      </div>
+      <div class="helper" style="font-size:12px">валидация — в домене <b>entities/visit-result</b> (не в controller)</div>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn btn-text">Отмена</button>
+      <button class="btn btn-contained">Сохранить и завершить приём</button>
+    </div>
+    <div class="helper" style="font-size:11px;padding: 8px 16px;border-top:1px solid var(--border)">
+      → одна транзакция: result (unit appointmentId) + статус <b>COMPLETED</b> + outbox <b>appointment.completed.v1</b> (письмо — Этап 3, 6.2)
+    </div>
+  </div>
+</div>
+
+<!-- ============ ВАРИАНТ B: чтение результата (COMPLETED, read-only) ============ -->
+<div style="display:flex;gap:24px;flex-wrap:wrap;padding:0 24px 24px">
+  <div class="backdrop" style="flex:1;min-width:320px;padding:16px">
+    <div class="dialog">
+      <div class="dialog-title">Результат приёма <span class="helper" style="float:right">READ-ONLY</span></div>
+      <div class="dialog-content" style="opacity:0.75;pointer-events:none">
+        <div class="field"><label>Заключение</label><textarea-like contenteditable="false">Острый аппендицит. Выполнена аппендэктомия лапароскопически.
+</textarea-like></div>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-text">Закрыть</button>
+        <button class="btn btn-outlined">Изменить</button>
+      </div>
+      <div class="helper" style="font-size:12px;padding:8px 16px;border-top:1px solid var(--border)">«Изменить» доступно только врачу записи; patient seeing artifact в роуте — история read-only</div>
+    </div>
+  </div>
+
+  <div class="state-card" style="flex:1;min-width:300px">
+    <div class="state-title">Варианты состояний</div>
+    <div class="state-body">
+      <div class="field error"><label>Заключение</label><div class="helper">«не введено» — валидация на форме и в домене; submit blocked (0 символов)</div></div>
+      <div class="field" style="margin-top:10px"><style="position:relative">Counter / 4000</style><div class="control filled disabled" style="opacity:0.6">Сохранение…</div></div>
+      <div class="alert error" style="margin-top:10px"><b>Ошибка сохранения (5xx)</b><div style="font-size:12px">текст сохранён, dialog остаётся открытым · requestId · «Повторить»</div></div>
+      <div class="alert info" style="margin-top:10px"><b>409</b><div style="font-size:12px">не APPROVED / чужая запись → «Закрыть + перезагрузить строку»</div></div>
+      <div class="alert success" style="margin-top:10px"><b>Сохранено</b><div style="font-size:12px">→ SNACKBAR «Результат сохранен; прием завершён» + diag закрыта; строка: Chip «COMPLETED» + «✓ Есть»</div></div>
+      <div class="helper" style="margin-top:10px">двойной submit: после первого клика кнопка disabled; идемпотентность — в БД один результат (unique appointmentId), повтор → 200 с текущим состоянием или 409</div>
+    </div>
+  </div>
+</div>
+
+<div class="mock-note">
+  <a href="index.html">← ко всем макетам</a> · <a href="../visit-result.md">../visit-result.md</a> ·
+  адаптив: &lt; 960 — MpDialog fullScreen, кнопки закреплены снизу
+</div>
+
+</body>
+</html>

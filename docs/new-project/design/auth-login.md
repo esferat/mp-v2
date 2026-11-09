@@ -1,6 +1,8 @@
 # Страница: Вход
 
-**Маршрут:** `/auth/login` (доступна гостю; при залогине — редирект на исходную страницу) · **Задачи:** 1.1, 1.3
+**Маршрут:** `/auth/login` (доступна гостю; при залогине — редирект на исходную страницу) · **Задачи:** 1.1, 1.3, **2.7**
+
+> **Канон от 09.11.2026:** страница входа — **тема Keycloak `mp-portal`** ([2.7](../functional-spec.md#27-переделка-ui-для-keycloak-тема-и-письма--l)); `/auth/login` в web — Auth.js-редирект на неё (с PKCE). Макет ниже описывает страницу темы в бренд-стиле `mp-ui-kit`.
 
 ## Макет (desktop)
 
@@ -22,9 +24,7 @@
 │              │  ┌───────────────────────────────┐  │                         │
 │              │  │           Войти                │  │  MUI Button (contained) │
 │              │  └───────────────────────────────┘  │                         │
-│              │  ─────────── или ───────────         │                         │
-│              │  [ Войти через Keycloak ]            │  ← OIDC (Auth.js)       │
-│              │  Нет аккаунта? Регистрация           │  ← /auth/signup         │
+│              │  Нет аккаунта? Регистрация           │  ← /auth/register       │
 │              └─────────────────────────────────────┘                         │
 │                    Card, maxWidth 400, padding 4                             │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -40,8 +40,8 @@
 | Поле email | `TextField` (type=email, autocomplete="email") | Zod-валидация на клиенте, `startAdornment` — иконка |
 | Поле пароль | `TextField` (type=password) | `IconButton` «показать/скрыть» |
 | «Забыли пароль?» | `Link` | `/auth/login?mode=reset` → flow Keycloak ([1.5](../functional-spec.md#15-восстановление-пароля--m) — **после MVP**) |
-| Кнопка «Войти» | `Button variant="contained"` fullWidth | `signin` → OIDC-редирект Auth.js — **основной путь** ([1.1](../functional-spec.md#11-вход-в-web-через-keycloak-authjs--l)); `loading` — `CircularProgress` вместо текста, кнопка disabled |
-| «Войти через Keycloak» | `Button variant="outlined"` | Дублирующая кнопка того же OIDC-потока: на MVP оставить **одну** кнопку «Войти» с OIDC-редиректом; вторая — только при включённом credentials-provider (опция, см. 1.1) |
+| Кнопка «Войти» | `Button variant="contained"` fullWidth | Сабмит формы Keycloak (тема `mp-portal`); `loading` — `CircularProgress` вместо текста, кнопка disabled |
+| «Нет аккаунта? Регистрация» | `Link` | → `/auth/register` → регистрация Keycloak ([1.4](../functional-spec.md#14-сага-регистрации--l)) |
 | Ошибка | `Alert severity="error"` над кнопкой | Маппинг кодов: неверный пароль / нет пользователя / rate-limit → «Слишком много попыток, попробуйте через N мин» |
 
 ## Состояния

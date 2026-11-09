@@ -2,13 +2,24 @@
 
 Прототипы интерфейса для задач Этапа 1 плана ([roadmap.md](../roadmap.md)): аутентификация, оболочка UI, врачи, управление записями, запись к врачу, история; и Этапа 2 — кабинет врача (приёмы, результаты приёма, документы пациентов); подэтапа **2.1** — личный профиль всех ролей (`profile.md`), а также правки формы врача (email, 10.2) и таблицы записей (перенос, 10.3).
 
+> **Визуальные макеты (HTML, для вёрстки из `mp-ui-kit`):** папка [`visual/`](visual/index.html) —
+> `index.html` (оглавление + палитра токенов), по одному HTML-файлу на каждую страницу из таблицы ниже:
+> `layout.html`, `profile.html`, `auth-login.html`, `auth-register.html`, `doctors-list.html`, `doctor-form.html`,
+> `appointments.html`, `booking.html`, `history.html`, `doctor-schedule.html`, `visit-result.html`, `doctor-patients.html`.
+> Открываются в браузере, сборка не нужна. Каждый макет содержит:
+> - полную отрисовку страницы в токенах mp-ui-kit (бирюзовый `#0D9488`, Inter, радиусы/отступы);
+> - бейджи компонентов `Mp*` прямо на макете;
+> - таблицу «Блок → компонент mp-ui-kit → props»;
+> - обязательные состояния (loading / empty / error);
+> - ссылку на соответствующий текстовый спецификатор `../<имя>.md` (логика, FSD, маршрут).
+
 ## Состав
 
 | Файл | Страница | Маршрут | Задачи |
 |---|---|---|---|
 | [layout.md](layout.md) | Оболочка: шапка, боковое меню, заголовок | все защищённые | 2.1 |
-| [auth-login.md](auth-login.md) | Вход | `/auth/login` | 1.1, 1.3 |
-| [auth-signup.md](auth-signup.md) | Регистрация | `/auth/signup` | 1.4 |
+| [auth-login.md](auth-login.md) | Вход (страница темы Keycloak) | `/auth/login` → Keycloak | 1.1, 1.3, **2.7** |
+| [auth-signup.md](auth-signup.md) | Регистрация (форма Keycloak) + добор профиля | `/auth/register` → Keycloak, далее `/cabinet/profile` | 1.4, **2.7** |
 | [doctors-list.md](doctors-list.md) | Список врачей | `/admin/doctors` | 3.1 |
 | [doctor-form.md](doctor-form.md) | Карточка/форма врача | `/admin/doctors/new`, `/admin/doctors/:id` | 3.2, 3.4, **10.2** (email + приглашение) |
 | — (макета нет) | Справочник специализаций | `/admin/specializations` | 3.3 — страница без макета, собирать по [3.3](../functional-spec.md#33-crud-специализаций--s) и общим правилам ниже |

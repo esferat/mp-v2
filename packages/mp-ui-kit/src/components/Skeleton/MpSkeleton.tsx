@@ -8,6 +8,11 @@ export interface MpSkeletonProps extends Omit<SkeletonProps, 'children'> {
    * (последняя — короче, как в макетах: «карточка — 6 линий»).
    */
   lines?: number;
+  /**
+   * Количество строк таблицы (макеты: «таблица — 10 строк»):
+   * рендерит стопку прямоугольных заглушек строк.
+   */
+  rows?: number;
 }
 
 /**
@@ -15,12 +20,23 @@ export interface MpSkeletonProps extends Omit<SkeletonProps, 'children'> {
  *
  * @example
  * <MpSkeleton lines={6} />            // карточка
+ * <MpSkeleton rows={10} />            // таблица (10 строк)
  * <MpSkeleton variant="rectangular" height={24} />  // строка таблицы
  */
 export const MpSkeleton = forwardRef<HTMLDivElement, MpSkeletonProps>(function MpSkeleton(
-  { lines, variant = 'text', width, height, ...props },
+  { lines, rows, variant = 'text', width, height, ...props },
   ref,
 ) {
+  if (rows !== undefined && rows > 1) {
+    return (
+      <Stack ref={ref} spacing={0.75} sx={{ width: width ?? '100%' }} aria-hidden {...props}>
+        {Array.from({ length: rows }, (_, index) => (
+          <Skeleton key={index} variant="rectangular" height={height ?? 40} />
+        ))}
+      </Stack>
+    );
+  }
+
   if (lines !== undefined && lines > 1) {
     return (
       <Stack ref={ref} spacing={0.75} sx={{ width: width ?? '100%' }} aria-hidden {...props}>

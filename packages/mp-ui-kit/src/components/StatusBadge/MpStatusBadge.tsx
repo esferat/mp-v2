@@ -12,14 +12,17 @@ export interface MpStatusMeta {
 
 /**
  * Реестр статусов — цвета статусов записей/врачей/истории
- * (design/appointments.md, design/history.md, design/doctors-list.md).
+ * (design/appointments.md, design/history.md, design/doctors-list.md,
+ * design/doctor-schedule.md).
  */
 export const mpStatuses = {
-  // Запись (entities/appointment): SUBMITTED → APPROVED | DECLINED, отмена → CANCELLED
+  // Запись (entities/appointment): SUBMITTED → APPROVED | DECLINED, отмена → CANCELLED;
+  // завершение приёма — COMPLETED (синий, design/doctor-schedule.md)
   SUBMITTED: { label: 'В ожидании', color: 'warning' },
   APPROVED: { label: 'Принята', color: 'success' },
   DECLINED: { label: 'Отклонена', color: 'error' },
   CANCELLED: { label: 'Отменена', color: 'neutral' },
+  COMPLETED: { label: 'Приём завершён', color: 'info' },
   // Врач (entities/doctor)
   ACTIVE: { label: 'Активен', color: 'success' },
   INACTIVE: { label: 'Неактивен', color: 'neutral' },
@@ -29,7 +32,6 @@ export const mpStatuses = {
   NEW: { label: 'Новая', color: 'info' },
   PENDING: { label: 'Ожидает', color: 'warning' },
   CONFIRMED: { label: 'Подтверждена', color: 'success' },
-  COMPLETED: { label: 'Завершена', color: 'success' },
   FAILED: { label: 'Ошибка', color: 'error' },
 } as const satisfies Record<string, MpStatusMeta>;
 

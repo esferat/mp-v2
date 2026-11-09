@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет · Личный профиль (все роли)</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+
+<div class="titlebar">
+  <span class="page-name">Личный профиль</span>
+  <span class="meta">/cabinet/profile (USER) · /admin/profile (ADMIN) · /doctor/profile (DOCTOR) · Задача 10.1 (+4.2) · макет profile.md</span>
+</div>
+<div class="legend">
+  <span>Бейджи <span class="comp">Mp*</span> — компоненты mp-ui-kit</span>
+  <span>Слой: <b>app/(*)/*/profile/page.tsx</b> → <b>widgets/profile-form</b> → <b>features/edit-profile</b> — общий слайс для всех ролей</span>
+</div>
+
+<div class="frame">
+  <header class="appbar">
+    <div class="logo">МП</div>
+    <div class="brand">Медицинский портал<small>Личный профиль · пример USER</small></div>
+    <div class="spacer"></div>
+    <div class="actions">
+      <span class="avatar">ИП</span>
+      <span style="font-size:13px">Иван П. Иванов</span>
+      <button class="btn btn-text btn-sm">Выйти</button>
+      <span class="comp">MpAppBar</span>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="sidebar">
+      <div class="group-title">(USER)</div>
+      <a class="nav-item" href="#"><span class="icon">👤</span> Моя карточка</a>
+      <a class="nav-item" href="#"><span class="icon">🗓️</span> Запись к врачу</a>
+      <a class="nav-item active" href="#"><span class="icon">📜</span> Профиль</a>
+      <div style="margin-top:20px"><span class="comp">MpNavDrawer</span></div>
+    </nav>
+
+    <main class="main">
+      <div class="page-header">
+        <div><h1>Профиль</h1><div class="sub">Иванов П. Иванов · Пациент (USER)</div></div>
+        <span class="comp">MpPageHeader</span>
+      </div>
+
+      <div class="content">
+        <div class="row">
+          <!-- ================= ФОТО (только USER) ================= -->
+          <section class="card" style="max-width:280px">
+            <h2>ФОТО</h2>
+            <div style="text-align:center">
+              <span class="avatar xl">ИП</span>
+              <div style="margin-top:12px"><button class="btn btn-outlined btn-sm">Загрузить фото</button></div>
+              <div class="helper" style="margin-top:6px">JPEG/PNG/WebP, ≤ 5 МБ · кроп (4.3)</div>
+              <div class="helper" style="margin-top:2px">отображение — presigned GET (TTL 5 мин)</div>
+              <div style="margin-top:8px"><span class="comp">MpAvatar</span> <span class="comp">image-cropper</span></div>
+            </div>
+          </section>
+
+          <!-- ================= ЛИЧНЫЕ ДАННЫЕ ================= -->
+          <section class="card" style="flex:2">
+            <h2>ЛИЧНЫЕ ДАННЫЕ <span class="comp">MpTextField ×5 · MpDatePicker</span></h2>
+            <div class="grid-3">
+              <div class="field"><label>Фамилия <span class="req">*</span></label><div class="control filled">Иванов</div></div>
+              <div class="field"><label>Имя <span class="req">*</span></label><div class="control filled">Пётр</div></div>
+              <div class="field"><label>Отчество</label><div class="control filled">Петрович</div></div>
+            </div>
+            <div class="grid-2" style="margin-top:12px">
+              <div class="field"><label>Дата рождения <span class="req">*</span></label><div class="control filled">12.03.1985</div><div class="helper">не в будущем, не ранее 1900 (фл.: ≤ сегодня)</div></div>
+              <div class="field"><label>Email <span class="req">*</span></label><div class="control filled">ivanov@example.com</div><div class="helper">✎ смена email действует при следующем входе; верификация — при включённом verifyEmail (Этап 3)</div></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ================= УЧЁТНАЯ ЗАПИСЬ ================= -->
+        <section class="card">
+          <h2>УЧЁТНАЯ ЗАПИСЬ</h2>
+          <div class="grid-3" style="align-items:center">
+            <div>
+              <div class="helper">Роль</div>
+              <div><span class="chip brand">Пациент (USER)</span> <span class="chip outlined">Активна</span></div>
+            </div>
+            <div>
+              <div class="helper">Email подтверждён</div>
+              <div><span class="status active"><span class="dot"></span>Да (с Этапа 3 — после confirm)</span></div>
+            </div>
+            <div style="text-align:right">
+              <button class="btn btn-neutral">Сменить пароль</button>
+              <div class="helper" style="margin-top:4px">→ Keycloak update-password (account console)</div>
+            </div>
+            <span class="comp">MpButton</span>
+          </div>
+        </section>
+
+        <!-- ================= ДЕЙСТВИЯ ================= -->
+        <section class="card" style="display:flex;justify-content:flex-end;gap:8px">
+          <button class="btn btn-text">Отмена</button>
+          <button class="btn btn-contained">Сохранить</button>
+          <span class="comp">MpButton</span>
+        </section>
+
+        <!-- ================= РАЗНИЦА ПО РОЛЯМ ================= -->
+        <h2 style="font-size:15px;margin:8px 0 0">Разница по ролям</h2>
+        <div class="card">
+          <table class="map-table">
+            <tr><th>Роль / маршрут</th><th>Источник</th><th>Форма</th><th>read-only</th></tr>
+            <tr><td>USER → /cabinet/profile</td><td>patient-service (4.2)</td><td>ФИО, дата рождения, email, фото, скан</td><td>дата регистрации</td></tr>
+            <tr><td>ADMIN → /admin/profile</td><td>identity (GET/PATCH me)</td><td>ФИО (атрибуты Keycloak), email</td><td>роль</td></tr>
+            <tr><td>DOCTOR → /doctor/profile</td><td>identity (email) + catalog</td><td>email</td><td>ФИО, специализация, статус</td></tr>
+          </table>
+        </div>
+
+        <!-- ================= СОСТОЯНИЯ ================= -->
+        <h2 style="font-size:15px;margin:8px 0 0">Состояния страницы</h2>
+        <div class="states-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
+          <div class="state-card"><div class="state-title">email занят (409)</div><div class="state-body">
+            <div class="field error"><label>Email</label><div class="control filled">petrov@example.com</div><div class="helper">Email: уже используется</div></div>
+            <div style="margin-top:10px"><span class="comp">MpFormHelperText</span> + ссылка «Войти этим email»</div>
+          </div></div>
+          <div class="state-card"><div class="state-title">ошибка сети (5xx)</div><div class="state-body">
+            <div class="alert error"><b>Ошибка сохранения</b><div>requestId: 9c1f…22 · «Повторить» — введённое не теряется</div></div>
+          </div></div>
+          <div class="state-card"><div class="state-title">чужой профиль / нет роли</div><div class="state-body">
+            <div class="alert error"><b>403</b><div>Страница 403 без формы — прямым URL поле чужих данных не открывается</div></div>
+          </div></div>
+          <div class="state-card"><div class="state-title">success</div><div class="state-body">
+            <div class="alert success" style="align-items:center"><b>Сохранено</b><div>ФИО обновится в списках scheduling (&lt; 5 с — событие <code>patient.updated.v1</code>)</div></div>
+          </div></div>
+        </div>
+
+        <!-- ================= КАРТА КОМПОНЕНТОВ ================= -->
+        <h2 style="font-size:15px;margin:8px 0 0">Соответствие компонентов mp-ui-kit</h2>
+        <div class="card">
+          <table class="map-table">
+            <tr><th>Блок</th><th>Компонент</th><th>Props / примечание</th></tr>
+            <tr><td>Форма (единый слайс)</td><td><span class="comp">MpTextField</span> <span class="comp">MpDatePicker</span> + <span class="comp">MpDateProvider</span></td><td>email type=email + уникальность (единая функция в identity); дата рождения — 4.2</td></tr>
+            <tr><td>Фото (USER)</td><td><span class="comp">MpAvatar</span> + image-cropper</td><td>upload-patient-photo → file-service (4.3/4.4)</td></tr>
+            <tr><td>Учётная запись</td><td><span class="comp">MpChip</span> <span class="comp">MpButton</span></td><td>роль из сессии; пароль → account console (вне 2.7)</td></tr>
+            <tr><td>Сохранение</td><td><span class="comp">MpButton</span></td><td>optimistic + откат; двойной клик blocked; тост — <span class="comp">MpSnackbar</span></td></tr>
+            <tr><td>Состояния</td><td><span class="comp">MpSkeleton</span> <span class="comp">MpAlert</span> <span class="comp">MpSnackbar</span></td><td>пустые поля — по макету (см. states выше)</td></tr>
+            <tr><td>«Скан документа» (USER)</td><td>виджет из карточки пациента</td><td>4.4 → upload, 4.5 → presigned «Скачать»</td></tr>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="mock-note">
+  <a href="index.html">← ко всем макетам</a> · спецификация: <a href="../profile.md">../profile.md</a> ·
+  правка только своих данных (<code>sub</code> ↔ сущность, иначе 403); события: <code>patient.updated.v1</code> / <code>doctor.updated.v1</code>
+</div>
+
+</body>
+</html>

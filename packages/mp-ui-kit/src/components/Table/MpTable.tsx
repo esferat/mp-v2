@@ -49,9 +49,17 @@ export const MpTableFooter = forwardRef<
   return <TableFooter ref={ref} {...props} />;
 });
 
+/** Брейкпоинт темы (по макетам: `md` = 960, `lg` = 1280). */
+export type MpBreakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
 export interface MpTableCellProps extends Omit<TableCellProps, 'children'> {
   /** Заголовок колонки: рендерит `<th scope="col">`. */
   head?: boolean;
+  /**
+   * Скрыть колонку на брейкпоинтах меньше указанного (макеты:
+   * «960–1279 — колонки ID и Фото скрыты» → `hideBelow="lg"`).
+   */
+  hideBelow?: MpBreakpoint;
   children?: ReactNode;
 }
 
@@ -60,14 +68,25 @@ export interface MpTableCellProps extends Omit<TableCellProps, 'children'> {
  *
  * @example
  * <MpTableCell head>Пациент</MpTableCell>
- * <MpTableCell>Иванов И. И.</MpTableCell>
+ * <MpTableCell hideBelow="lg">64de63…</MpTableCell>
  */
 export const MpTableCell = forwardRef<HTMLTableCellElement, MpTableCellProps>(function MpTableCell(
-  { head, component, scope, ...props },
+  { head, component, scope, hideBelow, sx, ...props },
   ref,
 ) {
+  const responsiveSx = hideBelow ? [{ display: { xs: 'none', [hideBelow]: 'table-cell' } }] : [];
+  const mergedSx = [...responsiveSx, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])];
+
   if (head) {
-    return <TableCell ref={ref} component={component ?? 'th'} scope={scope ?? 'col'} {...props} />;
+    return (
+      <TableCell
+        ref={ref}
+        component={component ?? 'th'}
+        scope={scope ?? 'col'}
+        sx={mergedSx}
+        {...props}
+      />
+    );
   }
-  return <TableCell ref={ref} component={component} scope={scope} {...props} />;
+  return <TableCell ref={ref} component={component} scope={scope} sx={mergedSx} {...props} />;
 });

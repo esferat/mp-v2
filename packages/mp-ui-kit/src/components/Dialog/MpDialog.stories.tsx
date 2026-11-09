@@ -107,3 +107,54 @@ export const WithoutTitle: Story = {
     );
   },
 };
+
+/**
+ * Окно с контекстом под заголовком (макет design/visit-result.md):
+ * «Пациент: …», «Приём: …» + `fullScreenBelow="md"` (< 960 — во весь экран).
+ */
+export const WithContext: Story = {
+  render: () => {
+    const [open, setOpen] = useState(true);
+    return (
+      <>
+        <MpButton variant="contained" onClick={() => setOpen(true)}>
+          Внести результат
+        </MpButton>
+        <MpDialog
+          open={open}
+          onClose={() => setOpen(false)}
+          title="Результат приёма"
+          subtitle={
+            <>
+              Пациент: Иванов П. П.
+              <br />
+              Приём: 05.11.2026 09:00 · Хирург
+            </>
+          }
+          maxWidth="md"
+          fullScreenBelow="md"
+        >
+          <MpDialogContent>
+            <MpTextField
+              label="Заключение"
+              multiline
+              minRows={4}
+              required
+              showCount
+              maxLength={4000}
+              defaultValue="Острый аппендицит. Выполнена аппендэктомия лапароскопически."
+            />
+          </MpDialogContent>
+          <MpDialogActions>
+            <MpButton color="neutral" onClick={() => setOpen(false)}>
+              Отмена
+            </MpButton>
+            <MpButton variant="contained" loading onClick={() => setOpen(false)}>
+              Сохранить и завершить приём
+            </MpButton>
+          </MpDialogActions>
+        </MpDialog>
+      </>
+    );
+  },
+};

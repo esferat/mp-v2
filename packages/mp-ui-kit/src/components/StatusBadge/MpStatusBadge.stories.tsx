@@ -39,6 +39,20 @@ export const Appointments: Story = {
   ),
 };
 
+/** Кабинет врача (design/doctor-schedule.md): + «Приём завершён» — синий. */
+export const DoctorSchedule: Story = {
+  render: () => (
+    <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+      <MpStatusBadge status="SUBMITTED" />
+      <MpStatusBadge status="APPROVED" />
+      <MpStatusBadge status="DECLINED" />
+      <MpStatusBadge status="CANCELLED" />
+      <MpStatusBadge status="COMPLETED" />
+      <MpStatusBadge status="COMPLETED" label="✓ Есть" variant="outlined" />
+    </Stack>
+  ),
+};
+
 /** Врачи и слоты (design/doctors-list.md, booking.md). */
 export const DoctorsAndSlots: Story = {
   render: () => (

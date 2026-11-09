@@ -36,6 +36,7 @@
 | Действия | `Button size=small` «✓ Принять» / «✗ Отклонить» | Только для `SUBMITTED`; → `set-appointment-status` → outbox `appointment.approved/declined.v1` |
 | Отмена | `Menu` «⋯» → «Отменить запись» | `Dialog`-подтверждение с причиной (опционально) |
 | Перенос | `Menu` «⋯» → «Перенести запись» | `Dialog`: врач (если меняется) + дата + слот (компоненты 5.2/5.3) → `PUT /api/scheduling/appointments/:id/reschedule` — [10.3](../functional-spec.md#103-перенос-и-изменение-записи-на-приём--l); доступно для `SUBMITTED`/`APPROVED` |
+| История | `Menu` «⋯» → «История переносов» | `Dialog` журнала переносов (кто/когда/откуда-куда, причина) — read-only, данные из `appointment_reschedule_log` (10.3) |
 
 ## Состояния
 

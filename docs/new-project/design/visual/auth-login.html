@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет · Вход (страница темы Keycloak)</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { background: var(--neutral-100); }
+  .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .auth-card { width: 400px; max-width: 100vw; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-xl); padding: var(--sp-xxl); box-shadow: 0 12px 32px rgba(15,23,42,0.08); }
+  .auth-card h1 { font-size: 18px; text-align: center; margin: 0 0 4px; }
+  .auth-card .brand-sub { text-align: center; color: var(--text-secondary); font-size: 12px; margin-bottom: 20px; }
+  .auth-card .field + .field, .auth-card .buttons + .field { margin-top: 16px; }
+  .buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+  .divider { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 12px; margin: 12px 0; }
+  .pwd { position: relative; }
+  .pwd .control { padding-right: 36px; color: var(--neutral-500); letter-spacing: 2px; }
+  .pwd .eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+  .side-link { font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <span class="page-name">Вход — страница темы Keycloak</span>
+  <span class="meta">/auth/login → Keycloak (Auth.js, PKCE) · Задачи 1.1, 2.7 · макет auth-login.md</span>
+</div>
+<div class="legend">
+  <span>Канон: страница входа — тема Keycloak <b>mp-portal</b> (2.7), бренд-токены — mp-ui-kit (бирюзовый #0D9488): рассинхрон theme.ts/main.css устраняется задачей 2.7</span>
+</div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:16px"><span class="logo" style="margin:auto">МП</span></div>
+    <h1>М е д и ц и н с к и й портал</h1>
+    <div class="brand-sub">Войдите, чтобы записаться к врачу или управлять порталом</div>
+
+    <span class="comp">MpTextField (email)</span>
+    <div class="field"><label>Email</label><div class="control filled">ivanov@example.com</div></div>
+
+    <span class="comp">MpTextField (password) · IconButton «показать»</span>
+    <div class="field pwd"><label>Пароль</label><div class="control">••••••••••<span class="eye">👁</span></div></div>
+
+    <div class="field" style="text-align:right">
+      <a class="side-link" href="#">Забыли пароль?</a>
+      <span class="helper">flow Keycloak (1.5) — после MVP</span>
+    </div>
+
+    <span class="comp">MpButton (contained)</span>
+    <div class="buttons">
+      <button class="btn btn-contained" style="height:var(--ctl-h-lg)">Войти</button>
+      <span class="helper" style="text-align:center">Enter — сабмит; loading: button disabled + spinner; какой из полей неверен — не раскрываем</span>
+    </div>
+
+    <span class="comp">MpLink (register)</span>
+    <div class="field" style="text-align:center;margin-top:16px">
+      Нет аккаунта? <a class="side-link" href="auth-register.html">Регистрация</a>
+      <span class="helper">→ /auth/register → форма Keycloak (1.4)</span>
+    </div>
+
+    <span class="comp">MpAlert (варианты ошибок)</span>
+    <div class="alert error" style="margin-top:20px"><span>⚠️</span><div><b>Неверный email или пароль</b><div style="font-size:12px">какое именно поле неверно — не подсказываем</div></div></div>
+    <div class="alert warning" style="margin-top:8px"><span>⏱</span><div><b>Слишком много попыток</b><div style="font-size:12px">Повторите через 15 мин (rate-limit 429)</div></div></div>
+
+    <div class="field" style="margin-top:20px">
+      <div class="helper">Ctrl+Enter … полный текст — auth-login.md; фокус-порядок: email → пароль → кнопки</div>
+    </div>
+  </div>
+</div>
+
+<div class="mock-note">
+  <a href="index.html">← ко всем макетам</a> · спецификация: <a href="../auth-login.md">../auth-login.md</a> ·
+  страница живёт в теме Keycloak (<b>2.7</b>) · /auth/login в web — Auth.js-редирект на неё (с PKCE) ·
+  редиректы роли: ADMIN → /admin/doctors, USER → /cabinet/profile, DOCTOR → /doctor/schedule<br>
+  Состояния: loading (кнопка disabled + поля заблокированы) · error (Alert с причиной; пароль не стирается) · rate-limit 429 (таймер) · успех (redirect по роли)
+</div>
+
+</body>
+</html>

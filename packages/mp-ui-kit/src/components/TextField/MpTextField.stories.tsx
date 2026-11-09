@@ -1,5 +1,6 @@
 import { Stack } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import { MpTextField } from './MpTextField';
 
 const meta = {
@@ -60,12 +61,57 @@ export const WithAdornments: Story = {
     <Stack spacing={2} sx={{ width: 360 }}>
       <MpTextField label="Поиск" placeholder="Найти компонент…" startAdornment={<span>🔍</span>} />
       <MpTextField label="Сумма" placeholder="0" endAdornment={<span>₽</span>} />
+      <MpTextField label="С паролем" type="password" defaultValue="secret" revealable />
+    </Stack>
+  ),
+};
+
+/** Пароль с показом/скрытием (макет design/auth-login.md). */
+export const Password: Story = {
+  render: () => (
+    <Stack spacing={2} sx={{ width: 360 }}>
       <MpTextField
-        label="С паролем"
+        label="Пароль"
         type="password"
-        defaultValue="secret"
-        endAdornment={<span>👁</span>}
+        revealable
+        placeholder="Не менее 8 символов"
+        helperText="Минимум 8 символов, обязательно цифра"
       />
     </Stack>
+  ),
+};
+
+/** Поиск со сбросом (макет design/doctors-list.md: «🔍 Поиск по ФИО…» + IconButton сброса). */
+export const Search: Story = {
+  render: () => {
+    const [value, setValue] = useState('Иванов');
+    return (
+      <MpTextField
+        label="Поиск по ФИО"
+        placeholder="Поиск по ФИО…"
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        onClear={() => setValue('')}
+        clearable
+        startAdornment={<span>🔍</span>}
+        sx={{ width: 360 }}
+      />
+    );
+  },
+};
+
+/** Счётчик символов (макет design/visit-result.md: «118 / 4000»). */
+export const WithCounter: Story = {
+  render: () => (
+    <MpTextField
+      label="Заключение"
+      multiline
+      minRows={4}
+      required
+      showCount
+      maxLength={4000}
+      defaultValue="Острый аппендицит. Выполнена аппендэктомия лапароскопически."
+      sx={{ width: 480 }}
+    />
   ),
 };

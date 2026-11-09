@@ -44,13 +44,19 @@ export {
   MpTableFooter,
   MpTableCell,
 } from './Table/MpTable';
-export type { MpTableCellProps, TableProps, TableCellProps, TableRowProps } from './Table/MpTable';
+export type {
+  MpBreakpoint,
+  MpTableCellProps,
+  TableProps,
+  TableCellProps,
+  TableRowProps,
+} from './Table/MpTable';
 export { MpTablePagination } from './Table/MpTablePagination';
 export type { MpTablePaginationProps } from './Table/MpTablePagination';
 
 // ——— Модальное окно ———
 export { MpDialog, MpDialogContent, MpDialogActions } from './Dialog/MpDialog';
-export type { MpDialogProps } from './Dialog/MpDialog';
+export type { MpDialogBreakpoint, MpDialogProps } from './Dialog/MpDialog';
 
 // ——— Тосты ———
 export { MpSnackbar } from './Snackbar/MpSnackbar';
@@ -87,8 +93,14 @@ export type { MpDateRangePickerProps } from './DatePicker/MpDateRangePicker';
 export { MpAppBar } from './AppShell/MpAppBar';
 export type { MpAppBarProps } from './AppShell/MpAppBar';
 export { MpNavDrawer } from './AppShell/MpNavDrawer';
-export type { MpNavDrawerProps, MpNavItem } from './AppShell/MpNavDrawer';
+export type { MpNavDrawerProps, MpNavEntry, MpNavItem, MpNavSection } from './AppShell/MpNavDrawer';
 export { MpPageHeader } from './AppShell/MpPageHeader';
 export type { MpPageHeaderProps } from './AppShell/MpPageHeader';
+export { MpUserMenu } from './AppShell/MpUserMenu';
+export type { MpUserMenuItem, MpUserMenuProps } from './AppShell/MpUserMenu';
 export { MpAppShell } from './AppShell/MpAppShell';
 export type { MpAppShellProps } from './AppShell/MpAppShell';
+
+// ——— Мастер (шаги) ———
+export { MpStepper } from './Stepper/MpStepper';
+export type { MpStepperProps } from './Stepper/MpStepper';

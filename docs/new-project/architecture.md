@@ -190,10 +190,10 @@
 | `appointment.approved.v1` | scheduling | notification, **report** (проекция: **+1**) | то же + статус |
 | `appointment.declined.v1` | scheduling | notification, audit | то же + причина; **на счётчик проекции не влияет** (переход только из `SUBMITTED`) |
 | `appointment.cancelled.v1` | scheduling | notification, **report** (проекция: **−1**, только если запись была `APPROVED`) | appointmentId, previousStatus |
-| `appointment.rescheduled.v1` | scheduling | notification («запись перенесена», Этап 3), audit; **report — не подключается** (счётчик не меняется) | appointmentId, старый/новый слот, doctorId (был/стал), patientId, инициатор |
+| `appointment.rescheduled.v1` | scheduling | notification («запись перенесена», Этап 3), audit, **report** (перемещение счётчика между ячейками `(spec, месяц)`) | appointmentId, старый/новый слот, doctorId (был/стал), специализация (была/стала), patientId, инициатор |
 | `appointment.completed.v1` | scheduling | notification, audit | appointmentId, patientId, doctorId, ФИО (результат приёма внесён) |
 
-**Статусная машина и правила проекции:** каноническая таблица переходов (`SUBMITTED → APPROVED | DECLINED`, `SUBMITTED/APPROVED → CANCELLED`, `APPROVED → COMPLETED`, **перенос** слота/врача из `SUBMITTED`/`APPROVED` без смены статуса) и правило счётчиков отчёта (**+1** по `APPROVED`, **−1** по `CANCELLED` из `APPROVED`, остальные переходы и перенос счётчик не меняют) — [functional-spec «Статусная машина записи (канон)»](functional-spec.md#статусная-машина-записи-канон). Правила меняются только там, с синхронизацией каталога событий выше.
+**Статусная машина и правила проекции:** каноническая таблица переходов (`SUBMITTED → APPROVED | DECLINED`, `SUBMITTED/APPROVED → CANCELLED`, `APPROVED → COMPLETED`, **перенос** слота/врача из `SUBMITTED`/`APPROVED` без смены статуса) и правило счётчиков отчёта (**+1** по `APPROVED`, **−1** по `CANCELLED` из `APPROVED`, **перенос из `APPROVED`** — перемещение счётчика между ячейками `(spec, месяц)`, перенос из `SUBMITTED` — без эффекта; остальные переходы счётчик не меняют) — [functional-spec «Статусная машина записи (канон)»](functional-spec.md#статусная-машина-записи-канон). Правила меняются только там, с синхронизацией каталога событий выше.
 
 Схемы полезной нагрузки — Zod в `packages/contracts/events`, версионируются; несовместимое изменение = новая версия routing key.
 

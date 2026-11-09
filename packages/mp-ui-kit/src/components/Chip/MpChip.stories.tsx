@@ -12,6 +12,7 @@ const meta = {
     color: 'neutral',
     variant: 'filled',
     size: 'small',
+    selected: false,
     disabled: false,
     onDelete: undefined,
   },
@@ -32,6 +33,7 @@ const meta = {
     },
     variant: { control: 'select', options: ['filled', 'outlined'] },
     size: { control: 'radio', options: ['small', 'medium'] },
+    selected: { control: 'boolean' },
     label: { control: 'text' },
   },
 } satisfies Meta<typeof MpChip>;
@@ -72,6 +74,20 @@ export const WithDelete: Story = {
     <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
       <MpChip color="brand" label="Фильтр: новый" onDelete={() => {}} />
       <MpChip color="neutral" label="Тег" onDelete={() => {}} />
+    </Stack>
+  ),
+};
+
+/** Слоты приёма (design/booking.md): свободные — contained, выбранный — filled primary, занятые — disabled. */
+export const Slots: Story = {
+  render: () => (
+    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', maxWidth: 320 }}>
+      <MpChip label="10:00" onClick={() => {}} />
+      <MpChip label="10:30" onClick={() => {}} />
+      <MpChip label="11:00" onClick={() => {}} />
+      <MpChip label="11:30" selected onClick={() => {}} />
+      <MpChip label="13:00" disabled />
+      <MpChip label="13:30" disabled />
     </Stack>
   ),
 };

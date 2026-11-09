@@ -2,12 +2,15 @@ import Box from '@mui/material/Box';
 import { useState, type ReactNode } from 'react';
 import { mpTokens } from '../../theme/tokens';
 import { MpAppBar } from './MpAppBar';
-import { MpNavDrawer, type MpNavItem } from './MpNavDrawer';
+import { MpNavDrawer, type MpNavEntry } from './MpNavDrawer';
 import { MpPageHeader } from './MpPageHeader';
 
 export interface MpAppShellProps {
-  /** Пункты бокового меню (передаются через пропсы — для ADMIN/USER разные массивы). */
-  menu: ReadonlyArray<MpNavItem>;
+  /**
+   * Пункты бокового меню (передаются через пропсы — для ADMIN/USER/DOCTOR
+   * разные массивы; поддерживаются секции с заголовками — layout.md).
+   */
+  menu: ReadonlyArray<MpNavEntry>;
   /** id выбранного пункта меню. */
   selectedId?: string;
   /** Выбор пункта меню (обычно — переход по роуту). */

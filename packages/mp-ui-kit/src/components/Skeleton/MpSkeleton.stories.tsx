@@ -10,6 +10,7 @@ const meta = {
   args: {
     variant: 'text',
     lines: undefined,
+    rows: undefined,
     animation: 'pulse',
     width: undefined,
     height: undefined,
@@ -18,6 +19,7 @@ const meta = {
     variant: { control: 'select', options: ['text', 'circular', 'rectangular', 'rounded'] },
     animation: { control: 'select', options: ['pulse', 'wave', false] },
     lines: { control: { type: 'range', min: 1, max: 10, step: 1 } },
+    rows: { control: { type: 'range', min: 1, max: 12, step: 1 } },
     width: { control: 'text' },
     height: { control: 'text' },
   },
@@ -51,11 +53,8 @@ export const TableRows: Story = {
   render: () => (
     <Card sx={{ width: 480 }}>
       <CardContent>
-        <Stack spacing={1}>
-          <MpSkeleton variant="rectangular" height={32} />
-          <MpSkeleton variant="rectangular" height={32} />
-          <MpSkeleton variant="rectangular" height={32} />
-        </Stack>
+        {/* Макеты: «таблица — 10 строк» вместо спиннера-центра. */}
+        <MpSkeleton rows={10} height={32} />
       </CardContent>
     </Card>
   ),

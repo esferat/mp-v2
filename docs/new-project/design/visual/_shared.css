@@ -1,0 +1,287 @@
+/* Визуальные макеты mp-v2 — общий стиль.
+   Токены соответствуют библиотеке mp-ui-kit (src/theme/tokens.ts):
+   brand teal #0D9488, neutral slate, Inter, компактные отступы, radius 2..16.
+   Использование: <link rel="stylesheet" href="_shared.css"> — сборка не нужна. */
+
+:root {
+  /* brand (teal) */
+  --brand-50: #f0fdfa;
+  --brand-100: #ccfbf1;
+  --brand-200: #99f6e4;
+  --brand-300: #5eead4;
+  --brand-400: #2dd4bf;
+  --brand-500: #14b8a6;
+  --brand-600: #0d9488;
+  --brand-700: #0f766e;
+  --brand-800: #115e59;
+  --brand-900: #134e4a;
+  /* neutral (slate) */
+  --neutral-50: #f8fafc;
+  --neutral-100: #f1f5f9;
+  --neutral-200: #e2e8f0;
+  --neutral-300: #cbd5e1;
+  --neutral-400: #94a3b8;
+  --neutral-500: #64748b;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1e293b;
+  --neutral-900: #0f172a;
+  /* semantic */
+  --success: #16a34a;
+  --success-soft: #dcfce7;
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --error: #dc2626;
+  --error-soft: #fee2e2;
+  --info: #2563eb;
+  --info-soft: #dbeafe;
+  /* surfaces */
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  /* spacing: xs 2 · sm 4 · md 8 · lg 12 · xl 16 · xxl 24 */
+  --sp-xs: 2px;
+  --sp-sm: 4px;
+  --sp-md: 8px;
+  --sp-lg: 12px;
+  --sp-xl: 16px;
+  --sp-xxl: 24px;
+  /* radius: xs 2 · sm 4 · md 8 · lg 12 · xl 16 · full */
+  --r-xs: 2px;
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  /* layout */
+  --header-h: 64px;
+  --page-header-h: 72px;
+  --sidebar-w: 240px;
+  --sidebar-mini: 72px;
+  /* controls */
+  --ctl-h: 32px;
+  --ctl-h-lg: 40px;
+  --font: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ---------- каркас страницы (MpAppShell / MpAppBar / MpNavDrawer / MpPageHeader) ---------- */
+.appbar {
+  height: var(--header-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  padding: 0 var(--sp-xl);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.appbar .logo {
+  width: 32px; height: 32px; border-radius: var(--r-md);
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;
+}
+.appbar .brand { font-weight: 600; font-size: 16px; }
+.appbar .brand small { display: block; font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+.appbar .spacer { flex: 1; }
+.appbar .actions { display: flex; align-items: center; gap: var(--sp-md); }
+
+.shell { display: flex; min-height: calc(100vh - var(--header-h)); }
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: var(--sp-lg) var(--sp-md);
+  flex-shrink: 0;
+}
+.sidebar .group-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--text-secondary); padding: var(--sp-md) var(--sp-lg) var(--sp-xs);
+}
+.nav-item {
+  display: flex; align-items: center; gap: var(--sp-lg);
+  padding: var(--sp-md) var(--sp-lg); border-radius: var(--r-md);
+  color: var(--neutral-700); text-decoration: none; margin-bottom: var(--sp-xs);
+}
+.nav-item:hover { background: var(--neutral-100); }
+.nav-item.active { background: var(--brand-50); color: var(--brand-700); font-weight: 600; }
+.nav-item .icon { width: 20px; text-align: center; }
+
+.main { flex: 1; min-width: 0; }
+.page-header {
+  min-height: var(--page-header-h);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--sp-xl) var(--sp-xxl);
+}
+.page-header h1 { font-size: 20px; margin: 0; }
+.page-header .sub { color: var(--text-secondary); font-size: 13px; }
+.content { padding: 0 var(--sp-xxl) var(--sp-xxl); display: grid; gap: var(--sp-xl); }
+
+/* ---------- карточки (MpCard) ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-xl);
+}
+.card h2 { font-size: 15px; margin: 0 0 var(--sp-lg); }
+.card h3 { font-size: 13px; margin: 0 0 var(--sp-md); color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; }
+.row { display: flex; gap: var(--sp-xl); flex-wrap: wrap; }
+.row > * { flex: 1; min-width: 220px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-xl); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-xl); }
+
+/* ---------- кнопки (MpButton) ---------- */
+.btn {
+  height: var(--ctl-h); padding: 0 var(--sp-xl); border-radius: var(--r-md);
+  font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: var(--sp-md); border: 1px solid transparent;
+  text-decoration: none;
+}
+.btn-contained { background: var(--brand-600); color: #fff; }
+.btn-contained:hover { background: var(--brand-700); }
+.btn-outlined { border-color: var(--brand-600); color: var(--brand-700); background: transparent; }
+.btn-text { color: var(--brand-700); background: transparent; }
+.btn-danger { background: var(--error); color: #fff; }
+.btn-neutral { border-color: var(--neutral-300); color: var(--neutral-700); background: var(--surface); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-sm { height: 24px; padding: 0 var(--sp-lg); font-size: 12px; }
+
+/* ---------- поля (MpTextField / MpSelect / MpDatePicker) ---------- */
+.field { display: flex; flex-direction: column; gap: var(--sp-sm); }
+.field label { font-size: 12px; font-weight: 600; color: var(--neutral-700); }
+.field label .req { color: var(--error); }
+.field .control {
+  height: var(--ctl-h); border: 1px solid var(--neutral-300); border-radius: var(--r-md);
+  display: flex; align-items: center; padding: 0 var(--sp-lg); color: var(--neutral-400);
+  background: var(--surface);
+}
+.field .control.filled { color: var(--text); }
+.field .helper { font-size: 11px; color: var(--text-secondary); }
+.field.error .control { border-color: var(--error); }
+.field.error .helper { color: var(--error); }
+.field .select::after { content: '▾'; margin-left: auto; color: var(--neutral-400); }
+
+/* ---------- чипы/бейджи (MpChip / MpStatusBadge / MpBadge) ---------- */
+.chip {
+  display: inline-flex; align-items: center; gap: var(--sp-sm);
+  height: 24px; padding: 0 var(--sp-lg); border-radius: 12px; font-size: 12px; font-weight: 600;
+  background: var(--neutral-100); color: var(--neutral-700);
+}
+.chip.brand { background: var(--brand-100); color: var(--brand-800); }
+.chip.outlined { background: transparent; border: 1px solid var(--neutral-300); }
+.status { display: inline-flex; align-items: center; gap: var(--sp-sm); font-size: 12px; font-weight: 600; }
+.status .dot { width: 8px; height: 8px; border-radius: 50%; }
+.status.submitted { color: var(--warning); }      .status.submitted .dot { background: var(--warning); }
+.status.approved  { color: var(--success); }      .status.approved .dot  { background: var(--success); }
+.status.declined  { color: var(--error); }        .status.declined .dot  { background: var(--error); }
+.status.cancelled { color: var(--neutral-500); }  .status.cancelled .dot { background: var(--neutral-400); }
+.status.completed { color: var(--info); }         .status.completed .dot { background: var(--info); }
+.status.active    { color: var(--success); }      .status.active .dot    { background: var(--success); }
+.status.inactive  { color: var(--neutral-500); }  .status.inactive .dot  { background: var(--neutral-400); }
+
+/* ---------- таблицы (MpTable / MpTablePagination) ---------- */
+.table { width: 100%; border-collapse: collapse; background: var(--surface); }
+.table th {
+  text-align: left; font-size: 12px; color: var(--text-secondary); font-weight: 600;
+  padding: var(--sp-lg); border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.table td { padding: var(--sp-lg); border-bottom: 1px solid var(--neutral-100); vertical-align: middle; }
+.table tr:hover td { background: var(--neutral-50); }
+.table .actions { display: flex; gap: var(--sp-md); justify-content: flex-end; }
+.pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--sp-lg); color: var(--text-secondary); font-size: 13px;
+}
+.pagination .pages { display: flex; gap: var(--sp-md); align-items: center; }
+
+/* ---------- аватар (MpAvatar) ---------- */
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--brand-100);
+  color: var(--brand-800); display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; flex-shrink: 0;
+}
+.avatar.lg { width: 64px; height: 64px; font-size: 18px; }
+.avatar.xl { width: 96px; height: 96px; font-size: 26px; }
+
+/* ---------- алерты/тосты (MpAlert / MpSnackbar) ---------- */
+.alert {
+  display: flex; gap: var(--sp-lg); padding: var(--sp-lg) var(--sp-xl);
+  border-radius: var(--r-md); border: 1px solid; font-size: 13px;
+}
+.alert.error { background: var(--error-soft); border-color: var(--error); color: var(--error); }
+.alert.warning { background: var(--warning-soft); border-color: var(--warning); color: var(--warning); }
+.alert.success { background: var(--success-soft); border-color: var(--success); color: var(--success); }
+.alert.info { background: var(--info-soft); border-color: var(--info); color: var(--info); }
+
+/* ---------- диалог (MpDialog) ---------- */
+.dialog {
+  background: var(--surface); border-radius: var(--r-xl); width: 560px; max-width: 92vw;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24); overflow: hidden;
+}
+.dialog .dialog-title { padding: var(--sp-xl); border-bottom: 1px solid var(--border); font-weight: 600; }
+.dialog .dialog-content { padding: var(--sp-xl); display: grid; gap: var(--sp-lg); }
+.dialog .dialog-actions { padding: var(--sp-lg) var(--sp-xl); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--sp-md); }
+.backdrop { background: rgba(15, 23, 42, 0.45); padding: var(--sp-xxl); display: flex; justify-content: center; border-radius: var(--r-lg); }
+
+/* ---------- пустые состояния/скелетоны (MpEmptyState / MpSkeleton) ---------- */
+.empty { text-align: center; padding: var(--sp-xxl) var(--sp-xl); color: var(--text-secondary); }
+.empty .icon { font-size: 40px; }
+.empty h3 { color: var(--text); margin: var(--sp-lg) 0 var(--sp-md); font-size: 15px; text-transform: none; letter-spacing: 0; }
+.skeleton { background: linear-gradient(90deg, var(--neutral-100), var(--neutral-200), var(--neutral-100)); border-radius: var(--r-sm); height: 14px; margin: var(--sp-md) 0; }
+
+/* ---------- степпер (MpStepper / MUI Stepper) ---------- */
+.steps { display: flex; align-items: center; gap: var(--sp-md); }
+.step { display: flex; align-items: center; gap: var(--sp-md); }
+.step .num {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--neutral-200);
+  color: var(--neutral-600); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+}
+.step.active .num { background: var(--brand-600); color: #fff; }
+.step.done .num { background: var(--brand-100); color: var(--brand-800); }
+.step .line { width: 48px; height: 2px; background: var(--neutral-200); }
+
+/* ---------- карточки состояний (макеты) ---------- */
+.state-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.state-card .state-title { padding: var(--sp-lg) var(--sp-xl); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; }
+.state-card .state-body { padding: var(--sp-xl); }
+
+/* ---------- аннотации макета ---------- */
+.mock-note {
+  max-width: 1280px; margin: var(--sp-xxl) auto; padding: 0 var(--sp-xl);
+  color: var(--text-secondary); font-size: 12px;
+}
+.comp {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 11px; background: var(--brand-50); color: var(--brand-800);
+  border: 1px dashed var(--brand-300); border-radius: var(--r-sm);
+  padding: 1px 6px; white-space: nowrap;
+}
+.comp-list { display: flex; flex-wrap: wrap; gap: var(--sp-md); }
+.map-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.map-table th, .map-table td { border: 1px solid var(--border); padding: var(--sp-md) var(--sp-lg); text-align: left; }
+.map-table th { background: var(--neutral-100); }
+.frame {
+  max-width: 1280px; margin: 0 auto; background: var(--bg);
+  border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+  min-height: 100vh;
+}
+.titlebar {
+  background: var(--neutral-800); color: #fff; padding: var(--sp-lg) var(--sp-xl);
+  display: flex; gap: var(--sp-lg); align-items: baseline; flex-wrap: wrap;
+}
+.titlebar .page-name { font-weight: 700; font-size: 15px; }
+.titlebar .meta { color: var(--neutral-300); font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--sp-lg); padding: var(--sp-lg) var(--sp-xl); background: var(--surface); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); }

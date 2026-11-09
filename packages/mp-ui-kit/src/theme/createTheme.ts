@@ -99,8 +99,26 @@ export function createMpTheme(config: MpThemeConfig = {}): Theme {
       },
     },
     shape: { borderRadius: t.radius.md },
+    // Брейкпоинты — по макетам design/*: ≥1280 desktop, 960–1279 tablet, <960 mobile.
+    breakpoints: { values: { xs: 0, sm: 600, md: 960, lg: 1280, xl: 1536 } },
     shadows: buildShadows(mode),
     components: {
+      // ——— Типографика ———
+      MuiTypography: {
+        variants: [
+          {
+            // Время приёма, идентификаторы (макеты: «Typography mono», design/appointments.md).
+            props: { variant: 'mono' },
+            style: {
+              fontFamily: t.typography.fontFamilyMono,
+              fontSize: t.typography.scale.body2.fontSize,
+              lineHeight: t.typography.scale.body2.lineHeight,
+              letterSpacing: 0,
+            },
+          },
+        ],
+      },
+
       // ——— Кнопки и иконки ———
       MuiButton: {
         defaultProps: { disableElevation: true },

@@ -1,7 +1,8 @@
-import { Box, TableFooter } from '@mui/material';
+import { Box, TableFooter, Typography } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { MpButton } from '../Button/MpButton';
+import { MpSkeleton } from '../Skeleton/MpSkeleton';
 import { MpStatusBadge } from '../StatusBadge/MpStatusBadge';
 import { MpTablePagination } from './MpTablePagination';
 import {
@@ -79,7 +80,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Управляемая пагинация: страница и шаг — через историю. */
+/**
+ * Управляемая пагинация: страница и шаг — через историю.
+ * Колонки ID и «Специализация» — `hideBelow="lg"` (скрыты на 960–1279, макеты).
+ */
 function AppointmentsTable({ rowCount = 42 }: { rowCount?: number }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -91,9 +95,14 @@ function AppointmentsTable({ rowCount = 42 }: { rowCount?: number }) {
       <MpTable aria-label="Управление записями">
         <MpTableHead>
           <MpTableRow>
+            <MpTableCell head hideBelow="lg">
+              ID
+            </MpTableCell>
             <MpTableCell head>Пациент</MpTableCell>
             <MpTableCell head>Врач</MpTableCell>
-            <MpTableCell head>Специализация</MpTableCell>
+            <MpTableCell head hideBelow="lg">
+              Специализация
+            </MpTableCell>
             <MpTableCell head>Время приёма</MpTableCell>
             <MpTableCell head>Статус</MpTableCell>
             <MpTableCell head align="right">
@@ -104,10 +113,13 @@ function AppointmentsTable({ rowCount = 42 }: { rowCount?: number }) {
         <MpTableBody>
           {rows.map((row) => (
             <MpTableRow key={row.id} hover>
+              <MpTableCell hideBelow="lg">ap-{row.id}</MpTableCell>
               <MpTableCell>{row.patient}</MpTableCell>
               <MpTableCell>{row.doctor}</MpTableCell>
-              <MpTableCell>{row.specialization}</MpTableCell>
-              <MpTableCell>{row.time}</MpTableCell>
+              <MpTableCell hideBelow="lg">{row.specialization}</MpTableCell>
+              <MpTableCell>
+                <Typography variant="mono">{row.time}</Typography>
+              </MpTableCell>
               <MpTableCell>
                 <MpStatusBadge status={row.status} />
               </MpTableCell>
@@ -173,24 +185,8 @@ export const Loading: Story = {
     <MpTableContainer
       sx={{ maxWidth: 640, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}
     >
-      <MpTable aria-label="Загрузка">
-        <MpTableHead>
-          <MpTableRow>
-            <MpTableCell head>ID</MpTableCell>
-            <MpTableCell head>Пациент</MpTableCell>
-            <MpTableCell head>Время</MpTableCell>
-          </MpTableRow>
-        </MpTableHead>
-        <MpTableBody>
-          {Array.from({ length: 5 }, (_, index) => (
-            <MpTableRow key={index}>
-              <MpTableCell>…</MpTableCell>
-              <MpTableCell>…</MpTableCell>
-              <MpTableCell>…</MpTableCell>
-            </MpTableRow>
-          ))}
-        </MpTableBody>
-      </MpTable>
+      {/* Макеты: loading — скелетон 10 строк таблицы вместо спиннера-центра. */}
+      <MpSkeleton rows={10} height={44} />
     </MpTableContainer>
   ),
 };

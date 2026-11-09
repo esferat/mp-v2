@@ -86,15 +86,15 @@ export function App() {
 
 ### Базовые
 
-| Компонент     | Описание                                                                    |
-| ------------- | --------------------------------------------------------------------------- |
-| `MpButton`    | Кнопка: варианты `contained/outlined/text`, цвета, размеры, `loading`       |
-| `MpTextField` | Поле ввода: `label`, `helperText`, `error`, `startAdornment`/`endAdornment` |
-| `MpAlert`     | Уведомление: `severity`, `variant`, `title`, `action`                       |
-| `MpChip`      | Тег/фильтр: цвета палитры (`brand`, `neutral` включительно), `onDelete`     |
-| `MpBadge`     | Счётчик: `badgeContent`, `max`, `variant="dot"`                             |
-| `MpAvatar`    | Аватар: размеры `xs…xl`, инициалы из `name`                                 |
-| `MpCard`      | Карточка: `variant="elevated                                                | outlined | flat"`+`MpCardContent`, `MpCardActions` |
+| Компонент     | Описание                                                                                                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MpButton`    | Кнопка: варианты `contained/outlined/text`, цвета, размеры, `loading`                                                                                                                             |
+| `MpTextField` | Поле ввода: `label`, `helperText`, `error`, `startAdornment`/`endAdornment`, `revealable` (пароль с глазом), `clearable`/`onClear` (сброс поиска), `showCount`/`maxLength` (счётчик «118 / 4000») |
+| `MpAlert`     | Уведомление: `severity`, `variant`, `title`, `action`                                                                                                                                             |
+| `MpChip`      | Тег/фильтр/слот: цвета палитры (`brand`, `neutral` включительно), `selected` (выбранный слот), `onDelete`                                                                                         |
+| `MpBadge`     | Счётчик: `badgeContent`, `max`, `variant="dot"`                                                                                                                                                   |
+| `MpAvatar`    | Аватар: размеры `xs…xl`, инициалы из `name`                                                                                                                                                       |
+| `MpCard`      | Карточка: `variant="elevated                                                                                                                                                                      | outlined | flat"`+`MpCardContent`, `MpCardActions` |
 
 ### Формы и выбор (Этап 1, §2.2)
 
@@ -108,35 +108,42 @@ export function App() {
 
 ### Таблицы, окна и обратная связь
 
-| Компонент                                                | Описание                                                                 |
-| -------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `MpTable` + `MpTableContainer/Head/Row/Body/Footer/Cell` | Таблица: `MpTableCell head` рендерит `<th scope="col">`                  |
-| `MpTablePagination`                                      | Пагинация: подписи по-русски, шаги `10/25/50`, первая/последняя страница |
-| `MpDialog` + `MpDialogContent/Actions`                   | Модальное окно: `title`, подтверждения, формы                            |
-| `MpSnackbar`                                             | Тосты: `severity` (Alert) или простой тост, `action` («Повторить»)       |
-| `MpSkeleton`                                             | Скелетон: `lines={n}` — стопка строк, варианты MUI                       |
-| `MpSpinner`                                              | Центрированный спиннер с подписью `label`                                |
-| `MpStatusBadge` + `mpStatuses`                           | Бейдж статуса: цвет и подпись из реестра статусов                        |
-| `MpEmptyState`                                           | Пустое состояние: иконка + заголовок + описание + действие               |
+| Компонент                                                | Описание                                                                                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `MpTable` + `MpTableContainer/Head/Row/Body/Footer/Cell` | Таблица: `MpTableCell head` рендерит `<th scope="col">`, `hideBelow="lg"` скрывает второстепенные колонки (960–1279 по макетам) |
+| `MpTablePagination`                                      | Пагинация по макетам: «Всего: N» слева, «‹ Страница X из Y ›», «На странице: [10 ▾]» (10/25/50), `showTotal`/`totalLabel`       |
+| `MpDialog` + `MpDialogContent/Actions`                   | Модальное окно: `title`, `subtitle` (контекст: «Пациент: …»), `fullScreenBelow` (< 960 — во весь экран), подтверждения, формы   |
+| `MpSnackbar`                                             | Тосты: `severity` (Alert) или простой тост, `action` («Повторить»)                                                              |
+| `MpSkeleton`                                             | Скелетон: `lines={n}` — стопка строк карточки (6 линий), `rows={n}` — строки таблицы (10 строк по макетам)                      |
+| `MpSpinner`                                              | Центрированный спиннер с подписью `label`                                                                                       |
+| `MpStatusBadge` + `mpStatuses`                           | Бейдж статуса: цвет и подпись из реестра статусов                                                                               |
+| `MpEmptyState`                                           | Пустое состояние: иконка + заголовок + описание + действие                                                                      |
+
+### Мастер (шаги)
+
+| Компонент   | Описание                                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MpStepper` | Индикатор шагов мастера «○───●───○» (booking.md, auth-signup.md): `steps`, `activeStep`, `showLabels`, `onStepClick` (нелинейный), `orientation` |
 
 ### Оболочка приложения (`../../docs/new-project/design/layout.md`)
 
-| Компонент      | Описание                                                                                                                                                                                                                      |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MpAppShell`   | Единая оболочка: шапка + меню + заголовок страницы + контент. `menu` через пропсы, `logo`, `title`/`subtitle`/`headerActions`, `pageTitle`/`pageSubtitle`/`pageActions`, `mini`/`defaultMini`/`onMiniChange`, `drawerVariant` |
-| `MpAppBar`     | Шапка 64px: `logo`, `title`, `subtitle`, гамбургер `onMenuClick`, `actions`                                                                                                                                                   |
-| `MpNavDrawer`  | Боковое меню 240px / свёрнутое 72px (`mini`, тултипы), `selectedId`, `onSelect`, кнопка свернуть/развернуть внизу `onToggleCollapse`                                                                                          |
-| `MpPageHeader` | Заголовок страницы 72px: `title`, `subtitle`, `actions`, слот под фильтры                                                                                                                                                     |
+| Компонент      | Описание                                                                                                                                                                                                                                                        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MpAppShell`   | Единая оболочка: шапка + меню + заголовок страницы + контент. `menu` через пропсы (в т.ч. секции ADMIN/USER/DOCTOR), `logo`, `title`/`subtitle`/`headerActions`, `pageTitle`/`pageSubtitle`/`pageActions`, `mini`/`defaultMini`/`onMiniChange`, `drawerVariant` |
+| `MpAppBar`     | Шапка 64px: `logo`, `title`, `subtitle`, гамбургер `onMenuClick`, `actions`                                                                                                                                                                                     |
+| `MpNavDrawer`  | Боковое меню 240px / свёрнутое 72px (`mini`, тултипы), секции `MpNavSection` с заголовками и разделителем, `selectedId`, `onSelect`, кнопка свернуть/развернуть внизу `onToggleCollapse`                                                                        |
+| `MpPageHeader` | Заголовок страницы 72px: `title`, `subtitle`, `actions`, `onBack`/`backLabel` («‹ Назад»), `breadcrumbs`, слот под фильтры                                                                                                                                      |
+| `MpUserMenu`   | Меню профиля в шапке (layout.md): аватар с инициалами + «ФИО ▾», пункты «Профиль»/«Выйти» (`items`)                                                                                                                                                             |
 
 ### Статусы
 
-`mpStatuses` — реестр цветов и подписей по макетам (`../../docs/new-project/design/`: `appointments.md`, `doctors-list.md`, `history.md`):
+`mpStatuses` — реестр цветов и подписей по макетам (`../../docs/new-project/design/`: `appointments.md`, `doctors-list.md`, `history.md`, `doctor-schedule.md`):
 
-| Группа            | Статусы                                                                                  |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| Запись            | `SUBMITTED` (жёлтый) · `APPROVED` (зелёный) · `DECLINED` (красный) · `CANCELLED` (серый) |
-| Врач              | `ACTIVE` · `INACTIVE`                                                                    |
-| Слоты и состояния | `AVAILABLE` · `BOOKED` · `NEW` · `PENDING` · `CONFIRMED` · `COMPLETED` · `FAILED`        |
+| Группа            | Статусы                                                                                                                                                                            |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Запись            | `SUBMITTED` (жёлтый, «В ожидании») · `APPROVED` (зелёный, «Принята») · `DECLINED` (красный, «Отклонена») · `CANCELLED` (серый, «Отменена») · `COMPLETED` (синий, «Приём завершён») |
+| Врач              | `ACTIVE` · `INACTIVE`                                                                                                                                                              |
+| Слоты и состояния | `AVAILABLE` · `BOOKED` · `NEW` · `PENDING` · `CONFIRMED` · `FAILED`                                                                                                                |
 
 ```tsx
 <MpStatusBadge status="SUBMITTED" />   // ⧗ В ожидании
@@ -161,13 +168,14 @@ const theme = createMpTheme({ mode: 'dark' });
 - **neutral** — нейтральная шкала slate 50…900
 - **semantic** — success, warning, error, info (+ soft-фоны `light`)
 - **surfaces** — фоны/текст/разделители для светлой и тёмной схем
-- **typography** — шрифтовой стек Inter, веса, шкала `display, h1…h6, body, caption, overline`
+- **typography** — шрифтовой стек Inter (+ моноширинный `fontFamilyMono` для времени приёма/ID), веса, шкала `display, h1…h6, body, caption, overline`; вариант `mono` — `<Typography variant="mono">`
 - **spacing** — компактная шкала `xs 2 · sm 4 · md 8 · lg 12 · xl 16 · xxl 24`
 - **radius** — `xs 2 · sm 4 · md 8 · lg 12 · xl 16 · xxl 24 · full`
 - **shadow** — уровни `sm/md/lg/xl` отдельно для светлой и тёмной схемы
 - **motion** — длительности и кривые easing
 - **controlHeight** — `sm 24 · md 32 · lg 40`; **avatarSize** — `xs 20 … xl 64`
 - **layout** — размеры оболочки: `header 64 · pageTitle 72 · sidebar 240 · sidebarMini 72`
+- **брейкпоинты MUI** — по макетам: `md 960` (tablet) и `lg 1280` (desktop): `< 960` — временный drawer и карточки вместо таблиц, `960–1279` — mini-сайдбар и скрытые второстепенные колонки
 
 Тема дополнительно уплотняет компоненты MUI: высоты кнопок/полей, отступы ячеек
 таблицы, пунктов меню, строк диалога — компактные по умолчанию.
@@ -199,7 +207,7 @@ mp-ui-kit/
 ├── src/
 │   ├── components/       # Button, TextField, Alert, Chip, Badge, Avatar, Card,
 │   │   └── <Name>/       #   Select, Autocomplete, Table, Dialog, Snackbar, Skeleton,
-│   │                     #   Spinner, StatusBadge, EmptyState, DatePicker, AppShell
+│   │                     #   Spinner, StatusBadge, EmptyState, DatePicker, Stepper, AppShell
 │   │                     #   → Mp<Name>.tsx + Mp<Name>.stories.tsx
 │   ├── docs/             # страницы документации: Introduction, Foundations
 │   ├── theme/            # tokens.ts, createTheme.ts, ThemeProvider.tsx, augmentation.ts
@@ -217,8 +225,10 @@ mp-ui-kit/
 - **Foundations** — цвета, типографика, скругления, отступы, тени
 - **Components/\*** — страница каждого компонента: автодоки, контролы, примеры
   (варианты, размеры, состояния, loading, тёмная тема через тулбар «Тема»)
-- **Shell/AppShell** — оболочка `MpAppShell`: логотип, меню через пропсы,
+- **Shell/AppShell** — оболочка `MpAppShell`: логотип, меню через пропсы (в т.ч. секции по ролям),
   кнопка свернуть/развернуть боковую панель, заголовок страницы
+- **Shell/UserMenu**, **Shell/PageHeader** — меню профиля «ФИО ▾» и заголовок страницы
+  (кнопка «‹ Назад», хлебные крошки)
 
 ## Планы
 

@@ -62,6 +62,12 @@ const surfaces = {
 const typography = {
   fontFamily:
     '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  /**
+   * Моноширинный шрифт — время приёма, идентификаторы записей
+   * (макеты: «Время приёма — `Typography mono`», design/appointments.md).
+   */
+  fontFamilyMono:
+    '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
   fontWeight: {
     regular: 400,
     medium: 500,

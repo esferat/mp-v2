@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет · Регистрация (Keycloak) + добор профиля</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { background: var(--neutral-100); }
+  .auth-wrap { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 32px 24px; gap: 24px; flex-wrap: wrap; }
+  .auth-card { width: 440px; max-width: 100vw; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-xl); padding: var(--sp-xxl); box-shadow: 0 12px 32px rgba(15,23,42,0.08); }
+  .auth-card h2 { margin: 0 0 16px; font-size: 16px; }
+  .badge-key { font-size: 11px; background: var(--neutral-800); color: #fff; border-radius: 6px; padding: 2px 8px; }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <span class="page-name">Регистрация: форма Keycloak + добор профиля</span>
+  <span class="meta">/auth/register → Keycloak, далее /cabinet/profile · Задачи 1.4, 2.7 · макет auth-signup.md</span>
+</div>
+<div class="legend">
+  <span>Канон от 09.11.2026: регистрация — форма Keycloak (тема mp-portal); карточка пациента (ФИО, дата рождения) и файлы добираются в профиле</span>
+</div>
+
+<div class="auth-wrap">
+
+  <!-- ============ЭТАП 1: РЕГИСТРАЦИЯ (страница темы Keycloak) ============ -->
+  <div class="auth-card">
+    <h2>Регистрация <span class="badge-key">страница темы Keycloak · 2.7</span></h2>
+
+    <span class="comp">MpTextField (email)</span>
+    <div class="field"><label>Email</label><div class="control filled">petrov@example.com</div><div class="helper">не подтвердив email — регистрация не завершится (verifyEmail — Этап 3)</div></div>
+    <div class="field" style="margin-top:12px"><label>Имя / Фамилия</label><div class="control filled">Пётр Петрович Петров</div><div class="helper">отчество и дата рождения — в профиле (добор, шаг 2)</div></div>
+
+    <span class="comp">MpTextField (password)</span>
+    <div class="field pwd" style="margin-top:12px"><label>Пароль</label><div class="control">••••••••<span class="helper" style="letter-spacing:normal">≥ 8 символов, цифра</span></div></div>
+    <div class="field pwd" style="margin-top:8px"><label>Подтвердите пароль</label><div class="control">••••••••</div></div>
+    <span class="helper">пароли совпадают — проверяется на клиенте и повторно на сервере</span>
+
+    <span class="comp">MpButton (contained)</span>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-contained" style="height:var(--ctl-h-lg)">Зарегистрироваться</button>
+    </div>
+    <span class="helper" style="display:block;margin-top:12px;text-align:center">
+      Уже есть аккаунт? <a href="auth-login.html" class="side-link">Войти</a> — в систему через Keycloak
+    </span>
+    <span class="helper" style="display:block;margin-top:8px;text-align:center;color:var(--error)">
+      EMAIL_EXISTS → «Пользователь уже зарегистрирован» + <a href="auth-login.html" style="color:var(--error)">Войти</a>
+    </span>
+  </div>
+
+  <!-- ============ЭТАП 2: ДОБОР ПРОФИЛЯ (веб-страница) ============ -->
+  <div class="auth-card" style="width:520px">
+    <h2>Добор карточки пациента <span class="badge-key">web · /cabinet/profile · 1.4 / 4.2 / 10.1</span></h2>
+
+    <div class="alert info" style="margin-bottom:16px">
+      <span>ℹ️</span><div><b>Учётная запись created in Keycloak</b><div style="font-size:12px">Теперь дополним личные данные — создадим карточку пациента</div></div>
+    </div>
+
+    <span class="comp">MpTextField ×4</span>
+    <div class="grid-3">
+      <div class="field"><label>Фамилия <span class="req">*</span></label><div class="control filled">Петров</div></div>
+      <div class="field"><label>Имя <span class="req">*</span></label><div class="control filled">Пётр</div></div>
+      <div class="field"><label>Отчество</label><div class="control">не заполнено</div></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Дата рождения <span class="req">*</span></label><div class="control"><span class="comp" style="border:none;background:transparent;padding:0">MpDatePicker</span>&nbsp;&nbsp;14.06.1992</div></div>
+
+    <span class="comp">MpButton (text)</span>
+    <div style="margin-top:12px"><button class="btn btn-text">＋ Добавить фото и документ</button>
+      <div class="helper" style="margin-top:2px">опционально; загрузка файлов — в Этапе 2 (4.3 / 4.4); кроп — 4.3</div>
+    </div>
+
+    <span class="comp">MpButton (contained)</span>
+    <div style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-text">Пропустить</button>
+      <button class="btn btn-contained">Профиль заполнен</button>
+    </div>
+
+    <span class="helper" style="display:block;margin-top:12px">
+      → идемпотентная сага (1.4): сохранение профиля при отказе patient-service → повтор → ровно одна карточка, без дублей
+    </span>
+    <div class="alert success" style="margin-top:12px"><b>Готово</b><div>Добро пожаловать! Профиль — <a href="profile.html">profile.html</a></div></div>
+  </div>
+
+</div>
+
+<div class="mock-note">
+  <a href="index.html">← ко всем макетам</a> · <a href="../auth-signup.md">../auth-signup.md</a> ·
+  ад даптив: &lt; 960 — поля в одну колонку; шаги — компактные подписи ·
+  мобильная подача: форма — на всю ширину
+</div>
+
+</body>
+</html>
