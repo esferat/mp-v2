@@ -2,7 +2,6 @@ import Card, { type CardProps } from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import { forwardRef, type ReactNode } from 'react';
-import { mpTokens } from '../../theme/tokens';
 
 export type MpCardVariant = 'elevated' | 'outlined' | 'flat';
 
@@ -17,12 +16,23 @@ export interface MpCardProps extends Omit<CardProps, 'variant'> {
   variant?: MpCardVariant;
 }
 
-const paddingScale: Record<'none' | 'sm' | 'md' | 'lg', number> = {
-  none: 0,
-  sm: mpTokens.spacing.md, // 8px
-  md: mpTokens.spacing.lg, // 12px
-  lg: mpTokens.spacing.xl, // 16px
+/**
+ * Внутренний отступ контента. Строки с `px`: числа в MUI `sx` умножаются
+ * на `theme.spacing` (8px) — «12» давало 96px вместо задуманных 12 (stories:
+ * sm=12, md=16, lg=24; макеты: `.card { padding: 24px }`).
+ */
+const paddingScale: Record<'none' | 'sm' | 'md' | 'lg', string> = {
+  none: '0px',
+  sm: '12px',
+  md: '16px',
+  lg: '24px',
 };
+
+/** `:last-child` — MUI-дефолт и override темы задают свой нижний отступ; синхронизируем со всем контентом. */
+function paddingStyles(padding: keyof typeof paddingScale): Record<string, unknown> {
+  const value = paddingScale[padding];
+  return { padding: value, '&:last-child': { paddingBottom: value } };
+}
 
 export interface MpCardContentProps {
   /** Внутренний отступ. @default 'md' */
@@ -80,7 +90,7 @@ export const MpCardContent = forwardRef<HTMLDivElement, MpCardContentProps>(func
   return (
     <CardContent
       ref={ref}
-      sx={[{ padding: paddingScale[padding] }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+      sx={[paddingStyles(padding), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
       {...props}
     >
       {children}
@@ -96,7 +106,7 @@ export const MpCardActions = forwardRef<HTMLDivElement, MpCardActionsProps>(func
   return (
     <CardActions
       ref={ref}
-      sx={[{ padding: paddingScale[padding] }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+      sx={[paddingStyles(padding), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
       {...props}
     >
       {children}

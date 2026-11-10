@@ -20,7 +20,7 @@ export default async function AdminProfilePage(): Promise<ReactNode> {
       <Box sx={{ maxWidth: 760 }}>
         <MpPageHeader title="Профиль" subtitle={`${me.email} · Администратор (ADMIN)`} />
         <MpCard>
-          <MpCardContent>
+          <MpCardContent padding="lg">
             <EditProfileForm initial={me} editableNames />
           </MpCardContent>
         </MpCard>

@@ -59,7 +59,7 @@ export default async function DoctorProfilePage(): Promise<ReactNode> {
 
           <Box sx={{ flex: 1, minWidth: 0, maxWidth: 760 }}>
             <MpCard>
-              <MpCardContent>
+              <MpCardContent padding="lg">
                 <EditProfileForm
                   initial={me}
                   details={
