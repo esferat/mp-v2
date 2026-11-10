@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, MpPageHeader, Stack, Typography } from '@/shared/ui';
+import { Alert, Box, MpAvatar, MpPageHeader, Stack, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { auth } from '@/shared/config/auth';
 import { PatientForm } from '@/widgets/patient-form';
@@ -11,8 +11,12 @@ export const metadata: Metadata = { title: 'Профиль — Кабинет' }
 
 /**
  * Профиль пациента (4.2/4.3/4.5): карточка по sub из токена (SSR),
- * форма редактирования (4.2), фото с кропом (4.3), документы и
+ * форма редактирования (4.2), аватар с кропом (4.3), документы и
  * presigned-скачивание (4.5).
+ *
+ * Разделение функций: аватар — своя колонка слева (обновляет только
+ * владелец), документы — отдельная секция справа (просмотр/скачивание;
+ * загрузка сканов — у врача в карточке пациента, 9.3).
  */
 export default async function ProfilePage(): Promise<ReactNode> {
   try {
@@ -44,6 +48,11 @@ export default async function ProfilePage(): Promise<ReactNode> {
             <Typography variant="subtitle1">
               {`${patient.lastName} ${patient.firstName}`}
             </Typography>
+            <MpAvatar
+              {...(patient.photoUrl ? { src: patient.photoUrl } : {})}
+              name={`${patient.lastName} ${patient.firstName}`}
+              size="xl"
+            />
             <UploadPhoto ownerType="PATIENT" ownerId={patient.id} />
             <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
               JPEG, PNG или WebP, до 5 МБ

@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import type { DoctorListItem } from '@mp/contracts';
-import { Alert, Box, MpPageHeader, Stack, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Typography } from '@/shared/ui';
 import { ApiError, createServerApi, loadSpecializations } from '@/shared/api';
 import { cachedCatalog, CATALOG_TAGS } from '@/shared/api/catalog-cache';
 import { DoctorForm } from '@/features/doctor-form';
-import { DoctorPhoto } from '@/widgets/doctor-photo';
 
 export const metadata: Metadata = { title: 'Врач — Администрирование' };
 
@@ -80,21 +79,16 @@ export default async function DoctorPage({
         backHref="/admin/doctors"
         backLabel="Врачи"
       />
-      {/* Двухколоночный макет (design/doctor-form.md): фото + форма */}
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={3}
-        sx={{ alignItems: { xs: 'center', sm: 'flex-start' } }}
-      >
-        <DoctorPhoto doctor={doctorResult.value} />
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <DoctorForm
-            mode="edit"
-            initial={doctorResult.value}
-            specializations={specializationsResult.items}
-          />
-        </Box>
-      </Stack>
+      {/* Форма редактирования (design/doctor-form.md). Аватар врача здесь не
+          редактируется: фото меняет только владелец в своём профиле (10.1) —
+          разделение «аватар в профиле» / «карточка админа — данные» */}
+      <Box sx={{ maxWidth: 760 }}>
+        <DoctorForm
+          mode="edit"
+          initial={doctorResult.value}
+          specializations={specializationsResult.items}
+        />
+      </Box>
     </Box>
   );
 }

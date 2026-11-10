@@ -1,7 +1,12 @@
 import { Controller, Get, Inject, Param, Req, UnauthorizedException } from '@nestjs/common';
 import type { Patient } from '@mp/contracts';
 import type { RequestAuth } from '@mp/service-kit';
-import { PATIENT_REPOSITORY, type PatientRepository } from '../../../entities/patient';
+import {
+  PATIENT_REPOSITORY,
+  type PatientRepository,
+  PHOTO_URL_SIGNER,
+  type PhotoUrlSigner,
+} from '../../../entities/patient';
 import { getPatient, getPatientInternal } from '../app/get-patient';
 
 type AuthedRequest = { auth?: RequestAuth };
@@ -12,6 +17,8 @@ export class GetPatientController {
   constructor(
     @Inject(PATIENT_REPOSITORY)
     private readonly repository: PatientRepository,
+    @Inject(PHOTO_URL_SIGNER)
+    private readonly signer: PhotoUrlSigner | undefined,
   ) {}
 
   @Get(':id')
@@ -20,7 +27,7 @@ export class GetPatientController {
     if (!auth) {
       throw new UnauthorizedException('Требуется токен доступа');
     }
-    return getPatient(this.repository, id, { sub: auth.sub, roles: auth.realmRoles });
+    return getPatient(this.repository, id, { sub: auth.sub, roles: auth.realmRoles }, this.signer);
   }
 
   /**

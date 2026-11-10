@@ -23,6 +23,11 @@ export const patientSchema = z.object({
   birthDate: z.iso.date(),
   email: z.email(),
   registeredAt: z.iso.datetime(),
+  /**
+   * Presigned-ссылка на аватар (TTL 5 мин) — для отображения в профиле
+   * (3.4/4.3). Аддитивное поле: потребители, которым оно не нужно, игнорируют.
+   */
+  photoUrl: z.url().optional(),
 });
 export type Patient = z.infer<typeof patientSchema>;
 
