@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { appointmentStatusSchema, slotSchema } from '../domain';
+import { appointmentStatusSchema, doctorScheduleSchema, slotSchema } from '../domain';
 import { paginationQuerySchema } from './common';
 
 /** GET /api/scheduling/slots?specId&from&to[&startTime&endTime] */
@@ -66,7 +66,23 @@ export type Appointment = z.infer<typeof appointmentSchema>;
 export const appointmentListQuerySchema = paginationQuerySchema.extend({
   status: appointmentStatusSchema.optional(),
   specId: z.string().min(1).optional(),
+  /**
+   * Мультивыбор специализаций (5.4, админ): строка «id1,id2» либо
+   * повторённый параметр `?specIds=id1&specIds=id2`.
+   */
+  specIds: z
+    .union([z.string(), z.array(z.string().min(1))])
+    .transform((value) => (Array.isArray(value) ? value : value.split(',')).filter(Boolean))
+    .optional(),
   doctorId: z.string().min(1).optional(),
+  /**
+   * Мультивыбор врачей (5.4, админ «Управление записями»): строка «id1,id2»
+   * либо повторённый параметр `?doctorIds=id1&doctorIds=id2`.
+   */
+  doctorIds: z
+    .union([z.string(), z.array(z.string().min(1))])
+    .transform((value) => (Array.isArray(value) ? value : value.split(',')).filter(Boolean))
+    .optional(),
   patientId: z.string().min(1).optional(),
   from: z.iso.date().optional(),
   to: z.iso.date().optional(),
@@ -85,6 +101,30 @@ export const cancelAppointmentSchema = z.object({
   reason: z.string().min(3).max(500).optional(),
 });
 export type CancelAppointmentRequest = z.infer<typeof cancelAppointmentSchema>;
+
+/**
+ * PUT /api/scheduling/appointments/:id/reschedule (10.3, Этап 2.1): перенос
+ * на другого врача/дату/время БЕЗ смены статуса (SUBMITTED/APPROVED → те же).
+ * Конец окна вычисляется на сервере: начало + длительность расписания врача.
+ */
+export const rescheduleAppointmentSchema = z.object({
+  /** Новый врач (опционально — можно менять только дату/время). */
+  doctorId: z.string().min(1).optional(),
+  localDate: z.iso.date(),
+  /** HH:mm начала нового окна. */
+  start: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Некорректное время (HH:mm)'),
+  /** Причина переноса — журнал (10.3). */
+  reason: z.string().min(3).max(500).optional(),
+});
+export type RescheduleAppointmentRequest = z.infer<typeof rescheduleAppointmentSchema>;
+
+/**
+ * GET /api/scheduling/doctors/:id/schedule (10.3 UI): расписание врача из
+ * копии (5.1) — недельный вид слотов в диалоге переноса (сетка времени,
+ * рабочие дни).
+ */
+export const doctorScheduleResponseSchema = doctorScheduleSchema;
+export type DoctorScheduleResponse = z.infer<typeof doctorScheduleResponseSchema>;
 
 /** Ответ списка записей с пагинацией (5.4/5.5 AC: total нужен пагинации). */
 export const appointmentListResponseSchema = z.object({

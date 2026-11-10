@@ -1,19 +1,21 @@
-import Chip, { type ChipProps } from '@mui/material/Chip';
+import Box from '@mui/material/Box';
 import { forwardRef } from 'react';
+import { mpTokens } from '../../theme/tokens';
 
-export type MpStatusColor = ChipProps['color'];
+export type MpStatusColor =
+  'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' | 'neutral';
 
 export interface MpStatusMeta {
   /** Подпись по умолчанию (ru). */
   label: string;
-  /** Цвет чипа из палитры темы. */
+  /** Семантический цвет статуса (точка и текст). */
   color: MpStatusColor;
 }
 
 /**
  * Реестр статусов — цвета статусов записей/врачей/истории
  * (design/appointments.md, design/history.md, design/doctors-list.md,
- * design/doctor-schedule.md).
+ * design/doctor-schedule.md, visual/_shared.css `.status.*`).
  */
 export const mpStatuses = {
   // Запись (entities/appointment): SUBMITTED → APPROVED | DECLINED, отмена → CANCELLED;
@@ -42,34 +44,62 @@ export interface MpStatusBadgeProps {
   status: MpStatus;
   /** Переопределить подпись (свой текст). */
   label?: string;
-  /** Размер чипа. @default 'small' */
+  /** Размер бейджа. @default 'small' */
   size?: 'small' | 'medium';
-  /** Стиль: filled (по умолчанию) или outlined. */
+  /** @deprecated Точечный бейдж не имеет вариантов заливки — проп игнорируется (совместимость API). */
   variant?: 'filled' | 'outlined';
   className?: string;
 }
 
 /**
- * Бейдж статуса: цвет и подпись берутся из реестра статусов.
+ * Бейдж статуса: цветная точка + подпись (visual/_shared.css `.status`):
+ * точка 8×8 и текст 12px/600 одним цветом; «нейтральные» статусы —
+ * текст `neutral-500`, точка `neutral-400`. Цвет и подпись берутся
+ * из реестра статусов.
  *
  * @example
  * <MpStatusBadge status="SUBMITTED" />
- * <MpStatusBadge status="APPROVED" variant="outlined" />
+ * <MpStatusBadge status="COMPLETED" label="✓ Есть" />
  */
-export const MpStatusBadge = forwardRef<HTMLDivElement, MpStatusBadgeProps>(function MpStatusBadge(
-  { status, label, size = 'small', variant = 'filled', className },
+export const MpStatusBadge = forwardRef<HTMLSpanElement, MpStatusBadgeProps>(function MpStatusBadge(
+  { status, label, size = 'small', className },
   ref,
 ) {
   const meta = mpStatuses[status];
+  const dotSize = size === 'medium' ? 10 : 8;
 
   return (
-    <Chip
+    <Box
       ref={ref}
-      size={size}
-      variant={variant}
-      color={meta.color}
-      label={label ?? meta.label}
+      component="span"
       className={className}
-    />
+      sx={(theme) => {
+        const isNeutral = meta.color === 'neutral';
+        const main = isNeutral
+          ? theme.palette.text.secondary
+          : theme.palette[meta.color as Exclude<MpStatusColor, 'neutral'>].main;
+        return {
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px',
+          fontSize: size === 'medium' ? 14 : 12,
+          fontWeight: 600,
+          lineHeight: 1.4,
+          color: main,
+          whiteSpace: 'nowrap',
+          verticalAlign: 'middle',
+          '& .MpStatusBadge-dot': {
+            width: dotSize,
+            height: dotSize,
+            borderRadius: '50%',
+            flexShrink: 0,
+            backgroundColor: isNeutral ? mpTokens.neutral[400] : main,
+          },
+        };
+      }}
+    >
+      <Box component="span" className="MpStatusBadge-dot" aria-hidden />
+      {label ?? meta.label}
+    </Box>
   );
 });

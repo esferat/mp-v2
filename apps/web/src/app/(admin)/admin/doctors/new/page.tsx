@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Typography } from '@/shared/ui';
 import { loadSpecializations } from '@/shared/api';
 import { DoctorForm } from '@/features/doctor-form';
 
@@ -28,9 +28,7 @@ export default async function NewDoctorPage(): Promise<ReactNode> {
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Новый врач
-      </Typography>
+      <MpPageHeader title="Новый врач" backHref="/admin/doctors" backLabel="Врачи" />
       <DoctorForm mode="create" specializations={result.items} />
     </Box>
   );

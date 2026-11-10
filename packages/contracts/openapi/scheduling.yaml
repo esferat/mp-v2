@@ -3,7 +3,7 @@ info:
   title: mp-v2 scheduling
   version: 0.1.0
   description: "Сгенерировано из Zod-схем packages/contracts. Перегенерация: pnpm
-    gen. Сервис: scheduling, операций: 11."
+    gen. Сервис: scheduling, операций: 13."
 paths:
   /api/scheduling/slots:
     get:
@@ -80,7 +80,7 @@ paths:
       tags:
         - scheduling
       summary: Забронировать слот (гонка → 409 SLOT_TAKEN)
-      parameters: []
+      parameters: [ ]
       requestBody:
         required: true
         content:
@@ -160,6 +160,17 @@ paths:
             $schema: https://json-schema.org/draft/2020-12/schema
             type: string
             minLength: 1
+        - name: specIds
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+                  minLength: 1
         - name: doctorId
           in: query
           required: false
@@ -167,6 +178,17 @@ paths:
             $schema: https://json-schema.org/draft/2020-12/schema
             type: string
             minLength: 1
+        - name: doctorIds
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+                  minLength: 1
         - name: patientId
           in: query
           required: false
@@ -215,6 +237,90 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+  /api/scheduling/doctors/:id/schedule:
+    get:
+      tags:
+        - scheduling
+      summary: "Расписание врача из копии (10.3: недельный вид слотов переноса)"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoctorScheduleResponse"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/scheduling/appointments/:id/reschedule:
+    put:
+      tags:
+        - scheduling
+      summary: Перенос записи без смены статуса (10.3, только ADMIN)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RescheduleAppointmentRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
   /api/scheduling/appointments/me:
     get:
       tags:
@@ -258,6 +364,17 @@ paths:
             $schema: https://json-schema.org/draft/2020-12/schema
             type: string
             minLength: 1
+        - name: specIds
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+                  minLength: 1
         - name: doctorId
           in: query
           required: false
@@ -265,6 +382,17 @@ paths:
             $schema: https://json-schema.org/draft/2020-12/schema
             type: string
             minLength: 1
+        - name: doctorIds
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+                  minLength: 1
         - name: patientId
           in: query
           required: false
@@ -452,6 +580,17 @@ paths:
             $schema: https://json-schema.org/draft/2020-12/schema
             type: string
             minLength: 1
+        - name: specIds
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+                  minLength: 1
         - name: doctorId
           in: query
           required: false
@@ -459,6 +598,17 @@ paths:
             $schema: https://json-schema.org/draft/2020-12/schema
             type: string
             minLength: 1
+        - name: doctorIds
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+                  minLength: 1
         - name: patientId
           in: query
           required: false
@@ -512,7 +662,7 @@ paths:
       tags:
         - scheduling
       summary: "Пациенты врача (9.3: distinct из записей)"
-      parameters: []
+      parameters: [ ]
       responses:
         "200":
           description: "Успех:"
@@ -978,9 +1128,23 @@ components:
         specId:
           type: string
           minLength: 1
+        specIds:
+          anyOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+                minLength: 1
         doctorId:
           type: string
           minLength: 1
+        doctorIds:
+          anyOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+                minLength: 1
         patientId:
           type: string
           minLength: 1
@@ -992,6 +1156,53 @@ components:
           type: string
           format: date
           pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+    DoctorScheduleResponse:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        startTime:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+        endTime:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+        durationMinutes:
+          type: integer
+          minimum: 5
+          maximum: 30
+        workDays:
+          minItems: 1
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+      required:
+        - startTime
+        - endTime
+        - durationMinutes
+        - workDays
+    RescheduleAppointmentRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        doctorId:
+          type: string
+          minLength: 1
+        localDate:
+          type: string
+          format: date
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+        start:
+          type: string
+          pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+      required:
+        - localDate
+        - start
     SetAppointmentStatusRequest:
       $schema: https://json-schema.org/draft/2020-12/schema
       type: object

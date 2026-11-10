@@ -217,6 +217,9 @@ export function createMpTheme(config: MpThemeConfig = {}): Theme {
       MuiAppBar: {
         defaultProps: { elevation: 0, color: 'default' },
         styleOverrides: {
+          // Макет `.appbar`: фон — белый surface, как у бокового меню
+          // (иначе color="default" даёт palette.background.default — серый)
+          colorDefault: { backgroundColor: surface.background.paper },
           root: { borderBottom: `1px solid ${surface.divider}`, backgroundImage: 'none' },
         },
       },
@@ -277,7 +280,10 @@ export function createMpTheme(config: MpThemeConfig = {}): Theme {
         },
       },
       MuiTablePagination: {
-        styleOverrides: { root: { height: 44 } },
+        // Высота подвала: чип 24 + padding 8×2 = 40 (.pagination макета).
+        // Именно minHeight (не height): тулбар может быть выше — фикс-высота
+        // давала вертикальный скролл внутри бокса (root имеет overflow: auto).
+        styleOverrides: { root: { minHeight: 40 } },
       },
 
       // ——— Диалоги и тосты ———

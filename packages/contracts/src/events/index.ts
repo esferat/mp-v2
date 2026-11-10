@@ -3,6 +3,7 @@ import {
   appointmentCancelledV1,
   appointmentCompletedV1,
   appointmentDeclinedV1,
+  appointmentRescheduledV1,
   appointmentSubmittedV1,
 } from './appointment';
 import { documentDeletedV1, documentUploadedV1 } from './document';
@@ -33,6 +34,7 @@ export const RoutingKeys = {
   AppointmentDeclined: 'appointment.declined.v1',
   AppointmentCancelled: 'appointment.cancelled.v1',
   AppointmentCompleted: 'appointment.completed.v1',
+  AppointmentRescheduled: 'appointment.rescheduled.v1',
 } as const;
 
 export type RoutingKey = (typeof RoutingKeys)[keyof typeof RoutingKeys];
@@ -53,6 +55,7 @@ export const eventSchemas = {
   [RoutingKeys.AppointmentDeclined]: appointmentDeclinedV1,
   [RoutingKeys.AppointmentCancelled]: appointmentCancelledV1,
   [RoutingKeys.AppointmentCompleted]: appointmentCompletedV1,
+  [RoutingKeys.AppointmentRescheduled]: appointmentRescheduledV1,
 } as const satisfies Record<string, import('zod').ZodType>;
 
 /** Проверка сообщения по схеме его routing key. Несовпадение → DLQ, не крах (0.6). */

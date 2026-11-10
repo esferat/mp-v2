@@ -1,13 +1,13 @@
-import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import {
   applyTraceIdMiddleware,
   AuthModule,
+  createPrismaOutboxStore,
   JwtAuthGuard,
   LoggerModule,
-  RabbitModule,
   OutboxModule,
-  createPrismaOutboxStore,
+  RabbitModule,
 } from '@mp/service-kit';
 import { PrismaService, SharedApiModule } from '../shared/api';
 import { ApiErrorFilter, RequestLogInterceptor } from './kernel';
@@ -15,6 +15,7 @@ import { getIdentityEnv } from '../shared/config';
 import { HealthFeatureModule } from '../features/health';
 import { RegisterModule } from '../features/register';
 import { RegisterDoctorModule } from '../features/register-doctor';
+import { MeModule } from '../features/me';
 
 /**
  * Composition root (fsd.md §4.1): только регистрация слайсов и глобальных
@@ -54,6 +55,7 @@ const env = getIdentityEnv();
     HealthFeatureModule,
     RegisterModule,
     RegisterDoctorModule,
+    MeModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

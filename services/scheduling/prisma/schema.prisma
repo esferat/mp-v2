@@ -112,3 +112,26 @@ model VisitResult {
 
   @@index([createdBy])
 }
+
+/// Журнал переносов записей (10.3, Этап 2.1): старый/новый слот и врач,
+/// инициатор (sub), причина. Строка пишется в одной транзакции с переносом.
+model AppointmentRescheduleLog {
+  id             String    @id @default(cuid())
+  appointmentId  String
+  /// Статус ДО переноса (перенос статус не меняет — для счётчиков проекции).
+  previousStatus String
+  oldDoctorId    String
+  oldLocalDate   DateTime
+  oldStart       String
+  oldEnd         String
+  newDoctorId    String
+  newLocalDate   DateTime
+  newStart       String
+  newEnd         String
+  /// sub инициатора (только ADMIN).
+  changedBy      String
+  reason         String?
+  changedAt      DateTime  @default(now())
+
+  @@index([appointmentId, changedAt])
+}

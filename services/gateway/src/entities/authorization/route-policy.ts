@@ -40,9 +40,27 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
     roles: ['ADMIN'],
     comment: 'сага врача с учётной записью DOCTOR (9.1) — только админ',
   },
+  {
+    methods: ['GET', 'PATCH'],
+    path: '/api/identity/me',
+    roles: ['ADMIN', 'USER', 'DOCTOR'],
+    comment: '10.1: профиль и правка СВОИХ данных (sub из токена)',
+  },
 
   // Каталог: админский CRUD; чтение справочника — для записи (эпики 3, 5)
   { methods: ['POST', 'PUT', 'PATCH', 'DELETE'], path: '/api/catalog/doctors', roles: ['ADMIN'] },
+  {
+    methods: ['PUT'],
+    path: '/api/catalog/doctors/me/schedule',
+    roles: ['DOCTOR'],
+    comment: '10.4: врач правит расписание своей карточки (sub из токена)',
+  },
+  {
+    methods: ['GET'],
+    path: '/api/catalog/doctors/me',
+    roles: ['DOCTOR'],
+    comment: '10.4: карточка своего врача по токену (форма расписания)',
+  },
   {
     methods: ['GET'],
     path: '/api/catalog/doctors',
@@ -101,6 +119,12 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
     comment: '5.4/1.2: список всех записей — админ',
   },
   { path: '/api/scheduling/appointments', roles: ['ADMIN', 'USER', 'DOCTOR'] },
+  {
+    methods: ['PUT'],
+    path: '/api/scheduling/appointments/:id/reschedule',
+    roles: ['ADMIN'],
+    comment: '10.3: перенос записи — только админ (и на gateway, и в сервисе)',
+  },
   { path: '/api/scheduling', roles: ['ADMIN', 'USER', 'DOCTOR'], comment: 'слоты читают все роли' },
 
   // Файлы: права на объект проверяет file-service (владелец/админ/врач)
@@ -113,6 +137,31 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
   { path: '/api/notifications', roles: ['ADMIN'] },
 ];
 
+/** Кэш regex для путей с параметрами (один паттерн — один regex). */
+const pathPatternCache = new Map<string, RegExp>();
+
+/**
+ * Совпадение пути политики: обычные пути — префикс; пути с `:param`
+ * (один сегмент) — по сегментам (10.3: `/appointments/:id/reschedule`
+ * не должен перехватывать `/appointments/:id/status`).
+ */
+function matchesPath(pattern: string, pathname: string): boolean {
+  if (!pattern.includes(':')) return pathname.startsWith(pattern);
+
+  let regex = pathPatternCache.get(pattern);
+  if (!regex) {
+    const source = pattern
+      .split('/')
+      .map((segment) =>
+        segment.startsWith(':') ? '[^/]+' : segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+      )
+      .join('/');
+    regex = new RegExp(`^${source}`);
+    pathPatternCache.set(pattern, regex);
+  }
+  return regex.test(pathname);
+}
+
 /**
  * Политика для запроса: самое длинное совпадение префикса выигрывает.
  * Возвращает undefined, если маршрута нет в реестре (любой авторизованный).
@@ -124,7 +173,7 @@ export function findPolicy(
 ): RoutePolicy | undefined {
   let best: RoutePolicy | undefined;
   for (const policy of policies) {
-    if (!pathname.startsWith(policy.path)) continue;
+    if (!matchesPath(policy.path, pathname)) continue;
     if (policy.methods && !policy.methods.includes(method.toUpperCase())) continue;
     if (!best || policy.path.length > best.path.length) best = policy;
   }

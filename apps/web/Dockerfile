@@ -37,6 +37,10 @@ COPY --from=build /app/apps/web/.next/standalone ./
 COPY --from=build /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=build /app/apps/web/public ./apps/web/public
 
+# Кэш Next (prerender/ISR) пишется от runtime-пользователя: сборка идёт от
+# root — без chown node не создаёт .next/cache (EACCES в логах, 0.7 AC)
+RUN chown -R node:node ./apps/web/.next
+
 # Непривилегированный пользователь (0.7 AC)
 USER node
 

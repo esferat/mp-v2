@@ -1,10 +1,11 @@
 /*
  * Стили страниц Keycloak (вход / регистрация / сброс пароля) под дизайн портала.
  *
- * Источник токенов — apps/web/src/shared/ui/theme.ts (тема MUI):
- *   primary #1976d2 (dark #1565c0), secondary #00897b (dark #00695c),
- *   error #d32f2f, warning.dark #bf3608, фон #f5f7fa, радиус 8, шрифт Inter,
- *   градиент бренда linear-gradient(90deg, #1565c0 0%, #1976d2 45%, #00695c 100%).
+ * Источник токенов — библиотека mp-ui-kit (src/theme/tokens.ts), макеты
+ * docs/new-project/design/visual/auth-login.html и auth-register.html:
+ *   бренд бирюзовый #0D9488 (brand-600), фон страницы #F1F5F9 (neutral-100),
+ *   карточка 400/440px: радиус 16, рамка neutral-200, мягкая тень, логотип «МП»,
+ *   поля 32px с рамкой neutral-300, кнопка-действие brand-600 (40px), Inter.
  *
  * Селекторы построены на семантических классах Keycloakify `kc*Class` (kcClsx
  * возвращает имя ключа всегда, даже при doUseDefaultCss=false) и стабильных
@@ -13,32 +14,32 @@
  */
 
 :root {
-  /* Палитра портала (без «магических» цветов ниже — только токены) */
-  --mp-primary: #1976d2;
-  --mp-primary-dark: #1565c0;
-  --mp-secondary: #00897b;
-  --mp-secondary-dark: #00695c;
-  --mp-error: #d32f2f;
-  --mp-error-dark: #b71c1c;
-  --mp-warning-dark: #bf3608;
-  --mp-success-dark: #1b5e20;
-  --mp-info-dark: #0d47a1;
+  /* Палитра портала (только токены, «сырых» цветов ниже нет) */
+  --mp-primary: #0d9488; /* brand-600 */
+  --mp-primary-dark: #0f766e; /* brand-700 */
+  --mp-secondary: #14b8a6; /* brand-500 */
+  --mp-secondary-dark: #115e59; /* brand-800 */
+  --mp-error: #dc2626;
+  --mp-error-dark: #b91c1c;
+  --mp-warning-dark: #b45309;
+  --mp-success-dark: #15803d;
+  --mp-info-dark: #1d4ed8;
 
-  --mp-bg: #f5f7fa;
+  --mp-bg: #f1f5f9; /* neutral-100 — фон auth-страниц (макет) */
   --mp-surface: #ffffff;
-  --mp-text: rgba(0, 0, 0, 0.87);
-  --mp-text-muted: rgba(0, 0, 0, 0.6);
-  --mp-border: #cfd8dc;
-  --mp-border-soft: #eceff1;
+  --mp-text: #1e293b; /* neutral-800 */
+  --mp-text-muted: #64748b; /* neutral-500 */
+  --mp-label: #334155; /* neutral-700 */
+  --mp-border: #cbd5e1; /* neutral-300 */
+  --mp-border-soft: #e2e8f0; /* neutral-200 */
 
-  --mp-radius: 8px;
-  --mp-gradient-brand: linear-gradient(90deg, #1565c0 0%, #1976d2 45%, #00695c 100%);
-  --mp-gradient-page: linear-gradient(180deg, #eef4fb 0%, #f5f7fa 480px);
+  --mp-radius: 8px; /* r-md — поля и кнопки */
+  --mp-card-radius: 16px; /* r-xl — карточка */
 
   /* Геометрия карточки: ширина и внутренний отступ держим в переменных,
      чтобы шапка и карточка были выровнены по левому краю полей ввода. */
   --mp-card-width: 400px;
-  --mp-card-padding: 32px;
+  --mp-card-padding: 24px; /* sp-xxl */
   --mp-gutter: 16px;
 
   /* Системный светлый интерфейс независимо от ОС (страницы только светлые) */
@@ -54,14 +55,17 @@ body.kcBodyClass {
 
 body.kcBodyClass {
   margin: 0;
-  font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
+  font-family:
+    'Inter',
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
   color: var(--mp-text);
-  /* Мягкий вертикальный градиент фона — как в MuiCssBaseline портала */
+  /* Плоский фон #F1F5F9 — как в макетах auth-страниц (без градиентов) */
   background-color: var(--mp-bg);
-  background-image: var(--mp-gradient-page);
-  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -76,63 +80,60 @@ body.kcBodyClass {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding: var(--mp-gutter) 0;
 }
 
-/* --- Шапка: фирменный градиент (как AppBar портала) ---------------------- */
-
+/* По макету в шапке страницы нет — брендинг внутри карточки (логотип «МП») */
 #kc-header.kcHeaderClass {
-  width: 100%;
-  padding: 14px var(--mp-gutter);
-  background-color: var(--mp-primary-dark);
-  background-image: var(--mp-gradient-brand);
-  color: var(--mp-surface);
-  box-shadow: 0 1px 3px rgba(21, 101, 192, 0.25);
-}
-
-#kc-header-wrapper.kcHeaderWrapperClass {
-  width: min(var(--mp-card-width), 100%);
-  margin: 0 auto;
-  padding: 0 var(--mp-card-padding);
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: var(--mp-surface);
+  display: none;
 }
 
 /* --- Карточка формы ------------------------------------------------------ */
 
 .kcFormCardClass {
   width: min(var(--mp-card-width), calc(100% - 2 * var(--mp-gutter)));
-  margin: 32px auto 48px;
+  /* auto-поля центрируют карточку в flex-обёртке (макет: по центру экрана) */
+  margin: auto;
   padding: var(--mp-card-padding);
   background: var(--mp-surface);
-  border-radius: var(--mp-radius);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--mp-border-soft);
+  border-radius: var(--mp-card-radius);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+}
+
+/* Регистрация — шире (макет auth-register.html: 440px) */
+body:has(#kc-register-form) .kcFormCardClass {
+  --mp-card-width: 440px;
 }
 
 .kcFormHeaderClass {
   margin: 0 0 20px;
 }
 
-/* Заголовок страницы + акцентная полоса под ним (как в SectionLayout) */
-#kc-page-title {
-  margin: 0;
-  font-size: 1.375rem;
+/* Логотип «МП» — бирюзовый квадрат над заголовком (макет auth-login.html) */
+.kcFormHeaderClass::before {
+  content: 'МП';
+  display: flex;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 16px;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 1.3;
-  color: var(--mp-primary-dark);
+  color: #fff;
+  background: linear-gradient(135deg, var(--mp-secondary), var(--mp-primary-dark));
+  border-radius: var(--mp-radius);
 }
 
-#kc-page-title::after {
-  content: '';
-  display: block;
-  width: 72px;
-  height: 4px;
-  margin-top: 10px;
-  border-radius: var(--mp-radius);
-  background-image: var(--mp-gradient-brand);
+/* Заголовок страницы — по центру, 18px (макет: h1 18px centered) */
+#kc-page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--mp-text);
 }
 
 /* Блок «вы вошли как …» (перезапуск входа) */
@@ -169,7 +170,7 @@ body.kcBodyClass {
   font-family: inherit;
   font-size: 0.8125rem;
   color: var(--mp-text-muted);
-  background: var(--mp-bg);
+  background: var(--mp-surface);
   border: 1px solid var(--mp-border-soft);
   border-radius: var(--mp-radius);
   cursor: pointer;
@@ -180,7 +181,7 @@ body.kcBodyClass {
 
 #kc-current-locale-link:hover {
   color: var(--mp-primary-dark);
-  background: #e3f2fd;
+  background: #ccfbf1; /* brand-100 */
 }
 
 /* Меню скрыто по умолчанию: menu-button-links.js раскрывает его inline
@@ -198,7 +199,7 @@ body.kcBodyClass {
   background: var(--mp-surface);
   border: 1px solid var(--mp-border-soft);
   border-radius: var(--mp-radius);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
 }
 
 .kcLocaleListItemClass {
@@ -216,20 +217,21 @@ a.kcLocaleItemClass {
 
 a.kcLocaleItemClass:hover {
   color: var(--mp-primary-dark);
-  background: rgba(25, 118, 210, 0.1);
+  background: rgba(13, 148, 136, 0.1);
 }
 
 /* --- Сообщения (ошибки/успех/предупреждение) ---------------------------- */
 
+/* По макету: мягкий фон + рамка 1px в цвет статуса (visual/_shared.css .alert) */
 .kcAlertClass {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   margin-bottom: 16px;
-  padding: 10px 14px;
-  font-size: 0.875rem;
-  border: 1px solid transparent;
-  border-left-width: 4px;
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  border: 1px solid;
   border-radius: var(--mp-radius);
 }
 
@@ -243,21 +245,20 @@ a.kcLocaleItemClass:hover {
 }
 
 .alert-error.kcAlertClass {
-  background: #fdecea;
-  border-left-color: var(--mp-error);
-  color: var(--mp-error-dark);
+  background: #fee2e2; /* error-soft */
+  border-color: var(--mp-error);
+  color: var(--mp-error);
 }
 
 .alert-error.kcAlertClass::before {
-  content: '×';
-  font-size: 1.1rem;
-  font-weight: 700;
-  line-height: 1.2;
+  content: '⚠️';
+  font-size: 0.9rem;
+  line-height: 1.3;
 }
 
 .alert-success.kcAlertClass {
-  background: #e8f5e9;
-  border-left-color: var(--mp-secondary-dark);
+  background: #dcfce7; /* success-soft */
+  border-color: #16a34a;
   color: var(--mp-success-dark);
 }
 
@@ -269,21 +270,20 @@ a.kcLocaleItemClass:hover {
 }
 
 .alert-warning.kcAlertClass {
-  background: #fff3e0;
-  border-left-color: var(--mp-warning-dark);
+  background: #fef3c7; /* warning-soft */
+  border-color: var(--mp-warning-dark);
   color: var(--mp-warning-dark);
 }
 
 .alert-warning.kcAlertClass::before {
-  content: '!';
-  font-size: 1rem;
-  font-weight: 700;
+  content: '⏱';
+  font-size: 0.9rem;
   line-height: 1.3;
 }
 
 .alert-info.kcAlertClass {
-  background: #e3f2fd;
-  border-left-color: var(--mp-primary);
+  background: #dbeafe; /* info-soft */
+  border-color: #2563eb;
   color: var(--mp-info-dark);
 }
 
@@ -306,9 +306,9 @@ a.kcLocaleItemClass:hover {
 }
 
 label.kcLabelClass {
-  font-size: 0.875rem;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--mp-text);
+  color: var(--mp-label);
 }
 
 /* Вход/сброс пароля: label — прямой ребёнок группы (без обёртки) */
@@ -322,9 +322,10 @@ select.kcInputClass,
 textarea.kcInputClass {
   display: block;
   width: 100%;
-  padding: 10px 12px;
+  min-height: 32px; /* --ctl-h по макету */
+  padding: 6px 12px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 14px;
   line-height: 1.4;
   color: var(--mp-text);
   background: var(--mp-surface);
@@ -336,13 +337,13 @@ textarea.kcInputClass {
 }
 
 input.kcInputClass::placeholder {
-  color: rgba(0, 0, 0, 0.38);
+  color: var(--mp-border);
 }
 
 input.kcInputClass:hover,
 select.kcInputClass:hover,
 textarea.kcInputClass:hover {
-  border-color: #90a4ae;
+  border-color: var(--mp-label);
 }
 
 input.kcInputClass:focus,
@@ -350,7 +351,7 @@ select.kcInputClass:focus,
 textarea.kcInputClass:focus {
   outline: none;
   border-color: var(--mp-primary);
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.18);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18);
 }
 
 input.kcInputClass[aria-invalid='true'],
@@ -360,7 +361,7 @@ textarea.kcInputClass[aria-invalid='true'] {
 
 input.kcInputClass[aria-invalid='true']:focus,
 textarea.kcInputClass[aria-invalid='true']:focus {
-  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.18);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
 }
 
 input.kcInputClass:disabled,
@@ -384,7 +385,7 @@ textarea.kcInputClass:disabled {
 .kcInputHelperTextBeforeClass,
 .kcInputHelperTextAfterClass {
   margin-top: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   line-height: 1.4;
   color: var(--mp-text-muted);
 }
@@ -410,7 +411,7 @@ textarea.kcInputClass:disabled {
   flex: none;
   padding: 0 12px;
   color: var(--mp-text-muted);
-  background: var(--mp-bg);
+  background: var(--mp-surface);
   border: 1px solid var(--mp-border);
   border-left: none;
   border-radius: 0 var(--mp-radius) var(--mp-radius) 0;
@@ -422,7 +423,7 @@ textarea.kcInputClass:disabled {
 
 .kcFormPasswordVisibilityButtonClass:hover {
   color: var(--mp-primary-dark);
-  background: #e3f2fd;
+  background: #ccfbf1; /* brand-100 */
 }
 
 .kcFormPasswordVisibilityButtonClass:focus-visible {
@@ -508,9 +509,10 @@ input[type='radio'] {
 
 .kcButtonClass {
   display: inline-block;
-  padding: 11px 16px;
+  min-height: 40px; /* --ctl-h-lg — кнопка действия (макет) */
+  padding: 10px 16px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
   text-align: center;
@@ -525,7 +527,6 @@ input[type='radio'] {
 
 .kcButtonLargeClass {
   padding: 12px 16px;
-  font-size: 1rem;
 }
 
 .kcButtonBlockClass {
@@ -542,31 +543,31 @@ input[type='radio'] {
 .kcButtonPrimaryClass:hover:not(:disabled) {
   background-color: var(--mp-primary-dark);
   border-color: var(--mp-primary-dark);
-  box-shadow: 0 1px 4px rgba(21, 101, 192, 0.4);
+  box-shadow: 0 1px 4px rgba(15, 118, 110, 0.4);
 }
 
 .kcButtonPrimaryClass:active:not(:disabled) {
-  background-color: #0d47a1;
-  border-color: #0d47a1;
+  background-color: #115e59; /* brand-800 */
+  border-color: #115e59;
   box-shadow: none;
 }
 
 .kcButtonPrimaryClass:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
   box-shadow: none;
 }
 
 /* Вторичная (passkey/другие способы) */
 .kcButtonDefaultClass {
-  color: var(--mp-text);
+  color: var(--mp-label);
   background-color: var(--mp-surface);
   border-color: var(--mp-border);
 }
 
 .kcButtonDefaultClass:hover:not(:disabled) {
   background-color: var(--mp-bg);
-  border-color: #90a4ae;
+  border-color: var(--mp-label);
 }
 
 .kcButtonSecondaryClass {
@@ -576,7 +577,7 @@ input[type='radio'] {
 }
 
 .kcButtonSecondaryClass:hover:not(:disabled) {
-  background-color: rgba(25, 118, 210, 0.08);
+  background-color: rgba(13, 148, 136, 0.08);
 }
 
 /* --- Информационный блок под формой (регистрация / назад ко входу) ------- */
@@ -645,21 +646,11 @@ button:focus-visible {
     --mp-gutter: 12px;
   }
 
-  .kcFormCardClass {
-    margin-top: 24px;
-    margin-bottom: 32px;
-  }
-
-  #kc-header {
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-
-  #kc-header-wrapper.kcHeaderWrapperClass {
-    font-size: 1rem;
+  .kcLoginClass {
+    padding: 12px 0;
   }
 
   #kc-page-title {
-    font-size: 1.25rem;
+    font-size: 17px;
   }
 }

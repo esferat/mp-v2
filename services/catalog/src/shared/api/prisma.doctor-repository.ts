@@ -129,6 +129,21 @@ export class PrismaDoctorRepository implements DoctorRepository {
     return toDomain(row);
   }
 
+  async updateSchedule(id: string, schedule: DoctorSchedule): Promise<DoctorListItem> {
+    // Только колонки расписания (10.4): ФИО/специализация/статус не трогаем
+    const row = await this.db.doctor.update({
+      where: { id },
+      data: {
+        scheduleStart: schedule.startTime,
+        scheduleEnd: schedule.endTime,
+        durationMinutes: schedule.durationMinutes,
+        workDays: schedule.workDays,
+      },
+      include: includeSpec,
+    });
+    return toDomain(row);
+  }
+
   async setPhoto(id: string, key: string | null): Promise<DoctorListItem | null> {
     try {
       const row = await this.db.doctor.update({

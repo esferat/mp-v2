@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, Stack, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { cachedCatalog, CATALOG_TAGS, getSpecializationsCached } from '@/shared/api/catalog-cache';
 import { DoctorsTable } from '@/widgets/doctors-table';
@@ -59,10 +59,11 @@ export default async function DoctorsAdminPage(): Promise<ReactNode> {
 
   return (
     <Box>
-      <Stack direction="row" sx={{ mb: 2, alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6">Врачи ({result.list.total})</Typography>
-        <DoctorControls />
-      </Stack>
+      <MpPageHeader
+        title="Врачи"
+        subtitle={`${result.list.total} записей · обновлено сегодня`}
+        actions={<DoctorControls />}
+      />
       <DoctorsTable initial={result.list} specializations={result.specializations} />
     </Box>
   );

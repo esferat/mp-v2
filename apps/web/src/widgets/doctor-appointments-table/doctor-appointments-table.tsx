@@ -57,7 +57,7 @@ export function DoctorAppointmentsTable({
     const range = periodRange(nextFilters.period);
     return {
       offset: nextOffset,
-      limit: LIMIT,
+      limit: pagination.limit,
       ...(nextFilters.status
         ? { status: nextFilters.status as NonNullable<AppointmentListQuery['status']> }
         : {}),
@@ -86,7 +86,7 @@ export function DoctorAppointmentsTable({
     return () => {
       cancelled = true;
     };
-  }, [offset, filters]);
+  }, [offset, pagination.limit, filters]);
 
   function setFilter(key: keyof Filters, value: string): void {
     const next: Filters = { ...filters, [key]: value };
@@ -129,6 +129,18 @@ export function DoctorAppointmentsTable({
           onChange={(event) => setFilter('status', event.target.value)}
           sx={{ minWidth: 180 }}
         />
+        {/* Сброс фильтров — нейтральная кнопка (visual/doctor-schedule.html) */}
+        <MpButton
+          color="neutral"
+          variant="outlined"
+          disabled={!filters.status && filters.period === PERIOD_OPTIONS[0]?.value}
+          onClick={() => {
+            setFilters({ period: PERIOD_OPTIONS[0]?.value ?? 'all' });
+            if (pagination.page !== 0) pagination.setPage(0);
+          }}
+        >
+          Сбросить
+        </MpButton>
       </Stack>
 
       {error ? (
@@ -142,6 +154,7 @@ export function DoctorAppointmentsTable({
           {
             key: 'slot',
             header: 'Дата и время',
+            mono: true,
             render: (item) => formatSlot(item.slot.localDate, item.slot.start),
           },
           { key: 'patientName', header: 'Пациент' },
@@ -186,17 +199,20 @@ export function DoctorAppointmentsTable({
         rows={data.items}
         rowKey={(item) => item.id}
         loading={loading}
+        pageSize={pagination.limit}
         {...(error ? { error } : {})}
         emptyTitle="Приёмов за период нет"
         emptyDescription="Измените период или статус"
+        footer={
+          data.total > 0 ? (
+            <PaginationBar
+              meta={{ ...pagination, total: data.total }}
+              onPageChange={(page) => pagination.setPage(page)}
+              onLimitChange={pagination.setLimit}
+            />
+          ) : undefined
+        }
       />
-
-      {data.total > 0 ? (
-        <PaginationBar
-          meta={{ ...pagination, total: data.total }}
-          onPageChange={(page) => pagination.setPage(page)}
-        />
-      ) : null}
 
       <VisitResultDialog
         appointment={dialogFor}

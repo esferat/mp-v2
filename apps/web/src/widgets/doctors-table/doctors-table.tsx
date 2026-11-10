@@ -11,15 +11,16 @@ import {
   Alert,
   Box,
   DataTable,
-  MpTextField,
-  MpSelect,
   LinkButton,
   MpAvatar,
+  MpButton,
+  MpSelect,
+  MpStatusBadge,
+  MpTextField,
   PaginationBar,
   Stack,
-  StatusBadge,
 } from '@/shared/ui';
-import { useDoctorsSearch, type DoctorsFilters } from '@/features/search-doctors';
+import { type DoctorsFilters, useDoctorsSearch } from '@/features/search-doctors';
 import { usePagination } from '@/shared/lib';
 
 const LIMIT = 10;
@@ -54,7 +55,7 @@ export function DoctorsTable({
   const pagination = usePagination({ limit: LIMIT, total });
   const searchState = useDoctorsSearch({
     offset: pagination.offset,
-    limit: LIMIT,
+    limit: pagination.limit,
     filters,
   });
 
@@ -83,8 +84,9 @@ export function DoctorsTable({
     <Box>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ mb: 2, maxWidth: 720, alignItems: { sm: 'flex-end' } }}
+        spacing={{ xs: 2, sm: 1.5 }}
+        useFlexGap
+        sx={{ mb: 2, flexWrap: 'wrap', alignItems: { sm: 'flex-end' } }}
       >
         <MpTextField
           label="Поиск по ФИО"
@@ -102,6 +104,7 @@ export function DoctorsTable({
         <MpSelect
           label="Специализация"
           placeholder="Все"
+          size="small"
           value={filters.specId ?? ''}
           options={specializations.map((spec) => ({ value: spec.id, label: spec.name }))}
           onChange={(event) => changeFilter('specId', event.target.value)}
@@ -110,11 +113,25 @@ export function DoctorsTable({
         <MpSelect
           label="Статус"
           placeholder="Все"
+          size="small"
           value={filters.status ?? ''}
           options={STATUS_OPTIONS}
           onChange={(event) => changeFilter('status', event.target.value)}
-          sx={{ minWidth: 150 }}
+          sx={{ minWidth: 200 }}
         />
+        {/* Сброс фильтров — нейтральная кнопка (visual/doctors-list.html) */}
+        <MpButton
+          color="neutral"
+          variant="outlined"
+          disabled={!searchActive && !filters.specId && !filters.status}
+          onClick={() => {
+            searchState.setSearch('');
+            setFilters({});
+            if (pagination.page !== 0) pagination.setPage(0);
+          }}
+        >
+          Сбросить
+        </MpButton>
       </Stack>
 
       {error && !searchActive ? (
@@ -144,12 +161,8 @@ export function DoctorsTable({
           {
             key: 'status',
             header: 'Статус',
-            render: (doctor) => (
-              <StatusBadge
-                label={doctor.status}
-                tone={doctor.status === 'ACTIVE' ? 'success' : 'neutral'}
-              />
-            ),
+            // Реестр статусов: ACTIVE (зелёный) / INACTIVE (серый) — точка + текст
+            render: (doctor) => <MpStatusBadge status={doctor.status} />,
           },
           {
             key: 'actions',
@@ -164,6 +177,7 @@ export function DoctorsTable({
         rows={view.items}
         rowKey={(doctor) => doctor.id}
         loading={searchState.loading}
+        pageSize={pagination.limit}
         {...(error && !searchActive ? { error } : {})}
         emptyTitle={filtered ? 'Ничего не найдено' : 'Врачей пока нет'}
         emptyDescription={
@@ -173,14 +187,16 @@ export function DoctorsTable({
         }
         emptyActionLabel={filtered ? undefined : 'Создать врача'}
         emptyActionHref={filtered ? undefined : '/admin/doctors/new'}
+        footer={
+          view.total > 0 ? (
+            <PaginationBar
+              meta={{ ...pagination, total: view.total }}
+              onPageChange={(page) => pagination.setPage(page)}
+              onLimitChange={pagination.setLimit}
+            />
+          ) : undefined
+        }
       />
-
-      {view.total > 0 ? (
-        <PaginationBar
-          meta={{ ...pagination, total: view.total }}
-          onPageChange={(page) => pagination.setPage(page)}
-        />
-      ) : null}
     </Box>
   );
 }

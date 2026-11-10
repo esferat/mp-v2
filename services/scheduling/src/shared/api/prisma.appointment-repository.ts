@@ -4,6 +4,7 @@ import type {
   AppointmentPageQuery,
   AppointmentRepository,
   CreateAppointmentData,
+  RescheduleData,
 } from '../../entities/appointment';
 import type { Prisma } from '../../generated/prisma/client';
 import { SlotTakenError } from '../model';
@@ -125,11 +126,67 @@ export class PrismaAppointmentRepository implements AppointmentRepository {
     }
   }
 
+  async reschedule(data: RescheduleData): Promise<Appointment | null> {
+    try {
+      // Атомарно: обновление ТОЛЬКО из активных статусов (гонка → P2025 → null)
+      // + строка журнала (10.3) в той же транзакции, что и перенос.
+      const row = await this.db.appointment.update({
+        where: { id: data.id, status: { in: ['SUBMITTED', 'APPROVED'] } },
+        data: {
+          doctorId: data.doctorId,
+          doctorName: data.doctorName,
+          specializationId: data.specializationId,
+          specializationName: data.specializationName,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          localDate: new Date(`${data.localDate}T00:00:00.000Z`),
+        },
+        include: includeVisitResult,
+      });
+
+      await this.db.appointmentRescheduleLog.create({
+        data: {
+          appointmentId: data.id,
+          previousStatus: data.log.previousStatus,
+          oldDoctorId: data.log.old.doctorId,
+          oldLocalDate: new Date(`${data.log.old.localDate}T00:00:00.000Z`),
+          oldStart: data.log.old.start,
+          oldEnd: data.log.old.end,
+          newDoctorId: data.doctorId,
+          newLocalDate: new Date(`${data.localDate}T00:00:00.000Z`),
+          newStart: data.startTime,
+          newEnd: data.endTime,
+          changedBy: data.log.changedBy,
+          ...(data.log.reason ? { reason: data.log.reason } : {}),
+        },
+      });
+
+      return toDomain(row);
+    } catch (error) {
+      // Дубль слота (частичный уникальный индекс) → 409 SLOT_TAKEN
+      if (isUniqueViolation(error)) {
+        throw new SlotTakenError();
+      }
+      // Запись уже обработана/удалена (гонка: статус сменился параллельно)
+      if (isRecordMissing(error)) return null;
+      throw error;
+    }
+  }
+
   async findPage(query: AppointmentPageQuery): Promise<{ items: Appointment[]; total: number }> {
     const where: Prisma.AppointmentWhereInput = {
       ...(query.status ? { status: query.status } : {}),
-      ...(query.specId ? { specializationId: query.specId } : {}),
-      ...(query.doctorId ? { doctorId: query.doctorId } : {}),
+      // Мультивыбор → IN; одиночные specId/doctorId — прежний путь
+      ...(query.specIds?.length
+        ? { specializationId: { in: [...query.specIds] } }
+        : query.specId
+          ? { specializationId: query.specId }
+          : {}),
+      ...(query.doctorIds?.length
+        ? { doctorId: { in: [...query.doctorIds] } }
+        : query.doctorId
+          ? { doctorId: query.doctorId }
+          : {}),
       ...(query.patientId ? { patientId: query.patientId } : {}),
       ...(query.from || query.to
         ? {

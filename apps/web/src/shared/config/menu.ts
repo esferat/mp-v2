@@ -29,6 +29,7 @@ export const MENU_ITEMS: readonly MenuItem[] = [
 
   // Кабинет врача (DOCTOR)
   { href: '/doctor/schedule', label: 'Мои приёмы', roles: ['DOCTOR'] },
+  { href: '/doctor/my-schedule', label: 'Моё расписание', roles: ['DOCTOR'] },
   { href: '/doctor/patients', label: 'Пациенты врача', roles: ['DOCTOR'] },
 ];
 

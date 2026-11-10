@@ -44,12 +44,39 @@ export interface CreateAppointmentData {
   localDate: string;
 }
 
+/** Данные переноса (10.3): обновление записи + строка журнала одной транзакцией. */
+export interface RescheduleData {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  specializationId: string;
+  specializationName: string;
+  /** HH:mm нового окна (конец уже вычислен по длительности врача). */
+  startTime: string;
+  endTime: string;
+  /** YYYY-MM-DD. */
+  localDate: string;
+  log: {
+    /** Статус ДО переноса (перенос статус не меняет). */
+    previousStatus: AppointmentStatus;
+    /** Снимок слота/врача до переноса (журнал, 10.3). */
+    old: { doctorId: string; localDate: string; start: string; end: string };
+    /** Кто инициировал (sub из токена — только ADMIN). */
+    changedBy: string;
+    reason?: string;
+  };
+}
+
 export interface AppointmentPageQuery {
   offset: number;
   limit: number;
   status?: AppointmentStatus;
   specId?: string;
+  /** Мультивыбор специализаций (админ-фильтр): IN по списку id. */
+  specIds?: readonly string[];
   doctorId?: string;
+  /** Мультивыбор врачей (админ-фильтр): IN по списку id. */
+  doctorIds?: readonly string[];
   patientId?: string;
   /** ISO-даты включительно. */
   from?: string;
@@ -82,14 +109,26 @@ export interface AppointmentRepository {
    * (5.3 AC: два запроса → один 201, второй 409).
    */
   create(data: CreateAppointmentData): Promise<Appointment>;
+
   findById(id: string): Promise<Appointment | null>;
+
   /** Обновление статуса/причины; null — запись исчезла (гонка удаления). */
   updateStatus(
     id: string,
     status: AppointmentStatus,
     declineReason?: string | null,
   ): Promise<Appointment | null>;
+
+  /**
+   * Перенос (10.3): обновляет слот/врача ТОЛЬКО из SUBMITTED/APPROVED —
+   * гонка статуса (запись уже обработана) → null; дубль слота гасится
+   * частичным уникальным индексом → SlotTakenError (409); строка журнала
+   * пишется в той же транзакции, что и обновление.
+   */
+  reschedule(data: RescheduleData): Promise<Appointment | null>;
+
   findPage(query: AppointmentPageQuery): Promise<{ items: Appointment[]; total: number }>;
+
   /**
    * Занятые слоты врачей за период (status <> CANCELLED) — для расчёта
    * свободных окон (5.2). Ключ строки: doctorId | localDate | startTime.
@@ -99,6 +138,7 @@ export interface AppointmentRepository {
     from: string,
     to: string,
   ): Promise<Array<{ doctorId: string; localDate: string; startTime: string }>>;
+
   /**
    * Денализация ФИО пациента в записи (4.6): списки/история отражают
    * ТЕКУЩЕЕ имя пациента (правило фиксируется в слайсе patient-sync);
@@ -106,6 +146,7 @@ export interface AppointmentRepository {
    * Возвращает число обновлённых записей.
    */
   updatePatientName(patientId: string, patientName: string): Promise<number>;
+
   /**
    * Пациенты врача (9.3): distinct из его записей, новые сверху.
    * lastVisit — последний приём в формате YYYY-MM-DD.
@@ -113,6 +154,7 @@ export interface AppointmentRepository {
   findDistinctPatients(
     doctorId: string,
   ): Promise<Array<{ patientId: string; patientName: string; lastVisit?: string }>>;
+
   /**
    * Связь «врач-пациент» (9.3): есть ли у врача действующая запись
    * с пациентом (APPROVED или COMPLETED). Отменённая/отклонённая запись

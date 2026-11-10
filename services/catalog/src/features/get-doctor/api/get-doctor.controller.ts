@@ -1,12 +1,15 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Req, UnauthorizedException } from '@nestjs/common';
+import type { RequestAuth } from '@mp/service-kit';
 import {
   DOCTOR_REPOSITORY,
-  PHOTO_URL_SIGNER,
   type DoctorListItem,
   type DoctorRepository,
+  PHOTO_URL_SIGNER,
   type PhotoUrlSigner,
 } from '../../../entities/doctor';
 import { getDoctor, getDoctorByUser } from '../app/get-doctor';
+
+type AuthedRequest = { auth?: RequestAuth };
 
 /** Адаптер входа: id из пути -> use-case (3.2); нет врача -> 404. */
 @Controller('api/catalog/doctors')
@@ -17,6 +20,18 @@ export class GetDoctorController {
     @Inject(PHOTO_URL_SIGNER)
     private readonly signer: PhotoUrlSigner,
   ) {}
+
+  /**
+   * Карточка СВОЕГО врача по токену (10.4, Этап 2.1): sub из токена,
+   * id не нужен — чужая карточка недоступна. Объявлен ДО ':id': односегментный
+   * 'me' иначе был бы схвачен параметрическим маршрутом.
+   */
+  @Get('me')
+  getMe(@Req() request: AuthedRequest): Promise<DoctorListItem> {
+    const auth = request.auth;
+    if (!auth) throw new UnauthorizedException('Требуется токен доступа');
+    return getDoctorByUser(this.repository, this.signer, auth.sub);
+  }
 
   @Get(':id')
   get(@Param('id') id: string): Promise<DoctorListItem> {

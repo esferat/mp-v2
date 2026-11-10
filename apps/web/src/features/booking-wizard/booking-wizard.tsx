@@ -17,6 +17,7 @@ import {
   MpDialogActions,
   MpDialogContent,
   MpSelect,
+  MpStepper,
   Stack,
   Typography,
   useToast,
@@ -148,10 +149,13 @@ export function BookingWizard({
 
   const specName = specializations.find((spec) => spec.id === specId)?.name ?? '';
 
+  // Шаги мастера (visual/booking.html): ① Спец-ия и дата → ② Врач и слот → ③ Подтверждение
+  const BOOKING_STEPS = ['Направление и дата', 'Врач и слот', 'Подтверждение'];
+
   return (
     <DatePickersProvider>
       <Stack spacing={2} sx={{ maxWidth: 900 }}>
-        <Typography color="text.secondary">Шаг {step} из 3</Typography>
+        <MpStepper steps={BOOKING_STEPS} activeStep={step - 1} showLabels />
 
         {stepError ? (
           <MpAlert severity="error" role="alert">

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { appointmentStatusSchema, type AppointmentListQuery } from '@mp/contracts';
-import { Alert, Box, Stack, Typography } from '@/shared/ui';
+import { type AppointmentListQuery, appointmentStatusSchema } from '@mp/contracts';
+import { Alert, Box, MpPageHeader, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { periodRange } from '@/shared/lib';
 import { DoctorAppointmentsTable } from '@/widgets/doctor-appointments-table';
@@ -43,13 +43,7 @@ export default async function DoctorSchedulePage({
 
     return (
       <Box>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{ mb: 2, alignItems: { sm: 'center' }, justifyContent: 'space-between' }}
-        >
-          <Typography variant="h6">Мои приёмы ({initial.total})</Typography>
-        </Stack>
+        <MpPageHeader title="Приёмы" subtitle={`Всего: ${initial.total}`} />
         <DoctorAppointmentsTable initial={initial} initialFilters={filters} />
       </Box>
     );

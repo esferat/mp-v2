@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
-import { useState, type ReactNode } from 'react';
-import { mpTokens } from '../../theme/tokens';
+import { type ReactNode, useState } from 'react';
 import { MpAppBar } from './MpAppBar';
 import { MpNavDrawer, type MpNavEntry } from './MpNavDrawer';
 import { MpPageHeader } from './MpPageHeader';
@@ -99,41 +98,59 @@ export function MpAppShell({
     onMiniChange?.(next);
   };
 
-  const sidebarWidth = collapsed ? mpTokens.layout.sidebarMini : mpTokens.layout.sidebar;
-
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: 'background.default',
+        // Каркас страницы — 1200px по центру (решение по вёрстке: рамка
+        // включает сайдбар, контент = 1200 − сайдбар). Шапка и меню живут
+        // ВНУТРИ рамки (макет .frame): sticky/в потоке, не fixed на viewport.
+        maxWidth: '1200px',
+        mx: 'auto',
+      }}
+    >
+      {/* Шапка sticky в потоке рамки — ширину задаёт каркас, не окно */}
       <MpAppBar
+        position="sticky"
+        sx={{ flexShrink: 0 }}
         logo={logo}
         title={title}
         subtitle={subtitle}
         actions={headerActions}
         onMenuClick={onMenuClick}
       />
-      <MpNavDrawer
-        items={menu}
-        selectedId={selectedId}
-        onSelect={onSelect}
-        mini={collapsed}
-        variant={drawerVariant}
-        open={drawerOpen}
-        onClose={onDrawerClose}
-        onToggleCollapse={toggleCollapse}
-      />
-      <Box
-        component="main"
-        sx={{
-          ml: { xs: 0, md: `${sidebarWidth}px` },
-          // Отступ под фиксированной шапкой (64px) + воздух до контента
-          pt: `${mpTokens.layout.header + 16}px`,
-          px: { xs: 2, md: 3 },
-          pb: 3,
-        }}
-      >
-        {pageTitle ? (
-          <MpPageHeader title={pageTitle} subtitle={pageSubtitle} actions={pageActions} />
-        ) : null}
-        {children}
+      {/* Строка растягивается на всю высоту каркаса — сайдбар идёт до низа
+          страницы (при коротком контенте — до низа окна) */}
+      <Box sx={{ display: 'flex', flex: 1, flexShrink: 0 }}>
+        <MpNavDrawer
+          items={menu}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          mini={collapsed}
+          variant={drawerVariant}
+          open={drawerOpen}
+          onClose={onDrawerClose}
+          onToggleCollapse={toggleCollapse}
+        />
+        <Box
+          component="main"
+          sx={{
+            // Сайдбар — в потоке flex-строки, отступов под фиксированную
+            // шапку больше не нужно (sticky занимает место в потоке)
+            flex: 1,
+            minWidth: 0,
+            px: { xs: 2, md: 3 },
+            pb: 3,
+          }}
+        >
+          {pageTitle ? (
+            <MpPageHeader title={pageTitle} subtitle={pageSubtitle} actions={pageActions} />
+          ) : null}
+          {children}
+        </Box>
       </Box>
     </Box>
   );

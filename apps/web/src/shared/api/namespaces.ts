@@ -10,10 +10,12 @@ import type {
   DoctorListQuery,
   DoctorListResponse,
   DoctorPatientList,
+  DoctorSchedule,
   EnterVisitResultRequest,
   FileDownload,
   FileListQuery,
   FileListResponse,
+  MeProfile,
   Patient,
   PatientListQuery,
   PatientListResponse,
@@ -21,10 +23,13 @@ import type {
   RegisterDoctorResponse,
   RegisterRequest,
   RegisterResponse,
+  RescheduleAppointmentRequest,
   SetAppointmentStatusRequest,
   SlotList,
   Specialization,
   UpdateDoctorRequest,
+  UpdateDoctorScheduleRequest,
+  UpdateMeRequest,
   UpdatePatientRequest,
   UpdateVisitResultRequest,
   VisitResult,
@@ -65,6 +70,11 @@ export function createApi(client: ApiClient) {
         client.get<DoctorListItem>(`/catalog/doctors/${encodeURIComponent(id)}`),
       updateDoctor: (id: string, body: UpdateDoctorRequest) =>
         client.put<DoctorListItem>(`/catalog/doctors/${encodeURIComponent(id)}`, body),
+      /** Карточка своего врача по токену (10.4: форма расписания). */
+      getMyDoctor: () => client.get<DoctorListItem>('/catalog/doctors/me'),
+      /** Расписание своей карточки (10.4): sub из токена, id не нужен. */
+      updateMySchedule: (body: UpdateDoctorScheduleRequest) =>
+        client.put<DoctorListItem>('/catalog/doctors/me/schedule', body, { noRetry: true }),
     },
 
     identity: {
@@ -74,6 +84,11 @@ export function createApi(client: ApiClient) {
       /** Сага врача с учётной записью DOCTOR (9.1, только ADMIN). */
       registerDoctor: (body: RegisterDoctorRequest) =>
         client.post<RegisterDoctorResponse>('/identity/doctors', body, { noRetry: true }),
+      /** Профиль текущего пользователя (10.1: email/ФИО из Keycloak). */
+      getMe: () => client.get<MeProfile>('/identity/me'),
+      /** Правка СВОИХ данных (10.1: занятый email → 409 с полем email). */
+      updateMe: (body: UpdateMeRequest) =>
+        client.patch<MeProfile>('/identity/me', body, { noRetry: true }),
     },
 
     patient: {
@@ -118,6 +133,9 @@ export function createApi(client: ApiClient) {
         });
         return client.get<SlotList>(`/scheduling/slots?${query.toString()}`);
       },
+      /** Расписание врача из копии (10.3 UI: недельный вид слотов переноса). */
+      getDoctorSchedule: (doctorId: string) =>
+        client.get<DoctorSchedule>(`/scheduling/doctors/${encodeURIComponent(doctorId)}/schedule`),
       /** Бронь слота (5.3): patientId — из токена или явно у админа. */
       bookAppointment: (body: BookAppointmentRequest) =>
         client.post<Appointment>('/scheduling/appointments', body, { noRetry: true }),
@@ -129,12 +147,22 @@ export function createApi(client: ApiClient) {
         });
         if (params.status) query.set('status', params.status);
         if (params.specId) query.set('specId', params.specId);
+        // Мультивыбор специализаций/врачей (админ-фильтры) — строка «id1,id2»
+        if (params.specIds?.length) query.set('specIds', params.specIds.join(','));
         if (params.doctorId) query.set('doctorId', params.doctorId);
+        if (params.doctorIds?.length) query.set('doctorIds', params.doctorIds.join(','));
         if (params.patientId) query.set('patientId', params.patientId);
         if (params.from) query.set('from', params.from);
         if (params.to) query.set('to', params.to);
         return client.get<AppointmentListResponse>(`/scheduling/appointments?${query.toString()}`);
       },
+      /** Перенос записи без смены статуса (10.3, только ADMIN). */
+      rescheduleAppointment: (id: string, body: RescheduleAppointmentRequest) =>
+        client.put<Appointment>(
+          `/scheduling/appointments/${encodeURIComponent(id)}/reschedule`,
+          body,
+          { noRetry: true },
+        ),
       /** История пациента (5.5): patientId сервер берёт из токена. */
       getMyAppointments: (params: AppointmentListQuery) => {
         const query = new URLSearchParams({

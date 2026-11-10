@@ -34,3 +34,28 @@ export const appointmentCancelledV1 = eventEnvelope(appointmentCancelledV1Payloa
 
 export const appointmentCompletedV1Payload = z.object(appointmentCore);
 export const appointmentCompletedV1 = eventEnvelope(appointmentCompletedV1Payload);
+
+/** Снимок врача/слота для события переноса (10.3). */
+const rescheduleSide = z.object({
+  doctorId: z.string().min(1),
+  doctorName: z.string().min(1),
+  specializationId: z.string().min(1),
+  specializationName: z.string().min(1),
+  slot: slotSchema,
+});
+
+/**
+ * 10.3 (Этап 2.1): перенос записи — статус НЕ меняется, старый/новый слот и
+ * врач в payload: журнал переносов и будущая проекция отчёта (перемещение
+ * счётчика из APPROVED по ячейке (специализация, месяц)).
+ */
+export const appointmentRescheduledV1Payload = z.object({
+  appointmentId: z.string().min(1),
+  patientId: z.string().min(1),
+  /** Статус ДО переноса (для счётчиков: двигаем только APPROVED). */
+  previousStatus: appointmentStatusSchema,
+  old: rescheduleSide,
+  new: rescheduleSide,
+  reason: z.string().min(1).optional(),
+});
+export const appointmentRescheduledV1 = eventEnvelope(appointmentRescheduledV1Payload);

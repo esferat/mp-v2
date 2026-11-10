@@ -47,7 +47,8 @@ const semantic = {
 /** Поверхности и цвета текста для двух режимов. */
 const surfaces = {
   light: {
-    background: { default: '#F6FDFC', paper: '#FFFFFF' },
+    // Фон страницы — серо-голубой (#F5F7FA, макеты _shared.css --bg), карточки белые
+    background: { default: '#F5F7FA', paper: '#FFFFFF' },
     text: { primary: '#0F172A', secondary: '#475569', disabled: 'rgba(15, 23, 42, 0.38)' },
     divider: '#E2E8F0',
   },

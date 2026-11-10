@@ -47,3 +47,32 @@ export const registerDoctorResponseSchema = z.object({
   doctorId: z.string().min(1),
 });
 export type RegisterDoctorResponse = z.infer<typeof registerDoctorResponseSchema>;
+
+/**
+ * GET /api/identity/me (10.1, Этап 2.1): профиль текущего пользователя —
+ * источник истины Keycloak (email, ФИО) + realm-роли из токена.
+ */
+export const meProfileSchema = z.object({
+  email: z.email(),
+  /** Без min(1): Keycloak может вернуть пустое ФИО (валидируем при сохранении). */
+  firstName: z.string(),
+  lastName: z.string(),
+  roles: z.array(z.string()),
+});
+export type MeProfile = z.infer<typeof meProfileSchema>;
+
+/**
+ * PATCH /api/identity/me (10.1): правка СВОИХ данных — только переданные
+ * поля; занятый email → 409 с полем `email` (проверка — единая функция
+ * identity, источник истины — Keycloak).
+ */
+export const updateMeSchema = z
+  .object({
+    email: z.email().optional(),
+    firstName: z.string().min(1).max(100).optional(),
+    lastName: z.string().min(1).max(100).optional(),
+  })
+  .refine((value) => Object.values(value).some((v) => v !== undefined), {
+    message: 'Укажите хотя бы одно поле для изменения',
+  });
+export type UpdateMeRequest = z.infer<typeof updateMeSchema>;

@@ -1,17 +1,18 @@
 import {
   ArgumentsHost,
   Catch,
+  type ExceptionFilter,
   HttpException,
   Inject,
   Injectable,
-  type ExceptionFilter,
 } from '@nestjs/common';
 import { getTraceId, LOGGER, type Logger } from '@mp/service-kit';
-import { DomainError } from '../../shared/model';
+import { ConflictError, DomainError, ValidationError } from '../../shared/model';
 
 /** Профиль HTTP-ответа без зависимости от типов express. */
 interface HttpResponseLike {
   status(code: number): HttpResponseLike;
+
   json(body: unknown): unknown;
 }
 
@@ -33,10 +34,16 @@ export class ApiErrorFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<HttpResponseLike>();
     const request = host.switchToHttp().getRequest<HttpRequestLike>();
-    const { status, code, message } = classify(exception);
+    const { status, code, message, field } = classify(exception);
     const requestId = getTraceId();
 
-    const payload = { code, message, ...(requestId ? { requestId } : {}) };
+    const payload = {
+      code,
+      message,
+      // Поле формы (10.1: занятый email → 409 с полем — клиент подсвечивает input)
+      ...(field ? { field } : {}),
+      ...(requestId ? { requestId } : {}),
+    };
 
     if (status >= 500) {
       this.log.error(
@@ -58,11 +65,25 @@ interface Classified {
   status: number;
   code: string;
   message: string;
+  /** Поле формы для ошибок валидации/конфликта (10.1). */
+  field?: string;
 }
 
 function classify(exception: unknown): Classified {
   if (exception instanceof DomainError) {
-    return { status: exception.status, code: exception.code, message: exception.message };
+    // Поле формы: ValidationError несёт field, ConflictError — details.field
+    const field =
+      exception instanceof ValidationError
+        ? exception.field
+        : exception instanceof ConflictError && typeof exception.details?.field === 'string'
+          ? exception.details.field
+          : undefined;
+    return {
+      status: exception.status,
+      code: exception.code,
+      message: exception.message,
+      ...(field ? { field } : {}),
+    };
   }
 
   if (exception instanceof HttpException) {

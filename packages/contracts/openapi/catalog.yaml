@@ -3,7 +3,7 @@ info:
   title: mp-v2 catalog
   version: 0.1.0
   description: "Сгенерировано из Zod-схем packages/contracts. Перегенерация: pnpm
-    gen. Сервис: catalog, операций: 8."
+    gen. Сервис: catalog, операций: 10."
 paths:
   /api/catalog/doctors:
     get:
@@ -81,7 +81,7 @@ paths:
       tags:
         - catalog
       summary: Создать врача с расписанием
-      parameters: []
+      parameters: [ ]
       requestBody:
         required: true
         content:
@@ -238,12 +238,86 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+  /api/catalog/doctors/me:
+    get:
+      tags:
+        - catalog
+      summary: "Карточка своего врача по токену (10.4: форма расписания)"
+      parameters: [ ]
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoctorListItem"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/catalog/doctors/me/schedule:
+    put:
+      tags:
+        - catalog
+      summary: "Расписание врача (10.4: врач правит своё, sub из токена)"
+      parameters: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDoctorScheduleRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoctorListItem"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
   /api/catalog/specializations:
     get:
       tags:
         - catalog
       summary: Список специализаций
-      parameters: []
+      parameters: [ ]
       responses:
         "200":
           description: "Успех:"
@@ -275,7 +349,7 @@ paths:
       tags:
         - catalog
       summary: Создать специализацию
-      parameters: []
+      parameters: [ ]
       requestBody:
         required: true
         content:
@@ -677,6 +751,37 @@ components:
         - firstName
         - lastName
         - specializationId
+        - schedule
+    UpdateDoctorScheduleRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        schedule:
+          type: object
+          properties:
+            startTime:
+              type: string
+              pattern: ^\d{2}:\d{2}$
+            endTime:
+              type: string
+              pattern: ^\d{2}:\d{2}$
+            durationMinutes:
+              type: integer
+              minimum: 5
+              maximum: 30
+            workDays:
+              minItems: 1
+              type: array
+              items:
+                type: integer
+                minimum: 1
+                maximum: 7
+          required:
+            - startTime
+            - endTime
+            - durationMinutes
+            - workDays
+      required:
         - schedule
     Specialization:
       $schema: https://json-schema.org/draft/2020-12/schema

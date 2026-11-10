@@ -1,6 +1,6 @@
 import { Stack } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { MpStatusBadge, mpStatuses, type MpStatus } from './MpStatusBadge';
+import { type MpStatus, MpStatusBadge, mpStatuses } from './MpStatusBadge';
 
 const allStatuses = Object.keys(mpStatuses) as MpStatus[];
 
@@ -12,12 +12,10 @@ const meta = {
   args: {
     status: 'SUBMITTED',
     size: 'small',
-    variant: 'filled',
   },
   argTypes: {
     status: { control: 'select', options: allStatuses },
     size: { control: 'radio', options: ['small', 'medium'] },
-    variant: { control: 'radio', options: ['filled', 'outlined'] },
     label: { control: 'text' },
   },
 } satisfies Meta<typeof MpStatusBadge>;
@@ -27,7 +25,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
 
-/** Записи (design/appointments.md): жёлтый/зелёный/красный/серый. */
+/** Записи (appointments.md, visual/_shared.css `.status`): точка + текст. */
 export const Appointments: Story = {
   render: () => (
     <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
@@ -48,7 +46,7 @@ export const DoctorSchedule: Story = {
       <MpStatusBadge status="DECLINED" />
       <MpStatusBadge status="CANCELLED" />
       <MpStatusBadge status="COMPLETED" />
-      <MpStatusBadge status="COMPLETED" label="✓ Есть" variant="outlined" />
+      <MpStatusBadge status="COMPLETED" label="✓ Есть" />
     </Stack>
   ),
 };
@@ -75,13 +73,11 @@ export const All: Story = {
   ),
 };
 
-export const Variants: Story = {
+export const Sizes: Story = {
   render: () => (
     <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-      <MpStatusBadge status="APPROVED" variant="filled" />
-      <MpStatusBadge status="APPROVED" variant="outlined" />
+      <MpStatusBadge status="SUBMITTED" />
       <MpStatusBadge status="SUBMITTED" size="medium" />
-      <MpStatusBadge status="SUBMITTED" variant="outlined" size="medium" />
       <MpStatusBadge status="FAILED" label="Свой текст" />
     </Stack>
   ),

@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { AppointmentListResponse, Specialization } from '@mp/contracts';
+import type { Appointment, AppointmentListResponse, Specialization } from '@mp/contracts';
 import {
-  Box,
   AppModal,
+  Box,
   DataTable,
   DatePickersProvider,
   DateRangeField,
   FormField,
   MpAlert,
+  MpAutocomplete,
   MpButton,
   MpSelect,
   MpStatusBadge,
@@ -20,6 +21,7 @@ import {
 import { formatSlot, usePagination } from '@/shared/lib';
 import { browserApi } from '@/shared/api/browser';
 import { ApiError, toApiError } from '@/shared/api/errors';
+import { RescheduleDialog } from '@/features/reschedule-appointment';
 
 /**
  * Управление записями (5.4, design/appointments.md): фильтры в URL,
@@ -39,8 +41,10 @@ const STATUS_OPTIONS = [
 
 type Filters = {
   status?: string;
-  specId?: string;
-  doctorId?: string;
+  /** Мультивыбор специализаций (поиск + мультиселект в одном поле). */
+  specIds?: string[];
+  /** Мультивыбор врачей (поиск + мультиселект в одном поле). */
+  doctorIds?: string[];
   from?: string;
   to?: string;
 };
@@ -54,13 +58,18 @@ export function AppointmentsTable({
   initial: AppointmentListResponse;
   initialFilters: Filters;
   specializations: Pick<Specialization, 'id' | 'name'>[];
-  doctors: Array<{ id: string; name: string }>;
+  /** Справочник врачей: специализация нужна для загрузки слотов (10.3). */
+  doctors: Array<{ id: string; name: string; specializationId?: string }>;
 }): React.JSX.Element {
   const toast = useToast();
   const [data, setData] = useState<AppointmentListResponse>(initial);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  /** Принудительное обновление списка (после переноса, 10.3). */
+  const [reloadKey, setReloadKey] = useState(0);
+  /** Открытый диалог переноса (10.3). */
+  const [rescheduleFor, setRescheduleFor] = useState<Appointment | null>(null);
   /** Причина отказа: {appointmentId} — открыт диалог. */
   const [declineFor, setDeclineFor] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState('');
@@ -78,10 +87,10 @@ export function AppointmentsTable({
     browserApi.scheduling
       .getAppointments({
         offset,
-        limit: LIMIT,
+        limit: pagination.limit,
         ...(filters.status ? { status: filters.status as never } : {}),
-        ...(filters.specId ? { specId: filters.specId } : {}),
-        ...(filters.doctorId ? { doctorId: filters.doctorId } : {}),
+        ...(filters.specIds?.length ? { specIds: filters.specIds } : {}),
+        ...(filters.doctorIds?.length ? { doctorIds: filters.doctorIds } : {}),
         ...(filters.from ? { from: filters.from } : {}),
         ...(filters.to ? { to: filters.to } : {}),
       })
@@ -99,7 +108,7 @@ export function AppointmentsTable({
     return () => {
       cancelled = true;
     };
-  }, [offset, filters]);
+  }, [offset, pagination.limit, filters, reloadKey]);
 
   function setFilter(key: keyof Filters, value: string): void {
     const next: Filters = { ...filters, [key]: value || undefined };
@@ -120,10 +129,10 @@ export function AppointmentsTable({
       // Обновление списка: refetch текущей страницы (invalidation, 5.4 AC)
       const response = await browserApi.scheduling.getAppointments({
         offset,
-        limit: LIMIT,
+        limit: pagination.limit,
         ...(filters.status ? { status: filters.status as never } : {}),
-        ...(filters.specId ? { specId: filters.specId } : {}),
-        ...(filters.doctorId ? { doctorId: filters.doctorId } : {}),
+        ...(filters.specIds?.length ? { specIds: filters.specIds } : {}),
+        ...(filters.doctorIds?.length ? { doctorIds: filters.doctorIds } : {}),
         ...(filters.from ? { from: filters.from } : {}),
         ...(filters.to ? { to: filters.to } : {}),
       });
@@ -139,42 +148,92 @@ export function AppointmentsTable({
   return (
     <Box>
       <DatePickersProvider>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{ mb: 2, alignItems: { sm: 'flex-end' } }}
-        >
-          <DateRangeField
-            from={filters.from ? new Date(filters.from) : null}
-            to={filters.to ? new Date(filters.to) : null}
-            onFromChange={(value) =>
-              setFilter('from', value ? value.toISOString().slice(0, 10) : '')
-            }
-            onToChange={(value) => setFilter('to', value ? value.toISOString().slice(0, 10) : '')}
-          />
-          <MpSelect
-            label="Статус"
-            placeholder="Все"
-            value={filters.status ?? ''}
-            options={STATUS_OPTIONS}
-            onChange={(event) => setFilter('status', event.target.value)}
-            sx={{ minWidth: 180 }}
-          />
-          <MpSelect
+        {/* Фильтры по строкам: период+статус+сброс, затем специализация, затем врач */}
+        <Stack spacing={2} sx={{ mb: 2 }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            useFlexGap
+            sx={{ alignItems: { sm: 'flex-end' }, flexWrap: 'wrap' }}
+          >
+            {/* Период: два поля в фиксированной ширине (иначе fullWidth занимает всю строку) */}
+            <Box sx={{ display: 'flex', gap: 2, width: 360, flexShrink: 0 }}>
+              <DateRangeField
+                from={filters.from ? new Date(filters.from) : null}
+                to={filters.to ? new Date(filters.to) : null}
+                onFromChange={(value) =>
+                  setFilter('from', value ? value.toISOString().slice(0, 10) : '')
+                }
+                onToChange={(value) =>
+                  setFilter('to', value ? value.toISOString().slice(0, 10) : '')
+                }
+              />
+            </Box>
+            <MpSelect
+              label="Статус"
+              placeholder="Все"
+              size="small"
+              fullWidth={false}
+              value={filters.status ?? ''}
+              options={STATUS_OPTIONS}
+              onChange={(event) => setFilter('status', event.target.value)}
+              sx={{ minWidth: 180 }}
+            />
+            {/* Сброс фильтров — нейтральная кнопка (visual/appointments.html) */}
+            <MpButton
+              color="neutral"
+              variant="outlined"
+              size={'medium'}
+              disabled={
+                !filters.status &&
+                !filters.specIds?.length &&
+                !filters.doctorIds?.length &&
+                !filters.from &&
+                !filters.to
+              }
+              onClick={() => {
+                setFilters({});
+                if (pagination.page !== 0) pagination.setPage(0);
+              }}
+            >
+              Сбросить
+            </MpButton>
+          </Stack>
+
+          {/* Специализация: поиск + мультиселект (как у врача, максимум 10 опций) */}
+          <MpAutocomplete
             label="Специализация"
-            placeholder="Все"
-            value={filters.specId ?? ''}
-            options={specializations.map((spec) => ({ value: spec.id, label: spec.name }))}
-            onChange={(event) => setFilter('specId', event.target.value)}
-            sx={{ minWidth: 180 }}
+            multiple
+            disableCloseOnSelect
+            placeholder="Поиск по названию"
+            options={specializations}
+            getOptionLabel={(spec) => spec.name}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            value={specializations.filter((spec) => filters.specIds?.includes(spec.id))}
+            onChange={(_, value) => {
+              const ids = value.map((spec) => spec.id);
+              setFilters((prev) => ({ ...prev, specIds: ids.length > 0 ? ids : undefined }));
+              if (pagination.page !== 0) pagination.setPage(0);
+            }}
+            sx={{ maxWidth: 480 }}
           />
-          <MpSelect
+
+          {/* Врач: поиск + мультиселект в одном поле (видно максимум 10 опций) */}
+          <MpAutocomplete
             label="Врач"
-            placeholder="Все"
-            value={filters.doctorId ?? ''}
-            options={doctors.map((doctor) => ({ value: doctor.id, label: doctor.name }))}
-            onChange={(event) => setFilter('doctorId', event.target.value)}
-            sx={{ minWidth: 180 }}
+            multiple
+            disableCloseOnSelect
+            placeholder="Поиск по ФИО"
+            options={doctors}
+            getOptionLabel={(doctor) => doctor.name}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            value={doctors.filter((doctor) => filters.doctorIds?.includes(doctor.id))}
+            onChange={(_, value) => {
+              const ids = value.map((doctor) => doctor.id);
+              setFilters((prev) => ({ ...prev, doctorIds: ids.length > 0 ? ids : undefined }));
+              if (pagination.page !== 0) pagination.setPage(0);
+            }}
+            sx={{ maxWidth: 480 }}
           />
         </Stack>
       </DatePickersProvider>
@@ -193,6 +252,7 @@ export function AppointmentsTable({
           {
             key: 'slot',
             header: 'Время приёма',
+            mono: true,
             render: (item) => formatSlot(item.slot.localDate, item.slot.start),
           },
           {
@@ -209,10 +269,11 @@ export function AppointmentsTable({
                 <Stack direction="row" spacing={1}>
                   {item.status === 'SUBMITTED' ? (
                     <>
+                      {/* По макету (appointments.html): «✓ Принять» — contained, «✗ Отклонить» — danger */}
                       <MpButton
                         size="small"
-                        variant="outlined"
-                        color="success"
+                        variant="contained"
+                        color="primary"
                         loading={busy}
                         onClick={() =>
                           void runAction(
@@ -225,11 +286,11 @@ export function AppointmentsTable({
                           )
                         }
                       >
-                        Принять
+                        ✓ Принять
                       </MpButton>
                       <MpButton
                         size="small"
-                        variant="outlined"
+                        variant="contained"
                         color="error"
                         disabled={busy}
                         onClick={() => {
@@ -237,20 +298,32 @@ export function AppointmentsTable({
                           setDeclineFor(item.id);
                         }}
                       >
-                        Отклонить
+                        ✗ Отклонить
                       </MpButton>
                     </>
                   ) : null}
                   {item.status === 'SUBMITTED' || item.status === 'APPROVED' ? (
-                    <MpButton
-                      size="small"
-                      variant="text"
-                      color="inherit"
-                      disabled={busy}
-                      onClick={() => setCancelFor(item.id)}
-                    >
-                      Отменить
-                    </MpButton>
+                    <>
+                      {/* Перенос (10.3): врач/дата/слот без смены статуса */}
+                      <MpButton
+                        size="small"
+                        variant="text"
+                        color="neutral"
+                        disabled={busy}
+                        onClick={() => setRescheduleFor(item)}
+                      >
+                        Перенести
+                      </MpButton>
+                      <MpButton
+                        size="small"
+                        variant="text"
+                        color="inherit"
+                        disabled={busy}
+                        onClick={() => setCancelFor(item.id)}
+                      >
+                        Отменить
+                      </MpButton>
+                    </>
                   ) : null}
                 </Stack>
               );
@@ -260,17 +333,20 @@ export function AppointmentsTable({
         rows={data.items}
         rowKey={(item) => item.id}
         loading={loading}
+        pageSize={pagination.limit}
         {...(error ? { error } : {})}
         emptyTitle="Записей нет"
         emptyDescription="За выбранными фильтрами ничего не найдено"
+        footer={
+          data.total > 0 ? (
+            <PaginationBar
+              meta={{ ...pagination, total: data.total }}
+              onPageChange={(page) => pagination.setPage(page)}
+              onLimitChange={pagination.setLimit}
+            />
+          ) : undefined
+        }
       />
-
-      {data.total > 0 ? (
-        <PaginationBar
-          meta={{ ...pagination, total: data.total }}
-          onPageChange={(page) => pagination.setPage(page)}
-        />
-      ) : null}
 
       {/* Отклонение: причина обязательна (канон §1, 5.4) */}
       <AppModal
@@ -323,6 +399,20 @@ export function AppointmentsTable({
       >
         Пациент увидит отмену в истории. Действие необратимо: повторная отмена невозможна.
       </AppModal>
+
+      {/* Перенос (10.3): условный монтирование — состояние сбрасывается при открытии */}
+      {rescheduleFor ? (
+        <RescheduleDialog
+          appointment={rescheduleFor}
+          doctors={doctors}
+          open
+          onClose={() => setRescheduleFor(null)}
+          onChanged={() => {
+            setRescheduleFor(null);
+            setReloadKey((key) => key + 1);
+          }}
+        />
+      ) : null}
     </Box>
   );
 }

@@ -65,14 +65,22 @@ export type UpdateDoctorData = CreateDoctorData;
 export interface DoctorRepository {
   /** Страница списка + общее число (для пагинации, AC 3.1). */
   findPage(query: DoctorListQuery): Promise<{ items: DoctorListItem[]; total: number }>;
+
   /** Карточка по id (форма редактирования, 3.2); null — не найден. */
   findById(id: string): Promise<DoctorListItem | null>;
+
   /** Карточка по Keycloak sub (9.1: идемпотентность саги); null — нет привязки. */
   findByUserId(userId: string): Promise<DoctorListItem | null>;
+
   /** Создание; существование специализации проверяет use-case (400, не FK-500). */
   create(data: CreateDoctorData): Promise<DoctorListItem>;
+
   /** Обновление по id; отсутствие — P2025, use-case проверяет заранее (404). */
   update(id: string, data: UpdateDoctorData): Promise<DoctorListItem>;
+
+  /** Обновление расписания своей карточки (10.4: self-service врача). */
+  updateSchedule(id: string, schedule: DoctorSchedule): Promise<DoctorListItem>;
+
   /** Установка/очистка ключа фото (3.4); null — врача нет. */
   setPhoto(id: string, key: string | null): Promise<DoctorListItem | null>;
 }

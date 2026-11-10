@@ -16,6 +16,11 @@ export interface MpPageHeaderProps {
    * Кнопка «‹ Назад» слева от заголовка (макеты: «‹ Врачи», «← К списку»).
    */
   onBack?: () => void;
+  /**
+   * Маршрут «назад» — вариант для серверных страниц (RSC): рендерит `<a href>`,
+   * обработчик не нужен. Взаимоисключим с `onBack` (приоритет — `onBack`).
+   */
+  backHref?: string;
   /** Подпись кнопки назад. @default 'Назад' */
   backLabel?: ReactNode;
   /** Хлебные крошки над заголовком («Врачи / Иванов Иван Иванов»). */
@@ -56,6 +61,7 @@ export function MpPageHeader({
   subtitle,
   actions,
   onBack,
+  backHref,
   backLabel = 'Назад',
   breadcrumbs,
   children,
@@ -82,13 +88,13 @@ export function MpPageHeader({
         sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between' }}
       >
         <Stack direction="row" spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
-          {onBack ? (
+          {onBack || backHref ? (
             <Button
               size="small"
               color="neutral"
               variant="text"
               startIcon={<ChevronLeftIcon />}
-              onClick={onBack}
+              {...(onBack ? { onClick: onBack } : { href: backHref })}
               sx={{ flexShrink: 0 }}
             >
               {backLabel}

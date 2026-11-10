@@ -63,7 +63,7 @@ export function HistoryTable({
     browserApi.scheduling
       .getMyAppointments({
         offset,
-        limit: LIMIT,
+        limit: pagination.limit,
         ...(filters.status ? { status: filters.status as never } : {}),
         ...(filters.specId ? { specId: filters.specId } : {}),
       })
@@ -81,7 +81,7 @@ export function HistoryTable({
     return () => {
       cancelled = true;
     };
-  }, [offset, filters]);
+  }, [offset, pagination.limit, filters]);
 
   function changeFilter(key: keyof Filters, value: string): void {
     const next: Filters = { ...filters, [key]: value || undefined };
@@ -112,6 +112,18 @@ export function HistoryTable({
           onChange={(event) => changeFilter('specId', event.target.value)}
           sx={{ minWidth: 200 }}
         />
+        {/* Сброс фильтров — нейтральная кнопка (visual/history.html) */}
+        <MpButton
+          color="neutral"
+          variant="outlined"
+          disabled={!filters.status && !filters.specId}
+          onClick={() => {
+            setFilters({});
+            if (pagination.page !== 0) pagination.setPage(0);
+          }}
+        >
+          Сбросить
+        </MpButton>
       </Stack>
 
       {error ? (
@@ -125,6 +137,7 @@ export function HistoryTable({
           {
             key: 'slot',
             header: 'Дата и время',
+            mono: true,
             render: (item) => formatSlot(item.slot.localDate, item.slot.start),
           },
           { key: 'doctorName', header: 'Врач' },
@@ -156,19 +169,22 @@ export function HistoryTable({
         rows={data.items}
         rowKey={(item) => item.id}
         loading={loading}
+        pageSize={pagination.limit}
         {...(error ? { error } : {})}
         emptyTitle="Записей пока нет"
         emptyDescription="Запишитесь к врачу, история появится здесь"
         emptyActionLabel="Записаться к врачу"
         emptyActionHref="/cabinet/record"
+        footer={
+          data.total > 0 ? (
+            <PaginationBar
+              meta={{ ...pagination, total: data.total }}
+              onPageChange={(page) => pagination.setPage(page)}
+              onLimitChange={pagination.setLimit}
+            />
+          ) : undefined
+        }
       />
-
-      {data.total > 0 ? (
-        <PaginationBar
-          meta={{ ...pagination, total: data.total }}
-          onPageChange={(page) => pagination.setPage(page)}
-        />
-      ) : null}
 
       {/* Результат приёма — только чтение: правка пациенту недоступна (5.5/9.2) */}
       <VisitResultDialog

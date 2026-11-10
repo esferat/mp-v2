@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { BookingWizard } from '@/features/booking-wizard';
 
@@ -17,9 +17,10 @@ export default async function RecordPage(): Promise<ReactNode> {
 
     return (
       <Box>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Запись к врачу
-        </Typography>
+        <MpPageHeader
+          title="Запись к врачу"
+          subtitle="Направление и дата → врач и слот → подтверждение"
+        />
         <BookingWizard specializations={specializations} />
       </Box>
     );

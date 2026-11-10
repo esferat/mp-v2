@@ -1,5 +1,10 @@
 import type { Logger } from '@mp/service-kit';
-import { EmailExistsError, type NewUser, type UserDirectory } from '../../entities/registration';
+import {
+  EmailExistsError,
+  type NewUser,
+  type UserDirectory,
+  type UserProfileData,
+} from '../../entities/registration';
 import type { IdentityEnv } from '../config';
 import { ClientCredentialsTokenCache } from './token-cache';
 
@@ -100,6 +105,102 @@ export class KeycloakAdminClient implements UserDirectory {
         await sleep(delay);
       }
     }
+  }
+
+  async findProfile(userId: string): Promise<UserProfileData | null> {
+    const user = await this.fetchUser(userId);
+    if (!user || !user.email) return null;
+    return {
+      email: user.email,
+      firstName: user.firstName ?? '',
+      lastName: user.lastName ?? '',
+    };
+  }
+
+  async updateProfile(
+    userId: string,
+    patch: { email?: string; firstName?: string; lastName?: string },
+  ): Promise<UserProfileData> {
+    const current = await this.fetchUser(userId);
+    if (!current) {
+      throw new Error(`Пользователь ${userId} не найден в Keycloak`);
+    }
+
+    const currentEmail = current.email ?? '';
+    if (!currentEmail && !patch.email) {
+      throw new Error(`У пользователя ${userId} не задан email`);
+    }
+    const nextEmail = patch.email?.trim() || currentEmail;
+    if (nextEmail !== currentEmail) {
+      // Единая проверка уникальности (10.1): источник истины — Keycloak
+      const taken = await this.findByEmail(nextEmail);
+      if (taken && taken !== userId) throw new EmailExistsError(nextEmail);
+    }
+
+    const nextFirstName = patch.firstName ?? current.firstName ?? '';
+    const nextLastName = patch.lastName ?? current.lastName ?? '';
+
+    const url = new URL(
+      `${this.env.KEYCLOAK_INTERNAL_URL}/admin/realms/${this.env.KEYCLOAK_REALM}/users/${userId}`,
+    );
+    const response = await this.request(url, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        // NB: username НЕ меняем — Keycloak 26 отвечает 400 на смену username
+        // через Admin API. Логин по новому email работает: loginWithEmailAllowed
+        // включён в realm (проверено), username остаётся прежним.
+        username: current.username ?? nextEmail,
+        email: nextEmail,
+        firstName: nextFirstName,
+        lastName: nextLastName,
+        enabled: current.enabled ?? true,
+        emailVerified: current.emailVerified ?? true,
+        ...(current.attributes ? { attributes: current.attributes } : {}),
+      }),
+    });
+
+    // Keycloak сам отвечает 409 при занятом username/email (гонка с другим запросом)
+    if (response.status === 409) throw new EmailExistsError(nextEmail);
+    if (!response.ok) {
+      throw new Error(`Keycloak admin update user: HTTP ${response.status}`);
+    }
+
+    this.log.debug({ userId, emailChanged: nextEmail !== currentEmail }, 'профиль обновлён');
+    return {
+      email: nextEmail,
+      firstName: nextFirstName,
+      lastName: nextLastName,
+    };
+  }
+
+  /** Пользователь Keycloak по id (= sub из токена); null — не найден. */
+  private async fetchUser(userId: string): Promise<{
+    username?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    enabled?: boolean;
+    emailVerified?: boolean;
+    attributes?: Record<string, string[]>;
+  } | null> {
+    const url = new URL(
+      `${this.env.KEYCLOAK_INTERNAL_URL}/admin/realms/${this.env.KEYCLOAK_REALM}/users/${userId}`,
+    );
+    const response = await this.request(url, { method: 'GET' });
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error(`Keycloak admin user: HTTP ${response.status}`);
+    }
+    return (await response.json()) as {
+      username?: string;
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      enabled?: boolean;
+      emailVerified?: boolean;
+      attributes?: Record<string, string[]>;
+    };
   }
 
   /**

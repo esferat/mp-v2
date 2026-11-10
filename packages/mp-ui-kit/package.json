@@ -4,12 +4,12 @@
   "description": "mp-ui-kit — дизайн-система и библиотека компонентов на базе Material UI",
   "type": "module",
   "main": "./dist/mp-ui-kit.cjs",
-  "module": "./dist/mp-ui-kit.js",
+  "module": "./dist/es/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "import": "./dist/mp-ui-kit.js",
+      "import": "./dist/es/index.js",
       "require": "./dist/mp-ui-kit.cjs"
     },
     "./package.json": "./package.json"

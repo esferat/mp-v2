@@ -57,6 +57,15 @@ export const updateDoctorSchema = createDoctorSchema.extend({
 });
 export type UpdateDoctorRequest = z.infer<typeof updateDoctorSchema>;
 
+/**
+ * Self-service расписание врача (10.4, Этап 2.1): правит только расписание
+ * СВОЕЙ карточки — врач резолвится по sub из токена, id в запросе нет.
+ */
+export const updateDoctorScheduleSchema = z.object({
+  schedule: doctorScheduleSchema,
+});
+export type UpdateDoctorScheduleRequest = z.infer<typeof updateDoctorScheduleSchema>;
+
 export const specializationSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),

@@ -56,5 +56,8 @@ export { default as MuiTableRow } from '@mui/material/TableRow';
 export { default as MuiTablePagination } from '@mui/material/TablePagination';
 export { default as MuiFormControlLabel } from '@mui/material/FormControlLabel';
 export { default as MuiSwitch } from '@mui/material/Switch';
+// Хук брейкпоинта (мобильный режим AppShell): только из shared/ui —
+// прямой импорт @mui/* вне слоя блокируется линтом (fsd.md §6, п.8)
+export { default as useMediaQuery } from '@mui/material/useMediaQuery';
 export { default as MuiTab } from '@mui/material/Tab';
 export { default as MuiTabs } from '@mui/material/Tabs';

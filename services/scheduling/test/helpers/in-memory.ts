@@ -1,10 +1,11 @@
-import type { Patient, PaginationQuery } from '@mp/contracts';
+import type { PaginationQuery, Patient } from '@mp/contracts';
 import type {
   Appointment,
   AppointmentContext,
   AppointmentPageQuery,
   AppointmentRepository,
   CreateAppointmentData,
+  RescheduleData,
 } from '../../src/entities/appointment';
 import type {
   CreateVisitResultData,
@@ -86,6 +87,16 @@ export class InMemoryScheduleCopyRepository implements ScheduleCopyRepository {
 
 export class InMemoryAppointmentRepository implements AppointmentRepository {
   readonly rows = new Map<string, Appointment>();
+  /** Журнал переносов (10.3) — как в таблице appointment_reschedule_log. */
+  readonly rescheduleLogs: Array<{
+    appointmentId: string;
+    previousStatus: Appointment['status'];
+    old: RescheduleData['log']['old'];
+    changedBy: string;
+    reason?: string;
+    newLocalDate: string;
+    newStart: string;
+  }> = [];
   private seq = 0;
 
   async create(data: CreateAppointmentData): Promise<Appointment> {
@@ -126,6 +137,45 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
     };
     if (declineReason === null) delete (updated as { declineReason?: string }).declineReason;
     this.rows.set(id, updated);
+    return updated;
+  }
+
+  async reschedule(data: RescheduleData): Promise<Appointment | null> {
+    const row = this.rows.get(data.id);
+    // Как в Prisma: UPDATE только из активных статусов (гонка → null)
+    if (!row || (row.status !== 'SUBMITTED' && row.status !== 'APPROVED')) return null;
+
+    // Частичный уникальный индекс (doctorId, localDate, start) WHERE <> CANCELLED
+    const duplicate = [...this.rows.values()].find(
+      (other) =>
+        other.id !== data.id &&
+        other.doctorId === data.doctorId &&
+        other.localDate === data.localDate &&
+        other.startTime === data.startTime &&
+        other.status !== 'CANCELLED',
+    );
+    if (duplicate) throw new SlotTakenError();
+
+    const updated: Appointment = {
+      ...row,
+      doctorId: data.doctorId,
+      doctorName: data.doctorName,
+      specializationId: data.specializationId,
+      specializationName: data.specializationName,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      localDate: data.localDate,
+    };
+    this.rows.set(data.id, updated);
+    this.rescheduleLogs.push({
+      appointmentId: data.id,
+      previousStatus: data.log.previousStatus,
+      old: data.log.old,
+      changedBy: data.log.changedBy,
+      ...(data.log.reason ? { reason: data.log.reason } : {}),
+      newLocalDate: data.localDate,
+      newStart: data.startTime,
+    });
     return updated;
   }
 
@@ -220,14 +270,6 @@ export class InMemoryVisitResultRepository implements VisitResultRepository {
 
   constructor(private readonly appointments: InMemoryAppointmentRepository) {}
 
-  /** Результат в записи — как include в Prisma (списки/история отдают visitResult). */
-  private attach(appointmentId: string, result: VisitResult): void {
-    this.appointments.attachVisitResult(appointmentId, {
-      conclusion: result.conclusion,
-      ...(result.recommendations ? { recommendations: result.recommendations } : {}),
-    });
-  }
-
   async findByAppointmentId(appointmentId: string): Promise<VisitResult | null> {
     return this.rows.get(appointmentId) ?? null;
   }
@@ -265,6 +307,14 @@ export class InMemoryVisitResultRepository implements VisitResultRepository {
     this.rows.set(appointmentId, next);
     this.attach(appointmentId, next);
     return next;
+  }
+
+  /** Результат в записи — как include в Prisma (списки/история отдают visitResult). */
+  private attach(appointmentId: string, result: VisitResult): void {
+    this.appointments.attachVisitResult(appointmentId, {
+      conclusion: result.conclusion,
+      ...(result.recommendations ? { recommendations: result.recommendations } : {}),
+    });
   }
 }
 

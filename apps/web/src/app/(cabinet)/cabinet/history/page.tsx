@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import type { AppointmentStatus } from '@mp/contracts';
 import { appointmentStatusSchema } from '@mp/contracts';
-import { Alert, Box, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { getSpecializationsCached } from '@/shared/api/catalog-cache';
 import { HistoryTable } from '@/widgets/history-table';
@@ -48,9 +48,7 @@ export default async function HistoryPage({
 
     return (
       <Box>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          История записей
-        </Typography>
+        <MpPageHeader title="История записей" subtitle={`Всего: ${initial.total}`} />
         <HistoryTable
           initial={initial}
           initialFilters={filters}

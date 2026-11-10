@@ -9,6 +9,7 @@ import type {
   DoctorListItem,
   DoctorListQuery,
   DoctorRepository,
+  DoctorSchedule,
   UpdateDoctorData,
 } from '../src/entities/doctor';
 import type { OutboxWriter } from '../src/shared/model';
@@ -179,6 +180,14 @@ export class InMemoryDoctorRepository implements DoctorRepository {
     const row = { ...prev } as { photoKey?: string };
     if (key === null) delete row.photoKey;
     else row.photoKey = key;
+    this.rows.set(id, row);
+    return row;
+  }
+
+  async updateSchedule(id: string, schedule: DoctorSchedule): Promise<DoctorListItem> {
+    const prev = this.rows.get(id);
+    if (!prev) throw new Error(`врач ${id} не существует (настройка теста)`);
+    const row: DoctorListItem = { ...prev, schedule };
     this.rows.set(id, row);
     return row;
   }

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Box, Container, LinkButton, Paper, Stack, Typography, theme } from '@/shared/ui';
+import { Box, Container, LinkButton, Paper, Stack, theme, Typography } from '@/shared/ui';
+import { Header } from '@/widgets/layout';
 import { auth } from '@/shared/config/auth';
 import { homeRedirectFor } from '@/shared/lib';
 
@@ -48,78 +49,81 @@ export default async function HomePage(): Promise<ReactNode> {
   if (landing) redirect(landing);
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ py: 6 }}>
-        {/* Герой: фирменный градиент вместо плоского заголовка */}
-        <Box
-          sx={{
-            p: 4,
-            mb: 3,
-            borderRadius: 2,
-            backgroundImage: theme.gradients.brand,
-            color: 'common.white',
-            boxShadow: 3,
-          }}
-        >
-          <Typography variant="h4" component="h1" gutterBottom>
-            Медицинский портал
-          </Typography>
-          <Typography>
-            Запись к врачу, документы и история приёмов. Разделы портала открываются после входа и
-            зависят от роли.
-          </Typography>
-          {!session ? (
-            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-              <LinkButton
-                href="/auth/login"
-                variant="contained"
+    <>
+      <Header />
+      <Container maxWidth="md">
+        <Box sx={{ py: 6 }}>
+          {/* Герой: фирменный градиент вместо плоского заголовка */}
+          <Box
+            sx={{
+              p: 4,
+              mb: 3,
+              borderRadius: 2,
+              backgroundImage: theme.gradients.brand,
+              color: 'common.white',
+              boxShadow: 3,
+            }}
+          >
+            <Typography variant="h4" component="h1" gutterBottom>
+              Медицинский портал
+            </Typography>
+            <Typography>
+              Запись к врачу, документы и история приёмов. Разделы портала открываются после входа и
+              зависят от роли.
+            </Typography>
+            {!session ? (
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <LinkButton
+                  href="/auth/login"
+                  variant="contained"
+                  sx={{
+                    bgcolor: 'common.white',
+                    color: 'primary.dark',
+                    '&:hover': { bgcolor: 'grey.100' },
+                  }}
+                >
+                  Войти
+                </LinkButton>
+                <LinkButton
+                  href="/auth/register"
+                  variant="outlined"
+                  sx={{ borderColor: 'common.white', color: 'common.white' }}
+                >
+                  Регистрация
+                </LinkButton>
+              </Stack>
+            ) : null}
+          </Box>
+
+          {/* Карточки направлений: цветной акцент слева из палитры темы */}
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            {FEATURES.map((feature) => (
+              <Paper
+                key={feature.title}
+                elevation={1}
                 sx={{
-                  bgcolor: 'common.white',
-                  color: 'primary.dark',
-                  '&:hover': { bgcolor: 'grey.100' },
+                  flex: 1,
+                  p: 2.5,
+                  borderTop: 4,
+                  // цвет акцента — токен палитры темы ('primary' | 'secondary' | 'warning')
+                  borderColor: `${feature.accent}.main`,
+                  transition: 'transform 0.15s ease',
+                  '&:hover': { transform: 'translateY(-2px)' },
+                  // цветной «подсвет» заголовка — токен палитры темы
+                  '& .feature-title': { color: `${feature.accent}.dark` },
                 }}
               >
-                Войти
-              </LinkButton>
-              <LinkButton
-                href="/auth/register"
-                variant="outlined"
-                sx={{ borderColor: 'common.white', color: 'common.white' }}
-              >
-                Регистрация
-              </LinkButton>
-            </Stack>
-          ) : null}
+                <Typography variant="subtitle1" className="feature-title" sx={{ fontWeight: 700 }}>
+                  {feature.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {feature.description}
+                </Typography>
+              </Paper>
+            ))}
+          </Stack>
         </Box>
-
-        {/* Карточки направлений: цветной акцент слева из палитры темы */}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          {FEATURES.map((feature) => (
-            <Paper
-              key={feature.title}
-              elevation={1}
-              sx={{
-                flex: 1,
-                p: 2.5,
-                borderTop: 4,
-                // цвет акцента — токен палитры темы ('primary' | 'secondary' | 'warning')
-                borderColor: `${feature.accent}.main`,
-                transition: 'transform 0.15s ease',
-                '&:hover': { transform: 'translateY(-2px)' },
-                // цветной «подсвет» заголовка — токен палитры темы
-                '& .feature-title': { color: `${feature.accent}.dark` },
-              }}
-            >
-              <Typography variant="subtitle1" className="feature-title" sx={{ fontWeight: 700 }}>
-                {feature.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {feature.description}
-              </Typography>
-            </Paper>
-          ))}
-        </Stack>
-      </Box>
-    </Container>
+      </Container>
+    </>
   );
 }

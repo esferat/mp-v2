@@ -4,6 +4,7 @@ import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import { forwardRef } from 'react';
+import { mpTokens } from '../../theme/tokens';
 
 export interface MpStepperProps {
   /** Подписи шагов («Направление и дата», «Врач и время», «Подтверждение»). */
@@ -12,66 +13,60 @@ export interface MpStepperProps {
   activeStep: number;
   /** Клик по шагу (нелинейный мастер; без обработчика шаги не кликабельны). */
   onStepClick?: (index: number) => void;
-  /** Показывать подписи шагов. @default false (макеты: только точки «○───●───○») */
+  /** Показывать подписи шагов. @default false */
   showLabels?: boolean;
   /** Ориентация. @default 'horizontal' */
   orientation?: 'horizontal' | 'vertical';
-  /** Размер точек. @default 'small' */
+  /** Размер кружков с номерами. @default 'small' */
   size?: 'small' | 'medium';
   className?: string;
 }
 
-/** Точка шага: ○ — предстоит, ● — активен, ✓ — пройден (макеты booking.md, auth-signup.md). */
+/**
+ * Кружок с номером шага (visual/_shared.css `.step .num`): 24px круг,
+ * номер внутри; активный — brand-600/белый, пройденный — brand-100/brand-800,
+ * предстоящий — neutral-200/neutral-600.
+ */
 function StepDot({
   active,
   completed,
+  index,
   diameter,
 }: {
   active: boolean;
   completed: boolean;
+  index: number;
   diameter: number;
 }) {
   return (
     <Box
+      aria-hidden
       sx={{
+        width: diameter,
+        height: diameter,
+        borderRadius: '50%',
         display: 'flex',
-        color: active || completed ? 'primary.main' : 'text.disabled',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        fontSize: diameter >= 28 ? 13 : 12,
+        fontWeight: 700,
+        backgroundColor: completed
+          ? mpTokens.brand[100]
+          : active
+            ? 'primary.main'
+            : mpTokens.neutral[200],
+        color: completed ? mpTokens.brand[800] : active ? '#FFFFFF' : mpTokens.neutral[600],
       }}
     >
-      <svg
-        width={diameter}
-        height={diameter}
-        viewBox="0 0 16 16"
-        aria-hidden
-        focusable="false"
-        style={{ display: 'block', flexShrink: 0 }}
-      >
-        <circle
-          cx="8"
-          cy="8"
-          r="6"
-          fill={active || completed ? 'currentColor' : 'transparent'}
-          stroke="currentColor"
-          strokeWidth="2"
-        />
-        {completed ? (
-          <path
-            d="M5 8.2l2 2 4-4"
-            stroke="#fff"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-        ) : null}
-      </svg>
+      {index + 1}
     </Box>
   );
 }
 
 /**
- * Индикатор шагов мастера (booking.md, auth-signup.md): компактные точки
- * «○───●───○» с разделителем, опционально — подписи шагов.
+ * Индикатор шагов мастера (booking.md, auth-signup.md): нумерованные
+ * кружки «①──②──③» с разделителями, опционально — подписи шагов.
  *
  * @example
  * <MpStepper steps={['Направление и дата', 'Врач и время', 'Подтверждение']} activeStep={0} />
@@ -88,7 +83,7 @@ export const MpStepper = forwardRef<HTMLDivElement, MpStepperProps>(function MpS
   },
   ref,
 ) {
-  const diameter = size === 'small' ? 14 : 18;
+  const diameter = size === 'medium' ? 28 : 24;
 
   return (
     <Stepper
@@ -97,7 +92,10 @@ export const MpStepper = forwardRef<HTMLDivElement, MpStepperProps>(function MpS
       activeStep={activeStep}
       orientation={orientation}
       sx={{
-        '& .MuiStepConnector-line': { borderColor: 'divider' },
+        // Разделители: 2px, gray; за пройденным шагом — брендовый (booking.html)
+        '& .MuiStepConnector-line': { height: 2, borderColor: mpTokens.neutral[200] },
+        '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line, & .MuiStep-root.Mui-completed + .MuiStepConnector-root .MuiStepConnector-line':
+          { borderColor: 'primary.main' },
         '& .MuiStepLabel-label': {
           color: 'text.secondary',
           '&.Mui-active, &.Mui-completed': { color: 'text.primary' },
@@ -108,7 +106,9 @@ export const MpStepper = forwardRef<HTMLDivElement, MpStepperProps>(function MpS
       {steps.map((label, index) => {
         const active = index === activeStep;
         const completed = index < activeStep;
-        const dot = <StepDot active={active} completed={completed} diameter={diameter} />;
+        const dot = (
+          <StepDot active={active} completed={completed} index={index} diameter={diameter} />
+        );
 
         return (
           <Step key={label} completed={completed} active={active}>

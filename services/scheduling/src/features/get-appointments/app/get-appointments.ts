@@ -1,5 +1,5 @@
 import type { AppointmentListQuery, AppointmentListResponse } from '@mp/contracts';
-import { toApiAppointment, type AppointmentRepository } from '../../../entities/appointment';
+import { type AppointmentRepository, toApiAppointment } from '../../../entities/appointment';
 
 /**
  * Список записей с фильтрами и пагинацией (5.4): админский обзор —
@@ -13,8 +13,17 @@ export async function getAppointments(
     offset: query.offset,
     limit: query.limit,
     ...(query.status ? { status: query.status } : {}),
-    ...(query.specId ? { specId: query.specId } : {}),
-    ...(query.doctorId ? { doctorId: query.doctorId } : {}),
+    // Мультивыбор специализаций/врачей приоритетнее одиночных doctorId/specId
+    ...(query.specIds?.length
+      ? { specIds: query.specIds }
+      : query.specId
+        ? { specId: query.specId }
+        : {}),
+    ...(query.doctorIds?.length
+      ? { doctorIds: query.doctorIds }
+      : query.doctorId
+        ? { doctorId: query.doctorId }
+        : {}),
     ...(query.patientId ? { patientId: query.patientId } : {}),
     ...(query.from ? { from: query.from } : {}),
     ...(query.to ? { to: query.to } : {}),

@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, Stack, Typography } from '@/shared/ui';
+import { Alert, Box, LinkButton, MpPageHeader, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
-import { LinkButton } from '@/shared/ui';
 import { DoctorPatientsTable } from '@/widgets/doctor-patients-table';
 
 export const metadata: Metadata = { title: 'Пациенты врача — Кабинет' };
@@ -18,16 +17,15 @@ export default async function DoctorPatientsPage(): Promise<ReactNode> {
 
     return (
       <Box>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{ mb: 2, alignItems: { sm: 'center' }, justifyContent: 'space-between' }}
-        >
-          <Typography variant="h6">Пациенты и документы ({initial.total})</Typography>
-          <LinkButton href="/doctor/schedule" variant="outlined" color="inherit">
-            К приёмам
-          </LinkButton>
-        </Stack>
+        <MpPageHeader
+          title="Пациенты и документы"
+          subtitle={`Всего: пациентов ${initial.total}`}
+          actions={
+            <LinkButton href="/doctor/schedule" variant="outlined" color="inherit">
+              ← К приёмам
+            </LinkButton>
+          }
+        />
         <DoctorPatientsTable initial={initial} />
       </Box>
     );

@@ -193,8 +193,9 @@ export const Loading: Story = {
 
 export const PaginationOnly: Story = {
   render: () => (
-    <Box sx={{ maxWidth: 720 }}>
+    <Box sx={{ maxWidth: 720, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
       <MpTablePagination
+        component="div"
         count={128}
         page={2}
         rowsPerPage={25}

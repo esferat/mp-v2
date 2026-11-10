@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { PatientListResponse } from '@mp/contracts';
-import { Alert, Box, DataTable, MpTextField, MpAvatar, PaginationBar } from '@/shared/ui';
+import { Alert, Box, DataTable, MpAvatar, MpTextField, PaginationBar } from '@/shared/ui';
 import { fetchPatientsPage, usePatientsSearch } from '@/features/search-patients';
 import { usePagination } from '@/shared/lib';
 import { toApiError } from '@/shared/api/errors';
@@ -26,15 +26,15 @@ export function PatientsTable({ initial }: { initial: PatientListResponse }): Re
   const error = searchActive ? searchState.error : pageError;
   const requestId = searchActive ? searchState.requestId : undefined;
 
-  async function changePage(nextPage: number): Promise<void> {
-    pagination.setPage(nextPage);
+  async function loadPage(nextPage: number, nextLimit: number, syncUrl: boolean): Promise<void> {
+    if (syncUrl) pagination.setPage(nextPage);
     setPageLoading(true);
     setPageError(null);
     try {
       const response = await fetchPatientsPage({
         ...(searchActive ? { search: searchState.search.trim() } : {}),
-        offset: nextPage * pagination.limit,
-        limit: pagination.limit,
+        offset: nextPage * nextLimit,
+        limit: nextLimit,
       });
       setPageData(response);
     } catch (caught) {
@@ -92,21 +92,28 @@ export function PatientsTable({ initial }: { initial: PatientListResponse }): Re
         rows={view.items}
         rowKey={(patient) => patient.id}
         loading={loading}
+        pageSize={pagination.limit}
         {...(error ? { error } : {})}
         emptyTitle={searchActive ? 'Ничего не найдено' : 'Пациентов пока нет'}
         emptyDescription={
           searchActive ? 'Измените запрос поиска' : 'Пациенты появятся после регистрации'
         }
+        footer={
+          view.total > 0 ? (
+            <PaginationBar
+              meta={{ ...pagination, total: view.total }}
+              onPageChange={(page) => {
+                void loadPage(page, pagination.limit, true);
+              }}
+              onLimitChange={(limit) => {
+                // Смена размера страницы: URL (page → 1-я) + перезагрузка данных
+                pagination.setLimit(limit);
+                void loadPage(0, limit, false);
+              }}
+            />
+          ) : undefined
+        }
       />
-
-      {view.total > 0 ? (
-        <PaginationBar
-          meta={{ ...pagination, total: view.total }}
-          onPageChange={(page) => {
-            void changePage(page);
-          }}
-        />
-      ) : null}
     </Box>
   );
 }

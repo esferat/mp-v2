@@ -1,56 +1,70 @@
 import type { ReactNode } from 'react';
-import { Box, Container, Typography, theme } from '@/shared/ui';
-import { Sidebar } from './sidebar';
+import { auth } from '@/shared/config/auth';
+import { menuForSection, type MenuRole } from '@/shared/config';
+import { AppShell } from './app-shell';
+
+/** Группа меню по разделу (visual/layout.html: «Управление» / кабинеты). */
+const GROUP_TITLES = {
+  '/admin': 'Управление',
+  '/cabinet': 'Личный кабинет',
+  '/doctor': 'Кабинет врача',
+} as const;
+
+/** Подзаголовок шапки по разделу (visual/layout.html: «MP Admin-Panel · ADMIN»). */
+const SECTION_SUBTITLES = {
+  '/admin': 'MP Admin-Panel',
+  '/cabinet': 'Личный кабинет пациента',
+  '/doctor': 'Кабинет врача',
+} as const;
+
+/** «Профиль» в меню пользователя — роль-specific маршрут (profile.md: 10.1). */
+const PROFILE_HREFS = {
+  '/admin': '/admin/profile',
+  '/cabinet': '/cabinet/profile',
+  '/doctor': '/doctor/profile',
+} as const;
 
 /**
- * Каркас страницы раздела (2.1): заголовок + сайдбар + контент.
- * Route group ((admin)/(cabinet)/(doctor)) оборачивает страницы этим layout'ом.
- * Адаптив: на мобильных сайдбар уходит сверху (базово, см. design/layout.md).
- *
- * NB: sx в Server Components — только объект (функцию Next не пропустит
- * через RSC-границу в клиентский MUI-компонент): градиент акцентной полосы
- * берётся строкой из импорта theme.
+ * Каркас раздела (2.1) — MpAppShell по макету visual/layout.html: шапка 64px
+ * (логотип, название, меню пользователя, «Выйти») + боковое меню с иконками
+ * + контент. Route group ((admin)/(cabinet)/(doctor)) оборачивает страницы
+ * этим layout'ом. Пункты меню фильтруются по ролям сессии на сервере
+ * (пункт чужой роли не попадает в HTML — 2.1). Профиль — только в меню
+ * пользователя (шапка), в боковом меню его нет.
  */
 export async function SectionLayout({
   section,
-  title,
   description,
   children,
 }: {
   section: '/admin' | '/cabinet' | '/doctor';
-  title: string;
+  title?: string;
   description?: string;
   children: ReactNode;
 }): Promise<React.JSX.Element> {
+  const session = await auth();
+  const roles = (session?.user.roles ?? []) as MenuRole[];
+  const items = menuForSection(roles, section);
+
+  const role = roles[0];
+  const email = session?.user.email ?? '';
+
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {title}
-        </Typography>
-        {/* Акцентная полоса под заголовком — градиент бренда (токен темы) */}
-        <Box
-          sx={{
-            width: 72,
-            height: 4,
-            borderRadius: 2,
-            backgroundImage: theme.gradients.brand,
-            mb: description ? 1.5 : 0,
-          }}
-        />
-        {description ? <Typography color="text.secondary">{description}</Typography> : null}
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: 3,
-          alignItems: 'flex-start',
-        }}
-      >
-        <Sidebar section={section} title={title} />
-        <Box sx={{ flexGrow: 1, width: '100%' }}>{children}</Box>
-      </Box>
-    </Container>
+    <AppShell
+      items={items}
+      groupTitle={GROUP_TITLES[section]}
+      subtitle={[SECTION_SUBTITLES[section], role].filter(Boolean).join(' · ') || description}
+      user={
+        email
+          ? {
+              name: email,
+              ...(role ? { subtitle: role } : {}),
+              profileHref: PROFILE_HREFS[section],
+            }
+          : undefined
+      }
+    >
+      {children}
+    </AppShell>
   );
 }

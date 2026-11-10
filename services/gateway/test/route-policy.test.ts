@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROUTE_POLICIES, allowsRoles, findPolicy } from '../src/entities/authorization';
+import { allowsRoles, findPolicy, ROUTE_POLICIES } from '../src/entities/authorization';
 
 describe('findPolicy', () => {
   it('находит публичный маршрут /api/auth', () => {
@@ -82,6 +82,27 @@ describe('findPolicy', () => {
       'ADMIN',
       'DOCTOR',
     ]);
+  });
+
+  // 10.3 (Этап 2.1): перенос — только ADMIN; ':id'-политика не перехватывает соседние маршруты
+  it('перенос записи — только ADMIN; :id-путь не перехватывает status/cancel', () => {
+    const reschedule = findPolicy('PUT', '/api/scheduling/appointments/ap-1/reschedule');
+    expect(reschedule?.roles).toEqual(['ADMIN']);
+    expect(reschedule?.path).toBe('/api/scheduling/appointments/:id/reschedule');
+    expect(allowsRoles(reschedule, ['DOCTOR'])).toBe(false);
+    expect(allowsRoles(reschedule, ['ADMIN'])).toBe(true);
+
+    // соседние маршруты остаются на своих политиках (ADMIN, DOCTOR)
+    expect(findPolicy('PUT', '/api/scheduling/appointments/ap-1/status')?.roles).toEqual([
+      'ADMIN',
+      'DOCTOR',
+    ]);
+    expect(findPolicy('PUT', '/api/scheduling/appointments/ap-1/cancel')?.roles).toEqual([
+      'ADMIN',
+      'DOCTOR',
+    ]);
+    // GET списка записей политикой переноса не задет
+    expect(findPolicy('GET', '/api/scheduling/appointments')?.roles).toEqual(['ADMIN']);
   });
 });
 

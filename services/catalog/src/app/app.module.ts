@@ -1,13 +1,13 @@
-import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import {
   applyTraceIdMiddleware,
   AuthModule,
+  createPrismaOutboxStore,
   JwtAuthGuard,
   LoggerModule,
-  RabbitModule,
   OutboxModule,
-  createPrismaOutboxStore,
+  RabbitModule,
 } from '@mp/service-kit';
 import { PrismaService, SharedApiModule } from '../shared/api';
 import { ApiErrorFilter, RequestLogInterceptor } from './kernel';
@@ -19,6 +19,7 @@ import { GetSpecializationsModule } from '../features/get-specializations';
 import { HealthFeatureModule } from '../features/health';
 import { CreateDoctorModule } from '../features/create-doctor';
 import { UpdateDoctorModule } from '../features/update-doctor';
+import { UpdateMyScheduleModule } from '../features/update-my-schedule';
 import { GetDoctorModule } from '../features/get-doctor';
 import { SetDoctorPhotoModule } from '../features/set-doctor-photo';
 
@@ -59,6 +60,7 @@ const env = getCatalogEnv();
     HealthFeatureModule,
     CreateDoctorModule,
     UpdateDoctorModule,
+    UpdateMyScheduleModule,
     GetDoctorModule,
     SetDoctorPhotoModule,
     GetSpecializationsModule,

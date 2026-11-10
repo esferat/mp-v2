@@ -7,30 +7,50 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
+
 const dirname =
   typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 const external = (id: string) =>
   /^(react($|\/)|react-dom($|\/)|react\/jsx-runtime|@mui\/|@emotion\/|date-fns($|\/))/.test(id);
+
+/** Имена глобалов для IIFE/UMD-сборок (наследие lib-режима). */
+const globals = {
+  react: 'React',
+  'react-dom': 'ReactDOM',
+  'react/jsx-runtime': 'jsxRuntime',
+} as const;
 export default defineConfig({
   plugins: [react()],
   build: {
     lib: {
       entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
       name: 'MpUiKit',
-      formats: ['es', 'cjs'],
-      fileName: (format) => `mp-ui-kit.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
       external,
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-          'react/jsx-runtime': 'jsxRuntime',
+      output: [
+        {
+          // ESM — по файлу на модуль (preserveModules): серверные компоненты Next
+          // (RSC) импортируют только hook-free модули (MpPageHeader, MpCard…);
+          // единый бандл тянет useState клиентских компонентов в RSC-граф,
+          // и Next роняет сборку web («module that depends on useState»).
+          format: 'es',
+          dir: 'dist/es',
+          preserveModules: true,
+          preserveModulesRoot: 'src',
+          entryFileNames: '[name].js',
+          globals,
         },
-      },
+        {
+          // CJS — классический одиночный бандл (require-консьюмеры).
+          format: 'cjs',
+          dir: 'dist',
+          entryFileNames: 'mp-ui-kit.cjs',
+          globals,
+        },
+      ],
     },
     sourcemap: true,
     emptyOutDir: true,

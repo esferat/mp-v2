@@ -3,14 +3,14 @@ info:
   title: mp-v2 identity
   version: 0.1.0
   description: "Сгенерировано из Zod-схем packages/contracts. Перегенерация: pnpm
-    gen. Сервис: identity, операций: 2."
+    gen. Сервис: identity, операций: 4."
 paths:
   /api/identity/register:
     post:
       tags:
         - identity
       summary: "Регистрация (сага: Keycloak + карточка пациента)"
-      parameters: []
+      parameters: [ ]
       requestBody:
         required: true
         content:
@@ -53,7 +53,7 @@ paths:
       tags:
         - identity
       summary: Сага врача с учётной записью DOCTOR (9.1, только ADMIN)
-      parameters: []
+      parameters: [ ]
       requestBody:
         required: true
         content:
@@ -87,6 +87,73 @@ paths:
                 $ref: "#/components/schemas/ApiError"
         "409":
           description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/identity/me:
+    get:
+      tags:
+        - identity
+      summary: "Профиль текущего пользователя (10.1: email/ФИО из Keycloak)"
+      parameters: [ ]
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeProfile"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      tags:
+        - identity
+      summary: "Правка своих данных (10.1: email/ФИО, занятый email → 409)"
+      parameters: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMeRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeProfile"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
           content:
             application/json:
               schema:
@@ -255,3 +322,40 @@ components:
       required:
         - userId
         - doctorId
+    MeProfile:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        firstName:
+          type: string
+        lastName:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+      required:
+        - email
+        - firstName
+        - lastName
+        - roles
+    UpdateMeRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100

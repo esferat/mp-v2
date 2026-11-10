@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, Stack, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Stack, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { auth } from '@/shared/config/auth';
 import { PatientForm } from '@/widgets/patient-form';
@@ -31,9 +31,10 @@ export default async function ProfilePage(): Promise<ReactNode> {
 
     return (
       <Box>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Профиль
-        </Typography>
+        <MpPageHeader
+          title="Профиль"
+          subtitle={`${patient.lastName} ${patient.firstName} · Пациент (USER)`}
+        />
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           spacing={3}

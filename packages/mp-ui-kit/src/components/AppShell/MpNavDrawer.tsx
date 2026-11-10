@@ -174,7 +174,13 @@ export function MpNavDrawer({
       sx={{
         width: variant === 'permanent' || open ? effectiveWidth : 0,
         flexShrink: 0,
+        // permanent: корень — flex-колонка, бумага (flex: 1) тянется
+        // до конца страницы вместе со строкой каркаса
+        ...(variant === 'permanent' ? { display: 'flex', flexDirection: 'column' } : {}),
         '& .MuiDrawer-paper': {
+          // permanent: бумага В потоке рамки — MUI по умолчанию fixed (приклеен
+          // к краю viewport) и разъезжается с центрированным каркасом (1200px)
+          ...(variant === 'permanent' ? { position: 'static' as const, pt: 1.5 } : {}),
           width: effectiveWidth,
           boxSizing: 'border-box',
           borderRight: '1px solid',
@@ -183,8 +189,11 @@ export function MpNavDrawer({
         },
       }}
     >
-      {/* Отступ под фиксированной шапкой */}
-      <Toolbar disableGutters sx={{ minHeight: headerHeight, px: 1.5 }} />
+      {/* Отступ под фиксированную шапку — только для overlay-режимов:
+          permanent начинается под шапкой (в потоке каркаса) */}
+      {variant === 'permanent' ? null : (
+        <Toolbar disableGutters sx={{ minHeight: headerHeight, px: 1.5 }} />
+      )}
       {sections.map((section, index) => (
         <Box key={section.id}>
           {index > 0 ? <Divider sx={{ my: 1 }} /> : null}

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { getSpecializationsCached } from '@/shared/api/catalog-cache';
 import { SpecializationsTable } from '@/widgets/specializations-table';
@@ -19,9 +19,7 @@ export default async function SpecializationsAdminPage(): Promise<ReactNode> {
 
     return (
       <Box>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Специализации ({items.length})
-        </Typography>
+        <MpPageHeader title="Специализации" subtitle={`Всего: ${items.length}`} />
         <SpecializationsTable initial={items} />
       </Box>
     );

@@ -24,10 +24,31 @@ export interface NewUser {
 export interface UserDirectory {
   /** Поиск по email (exact): userId или null. */
   findByEmail(email: string): Promise<string | null>;
+
   /** Создание пользователя с ролью (по умолчанию USER). Email занят → EmailExistsError. */
   createUser(user: NewUser): Promise<string>;
+
   /** Компенсация: best-effort удаление (ретраи делает адаптер). */
   deleteUser(userId: string): Promise<void>;
+
+  /** Профиль пользователя (10.1): email/ФИО из Keycloak; null — нет. */
+  findProfile(userId: string): Promise<UserProfileData | null>;
+
+  /**
+   * Правка СВОИХ данных (10.1): только переданные поля; логин следует за
+   * email (username = email, как при регистрации). Email занят → EmailExistsError.
+   */
+  updateProfile(
+    userId: string,
+    patch: { email?: string; firstName?: string; lastName?: string },
+  ): Promise<UserProfileData>;
+}
+
+/** Профиль пользователя Keycloak (10.1): email + ФИО. */
+export interface UserProfileData {
+  email: string;
+  firstName: string;
+  lastName: string;
 }
 
 /** Email уже зарегистрирован (маппится в 409, человекочитаемый ответ). */
@@ -42,6 +63,7 @@ export class EmailExistsError extends Error {
 export interface PatientCards {
   /** Карточка по userId; null — ещё нет. */
   findByUserId(userId: string): Promise<{ id: string } | null>;
+
   /** Идемпотентное создание карточки (уникальность — на стороне patient). */
   create(card: {
     userId: string;
@@ -82,6 +104,7 @@ export interface CatalogDoctors {
       workDays: number[];
     };
   }): Promise<{ id: string }>;
+
   /** Существующий врач по userId (9.1: идемпотентный повтор саги); null — нет. */
   findDoctorByUser(userId: string): Promise<{ id: string } | null>;
 }

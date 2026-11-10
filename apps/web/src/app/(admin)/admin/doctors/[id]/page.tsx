@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import type { DoctorListItem } from '@mp/contracts';
-import { Alert, Box, Stack, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Stack, Typography } from '@/shared/ui';
 import { ApiError, createServerApi, loadSpecializations } from '@/shared/api';
 import { cachedCatalog, CATALOG_TAGS } from '@/shared/api/catalog-cache';
 import { DoctorForm } from '@/features/doctor-form';
@@ -73,11 +73,13 @@ export default async function DoctorPage({
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        {`${doctorResult.value.lastName} ${doctorResult.value.firstName}${
+      <MpPageHeader
+        title={`${doctorResult.value.lastName} ${doctorResult.value.firstName}${
           doctorResult.value.middleName ? ` ${doctorResult.value.middleName}` : ''
         }`}
-      </Typography>
+        backHref="/admin/doctors"
+        backLabel="Врачи"
+      />
       {/* Двухколоночный макет (design/doctor-form.md): фото + форма */}
       <Stack
         direction={{ xs: 'column', sm: 'row' }}

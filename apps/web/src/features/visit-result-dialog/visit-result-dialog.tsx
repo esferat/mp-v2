@@ -6,11 +6,9 @@ import {
   MpAlert,
   MpButton,
   MpDialog,
-  MpDialogContent,
   MpDialogActions,
+  MpDialogContent,
   MpTextField,
-  Stack,
-  Typography,
   useToast,
 } from '@/shared/ui';
 import { formatSlot } from '@/shared/lib';
@@ -136,17 +134,19 @@ export function VisitResultDialog({
   }
 
   return (
-    <MpDialog open={open} title="Результат приёма" onClose={close} maxWidth="md" fullWidth>
+    <MpDialog
+      open={open}
+      title="Результат приёма"
+      subtitle={
+        viewOnly
+          ? `${formatSlot(appointment.slot.localDate, appointment.slot.start)} · ${appointment.specializationName}`
+          : `Пациент: ${appointment.patientName} · ${formatSlot(appointment.slot.localDate, appointment.slot.start)} · ${appointment.specializationName}`
+      }
+      onClose={close}
+      maxWidth="md"
+      fullWidth
+    >
       <MpDialogContent>
-        <Stack spacing={1} sx={{ mb: 2 }}>
-          {viewOnly ? null : (
-            <Typography variant="body2">Пациент: {appointment.patientName}</Typography>
-          )}
-          <Typography variant="body2" color="text.secondary">
-            {`Приём: ${formatSlot(appointment.slot.localDate, appointment.slot.start)} · ${appointment.specializationName}`}
-          </Typography>
-        </Stack>
-
         {error ? (
           <MpAlert severity="error" role="alert" sx={{ mb: 2 }}>
             {error}
@@ -161,9 +161,9 @@ export function VisitResultDialog({
           fullWidth
           value={conclusion}
           disabled={saving}
-          helperText={`${conclusion.length} / ${MAX}`}
+          showCount
+          maxLength={MAX}
           slotProps={{
-            htmlInput: { maxLength: MAX },
             ...(readOnly ? { input: { readOnly: true } } : {}),
           }}
           onChange={(event) => {
@@ -178,9 +178,9 @@ export function VisitResultDialog({
           fullWidth
           value={recommendations}
           disabled={saving}
-          helperText={`${recommendations.length} / ${MAX}`}
+          showCount
+          maxLength={MAX}
           slotProps={{
-            htmlInput: { maxLength: MAX },
             ...(readOnly ? { input: { readOnly: true } } : {}),
           }}
           onChange={(event) => {

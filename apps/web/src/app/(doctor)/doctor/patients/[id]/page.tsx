@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
-import { Alert, Box, Stack, Typography } from '@/shared/ui';
+import { Alert, Box, MpPageHeader, Typography } from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
-import { LinkButton } from '@/shared/ui';
 import { DoctorPatientDocuments } from '@/widgets/doctor-patient-documents';
 
 export const metadata: Metadata = { title: 'Документы пациента — Кабинет' };
@@ -57,23 +56,16 @@ export default async function DoctorPatientPage({
 
   return (
     <Box>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ mb: 2, alignItems: { sm: 'center' }, justifyContent: 'space-between' }}
-      >
-        <Box>
-          <Typography variant="h6">{patient.patientName}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {patient.lastVisit
-              ? `Последний приём: ${new Date(patient.lastVisit).toLocaleDateString('ru-RU')}`
-              : 'Приёмов ещё не было'}
-          </Typography>
-        </Box>
-        <LinkButton href="/doctor/patients" variant="outlined" color="inherit">
-          К списку
-        </LinkButton>
-      </Stack>
+      <MpPageHeader
+        title={patient.patientName}
+        subtitle={
+          patient.lastVisit
+            ? `Последний приём: ${new Date(patient.lastVisit).toLocaleDateString('ru-RU')}`
+            : 'Приёмов ещё не было'
+        }
+        backHref="/doctor/patients"
+        backLabel="К списку"
+      />
 
       <Typography variant="h6" sx={{ mb: 1 }}>
         Документы

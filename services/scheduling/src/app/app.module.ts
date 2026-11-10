@@ -1,15 +1,15 @@
-import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import {
   applyTraceIdMiddleware,
   AuthModule,
+  createPrismaInboxStore,
+  createPrismaOutboxStore,
   InboxModule,
   JwtAuthGuard,
   LoggerModule,
-  RabbitModule,
   OutboxModule,
-  createPrismaInboxStore,
-  createPrismaOutboxStore,
+  RabbitModule,
 } from '@mp/service-kit';
 import { PrismaService, SharedApiModule } from '../shared/api';
 import { ApiErrorFilter, RequestLogInterceptor } from './kernel';
@@ -28,6 +28,8 @@ import { VisitResultModule } from '../features/visit-result';
 import { GetDoctorAppointmentsModule } from '../features/get-doctor-appointments';
 import { GetDoctorPatientsModule } from '../features/get-doctor-patients';
 import { CheckRelationModule } from '../features/check-relation';
+import { RescheduleAppointmentModule } from '../features/reschedule-appointment';
+import { GetDoctorScheduleModule } from '../features/get-doctor-schedule';
 
 /**
  * Composition root (fsd.md §4.1): только регистрация слайсов и глобальных
@@ -84,6 +86,8 @@ const env = getSchedulingEnv();
     GetDoctorAppointmentsModule,
     GetDoctorPatientsModule,
     CheckRelationModule,
+    RescheduleAppointmentModule,
+    GetDoctorScheduleModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

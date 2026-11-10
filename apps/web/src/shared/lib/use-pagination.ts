@@ -37,6 +37,9 @@ export interface UsePaginationOptions {
 /** Ключ номера страницы в URL (восстановление после F5 — AC 2.5). */
 export const PAGE_PARAM = 'page';
 
+/** Ключ размера страницы в URL (макеты: «На странице: 10 ▾», шаги 10/25/50). */
+export const LIMIT_PARAM = 'limit';
+
 /** Чистый расчёт состояния (тестируется без React/Next). */
 export function computePagination({
   page,
@@ -69,6 +72,8 @@ export function computePagination({
 export function usePagination(options: UsePaginationOptions = {}): PaginationMeta & {
   /** Перейти к странице (0-based); клипует к допустимому диапазону. */
   setPage: (page: number) => void;
+  /** Сменить размер страницы (10/25/50) — сбрасывает на первую. */
+  setLimit: (limit: number) => void;
   previous: () => void;
   next: () => void;
   /** Состояние «загрузка» — передаётся таблицей при запросе новой страницы. */
@@ -84,14 +89,16 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationMet
   const urlPage = Number(searchParams.get(PAGE_PARAM) ?? '0');
   const page = Number.isFinite(urlPage) && urlPage > 0 ? Math.floor(urlPage) : 0;
 
+  // Размер страницы тоже живёт в URL: «На странице: 10 ▾» восстанавливается после F5
+  const urlLimit = Number(searchParams.get(LIMIT_PARAM) ?? '0');
+  const effectiveLimit = Number.isFinite(urlLimit) && urlLimit > 0 ? Math.floor(urlLimit) : limit;
+
   const [loading, setLoading] = useState(false);
 
-  const setPage = useCallback(
-    (nextPage: number) => {
+  const pushParams = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (nextPage > 0) params.set(PAGE_PARAM, String(nextPage));
-      else params.delete(PAGE_PARAM);
-
+      mutate(params);
       const query = params.toString();
       // push (не replace) — «назад» в браузере возвращает на предыдущую страницу
       router.push(query ? `${pathname}?${query}` : pathname);
@@ -99,14 +106,37 @@ export function usePagination(options: UsePaginationOptions = {}): PaginationMet
     [router, pathname, searchParams],
   );
 
+  const setPage = useCallback(
+    (nextPage: number) => {
+      pushParams((params) => {
+        if (nextPage > 0) params.set(PAGE_PARAM, String(nextPage));
+        else params.delete(PAGE_PARAM);
+      });
+    },
+    [pushParams],
+  );
+
+  /** Смена размера страницы: сбрасывает на первую страницу (макеты, AC 2.5). */
+  const setLimit = useCallback(
+    (nextLimit: number) => {
+      pushParams((params) => {
+        params.delete(PAGE_PARAM);
+        if (nextLimit !== limit) params.set(LIMIT_PARAM, String(nextLimit));
+        else params.delete(LIMIT_PARAM);
+      });
+    },
+    [pushParams, limit],
+  );
+
   const meta = useMemo(
-    () => computePagination({ page, limit, total, loadedPages }),
-    [page, limit, total, loadedPages],
+    () => computePagination({ page, limit: effectiveLimit, total, loadedPages }),
+    [page, effectiveLimit, total, loadedPages],
   );
 
   return {
     ...meta,
     setPage,
+    setLimit,
     previous: () => setPage(Math.max(0, page - 1)),
     next: () => setPage(page + 1),
     loading,

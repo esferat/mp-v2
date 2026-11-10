@@ -54,6 +54,10 @@ export type {
 export { MpTablePagination } from './Table/MpTablePagination';
 export type { MpTablePaginationProps } from './Table/MpTablePagination';
 
+// ——— Меню ———
+export { MpMenu, MpMenuItem } from './Menu/MpMenu';
+export type { MpMenuProps, MpMenuItemProps } from './Menu/MpMenu';
+
 // ——— Модальное окно ———
 export { MpDialog, MpDialogContent, MpDialogActions } from './Dialog/MpDialog';
 export type { MpDialogBreakpoint, MpDialogProps } from './Dialog/MpDialog';

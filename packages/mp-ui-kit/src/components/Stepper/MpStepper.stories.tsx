@@ -30,7 +30,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
 
-/** Мастер записи (design/booking.md): «Шаг 1 из 3  ○───○───○». */
+/** Мастер записи (design/booking.md, visual/booking.html): «Шаг 1 из 3  ①──②──③». */
 export const WizardDots: Story = {
   render: () => {
     const [step, setStep] = useState(0);
