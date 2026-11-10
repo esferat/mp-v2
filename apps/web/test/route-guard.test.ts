@@ -114,7 +114,7 @@ describe('isGuestOnlyPath', () => {
   });
 });
 
-describe('homeRedirectFor (9.1: домашняя страница после входа)', () => {
+describe('homeRedirectFor (1.4: домашняя страница после входа)', () => {
   it('админ попадает в администрирование', () => {
     expect(homeRedirectFor(['ADMIN'])).toBe('/admin/doctors');
     expect(homeRedirectFor(['ADMIN', 'DOCTOR'])).toBe('/admin/doctors');
@@ -125,8 +125,11 @@ describe('homeRedirectFor (9.1: домашняя страница после в�
     expect(homeRedirectFor(['USER', 'DOCTOR'])).toBe('/doctor/schedule');
   });
 
-  it('пациент и гость остаются на агрегированной главной', () => {
-    expect(homeRedirectFor(['USER'])).toBeNull();
+  it('пациент попадает в личный кабинет (с боковым меню и профилем)', () => {
+    expect(homeRedirectFor(['USER'])).toBe('/cabinet/profile');
+  });
+
+  it('гость остаётся на агрегированной главной', () => {
     expect(homeRedirectFor([])).toBeNull();
   });
 });

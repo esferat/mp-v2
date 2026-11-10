@@ -38,13 +38,18 @@ export function isGuestOnlyPath(pathname: string): boolean {
 }
 
 /**
- * Домашняя страница после входа (9.1 AC: «вход врача ведёт на
- * /doctor/schedule»): ADMIN → администрирование, DOCTOR → кабинет врача,
- * остальным (USER, гость) остаётся агрегированная главная.
+ * Домашняя страница после входа (1.4 AC: «редирект после входа по роли»):
+ * ADMIN → администрирование, DOCTOR → кабинет врача, USER → личный кабинет
+ * (профиль; спека: «в Этапе 1, пока профиль не готов — /cabinet/record»,
+ * профиль готов). Гость остаётся на агрегированной главной (null).
+ *
+ * Приоритет ролей: ADMIN > DOCTOR > USER — у админа-врача (и админа-пациента)
+ * выигрывает более привилегированный раздел.
  */
 export function homeRedirectFor(roles: readonly string[]): string | null {
   if (roles.includes('ADMIN')) return '/admin/doctors';
   if (roles.includes('DOCTOR')) return '/doctor/schedule';
+  if (roles.includes('USER')) return '/cabinet/profile';
   return null;
 }
 
