@@ -13,6 +13,7 @@ import { eventSchemas } from '../src/events/index';
 interface FieldBaseline {
   type: string | undefined;
 }
+
 interface EventBaseline {
   required: string[];
   properties: Record<string, FieldBaseline>;

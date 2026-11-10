@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { SpecializationsTable } from '../src/widgets/specializations-table';
 import { ToastProvider } from '../src/shared/ui';
 import { ApiError } from '../src/shared/api/errors';

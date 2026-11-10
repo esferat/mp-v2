@@ -1,9 +1,9 @@
 import {
-  toPublicDoctor,
   type DoctorListItem,
   type DoctorListQuery,
   type DoctorRepository,
   type PhotoUrlSigner,
+  toPublicDoctor,
 } from '../../../entities/doctor';
 
 /**

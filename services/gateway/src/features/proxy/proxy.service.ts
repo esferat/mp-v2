@@ -1,7 +1,7 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { getTraceId } from '@mp/service-kit';
 import { Readable } from 'node:stream';
-import { parseServiceUrls, getGatewayEnv } from '../../shared/config';
+import { getGatewayEnv, parseServiceUrls } from '../../shared/config';
 
 /** Заголовки, которые не пересылаются между hop'ами (RFC 9110). */
 const HOP_BY_HOP = new Set([

@@ -1,19 +1,64 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Макет · Мастер записи /cabinet/record</title>
-<link rel="stylesheet" href="_shared.css">
-<style>
-  .slot { display: inline-flex; height: 30px; padding: 0 12px; align-items: center; border-radius: 15px; font-size: 12px; font-weight: 600; margin: 0 6px 6px 0; cursor: pointer; border: 1px solid var(--brand-600); color: var(--brand-700); background: var(--surface); }
-  .slot.sel { background: var(--brand-600); color: #fff; }
-  .slot.busy { background: var(--neutral-100); border: 1px dashed var(--neutral-300); color: var(--neutral-400); text-decoration: line-through; cursor: not-allowed; }
-  .doctor-card { display: grid; grid-template-columns: auto 1fr; gap: 12px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
-  .doctor-card.sel { border: 2px solid var(--brand-600); background: var(--brand-50); }
-  .confirm-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px; }
-  .confirm-grid .k { color: var(--text-secondary); }
-</style>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <title>Макет · Мастер записи /cabinet/record</title>
+  <link href="_shared.css" rel="stylesheet">
+  <style>
+    .slot {
+      display: inline-flex;
+      height: 30px;
+      padding: 0 12px;
+      align-items: center;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 0 6px 6px 0;
+      cursor: pointer;
+      border: 1px solid var(--brand-600);
+      color: var(--brand-700);
+      background: var(--surface);
+    }
+
+    .slot.sel {
+      background: var(--brand-600);
+      color: #fff;
+    }
+
+    .slot.busy {
+      background: var(--neutral-100);
+      border: 1px dashed var(--neutral-300);
+      color: var(--neutral-400);
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
+
+    .doctor-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .doctor-card.sel {
+      border: 2px solid var(--brand-600);
+      background: var(--brand-50);
+    }
+
+    .confirm-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 12px;
+      font-size: 13px;
+    }
+
+    .confirm-grid .k {
+      color: var(--text-secondary);
+    }
+  </style>
 </head>
 <body>
 
@@ -31,7 +76,9 @@
     <div class="logo">МП</div>
     <div class="brand">Медицинский портал<small>Медицинский портал · Иван П.</small></div>
     <div class="spacer"></div>
-    <div class="actions"><span class="avatar">ИП</span><button class="btn btn-text btn-sm">Выйти</button><span class="comp">MpAppBar</span></div>
+    <div class="actions"><span class="avatar">ИП</span>
+      <button class="btn btn-text btn-sm">Выйти</button>
+      <span class="comp">MpAppBar</span></div>
   </header>
 
   <div class="shell">
@@ -50,7 +97,9 @@
           <div class="sub">НАПРАВЛЕНИЕ ХИРУРГИЯ · 05.11.2026</div>
         </div>
         <div class="steps">
-          <div class="step done"><span class="num">1</span><span>Спец-ия и дата</span><span class="line" style="background:var(--brand-600)"></span></div>
+          <div class="step done"><span class="num">1</span><span>Спец-ия и дата</span><span class="line"
+                                                                                            style="background:var(--brand-600)"></span>
+          </div>
           <div class="step active"><span class="num">2</span><span>Врач и слот</span><span class="line"></span></div>
           <div class="step"><span class="num">3</span><span>Подтверждение</span></div>
           <span class="comp" style="margin-left:8px">MpStepper</span>
@@ -59,12 +108,16 @@
 
       <div class="content">
         <section class="card">
-          <h2>ШАГ 1: направление и дата <span class="comp" style="float:right">MpSelect/MpAutocomplete · MpDatePicker</span></h2>
+          <h2>ШАГ 1: направление и дата <span class="comp"
+                                              style="float:right">MpSelect/MpAutocomplete · MpDatePicker</span></h2>
           <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
             <div class="field" style="flex:1"><label>Направление (специализация) <span class="req">*</span></label>
-              <div class="control filled select"><b>Хирургия</b></div></div>
-            <div class="field" style="flex:1"><label>Дата приёма</label><div class="control filled">05.11.2026 📅</div>
-              <div class="helper">min — сегодня, max — конец следующего месяца; проверка на клиенте и на сервере</div></div>
+              <div class="control filled select"><b>Хирургия</b></div>
+            </div>
+            <div class="field" style="flex:1"><label>Дата приёма</label>
+              <div class="control filled">05.11.2026 📅</div>
+              <div class="helper">min — сегодня, max — конец следующего месяца; проверка на клиенте и на сервере</div>
+            </div>
             <button class="btn btn-outlined">Изменить направление</button>
           </div>
         </section>
@@ -77,11 +130,14 @@
             <span class="avatar">ИИ</span>
             <div>
               <div style="display:flex;justify-content:space-between;align-items:start">
-                <div><b>Иванов Иван Иванович</b><div style="font-size:12px" class="hint-cause">Хирург · 09:00–18:00</div></div>
+                <div><b>Иванов Иван Иванович</b>
+                  <div class="hint-cause" style="font-size:12px">Хирург · 09:00–18:00</div>
+                </div>
                 <span class="chip brand">выбран</span>
               </div>
               <div style="margin-top:10px">
-                <span class="slot">10:00</span><span class="slot">10:30</span><span class="slot">11:00</span><span class="slot sel">11:30</span><span class="slot">13:00</span><span class="slot">13:30</span>
+                <span class="slot">10:00</span><span class="slot">10:30</span><span class="slot">11:00</span><span
+                class="slot sel">11:30</span><span class="slot">13:00</span><span class="slot">13:30</span>
               </div>
               <div class="helper">свободные Chip contained · выбран filled primary · один слот на экран</div>
             </div>
@@ -91,11 +147,14 @@
             <span class="avatar" style="background:var(--info-soft);color:var(--info)">ПМ</span>
             <div>
               <div style="display:flex;justify-content:space-between;align-items:start">
-                <div><b>Петрова Мария С.</b><div style="font-size:12px" class="hint-cause">Хирург · все слоты недоступны</div></div>
+                <div><b>Петрова Мария С.</b>
+                  <div class="hint-cause" style="font-size:12px">Хирург · все слоты недоступны</div>
+                </div>
                 <span class="chip outlined">выбрать</span>
               </div>
               <div style="margin-top:10px">
-                <span class="slot busy">09:00</span><span class="slot busy">09:30</span><span class="slot busy">10:00</span>
+                <span class="slot busy">09:00</span><span class="slot busy">09:30</span><span
+                class="slot busy">10:00</span>
                 <div class="helper">занятые Chip disabled / скрыты</div>
               </div>
             </div>
@@ -129,7 +188,9 @@
 
         <div class="card alert success" style="display:flex;align-items:center;gap:16px;justify-content:center">
           <div style="font-size:30px;color:var(--success)">✓</div>
-          <div><b>Запись отправлена!</b><div style="font-size:13px">Мы сообщим, когда врач подтвердит приём (событие → Этап 3, письмо)</div></div>
+          <div><b>Запись отправлена!</b>
+            <div style="font-size:13px">Мы сообщим, когда врач подтвердит приём (событие → Этап 3, письмо)</div>
+          </div>
           <button class="btn btn-contained">Мои записи</button>
           <button class="btn btn-outlined">Записаться ещё</button>
         </div>
@@ -137,15 +198,52 @@
         <h2 style="font-size:15px">Соответствие компонентов mp-ui-kit</h2>
         <div class="card">
           <table class="map-table">
-            <tr><th>Блок</th><th>Компонент</th><th>Props / примечание</th></tr>
-            <tr><td>Шаги мастера</td><td><span class="comp">Stepper (не Mp-компонент — mockm)</span></td><td>состояние в processes/booking-wizard, назад не теряет выбор</td></tr>
-            <tr><td>Шаг 1</td><td><span class="comp">MpSelect / MpAutocomplete</span> + <span class="comp">MpDatePicker</span></td><td>GET /api/catalog/specializations; min=сегодня, max=+мес, на кл-те и сервере</td></tr>
-            <tr><td>Шаг 2</td><td><span class="comp">MpCard</span> <span class="comp">MpChip</span> (contained/filled/disabled)</td><td>GET /api/scheduling/slots?specId&date — один слот, повторный выбор переключает; пусто → empty-state</td></tr>
-            <tr><td>Шаг 3</td><td><span class="comp">MpDialog</span></td><td>→ POST /api/bff/scheduling/appointments — 5.3 (транзакция + событие)</td></tr>
-            <tr><td>Успех</td><td><span class="comp">MpDialog</span> / <span class="comp">MpButton</span></td><td>201 → id, status SUBMITTED; кнопки «Мои записи» → /cabinet/history, «Записаться ещё»</td></tr>
-            <tr><td>409 SLOT_TAKEN</td><td><span class="comp">MpSnackbar</span></td><td>«Слот только что заняли» → выбор не сбрасывается, neighbor предложение; тест 5.6</td></tr>
-            <tr><td>Двойной submit</td><td><span class="comp">MpButton (disabled)</span></td><td>кнопка до ответа от сервера; без повторного POST — 5.3 запрет ретраев</td></tr>
-            <tr><td>Ошибка сети</td><td><span class="comp">MpAlert</span></td><td>Dialog остаётся открытым, текст сохранён, «Повторить»</td></tr>
+            <tr>
+              <th>Блок</th>
+              <th>Компонент</th>
+              <th>Props / примечание</th>
+            </tr>
+            <tr>
+              <td>Шаги мастера</td>
+              <td><span class="comp">Stepper (не Mp-компонент — mockm)</span></td>
+              <td>состояние в processes/booking-wizard, назад не теряет выбор</td>
+            </tr>
+            <tr>
+              <td>Шаг 1</td>
+              <td><span class="comp">MpSelect / MpAutocomplete</span> + <span class="comp">MpDatePicker</span></td>
+              <td>GET /api/catalog/specializations; min=сегодня, max=+мес, на кл-те и сервере</td>
+            </tr>
+            <tr>
+              <td>Шаг 2</td>
+              <td><span class="comp">MpCard</span> <span class="comp">MpChip</span> (contained/filled/disabled)</td>
+              <td>GET /api/scheduling/slots?specId&date — один слот, повторный выбор переключает; пусто → empty-state
+              </td>
+            </tr>
+            <tr>
+              <td>Шаг 3</td>
+              <td><span class="comp">MpDialog</span></td>
+              <td>→ POST /api/bff/scheduling/appointments — 5.3 (транзакция + событие)</td>
+            </tr>
+            <tr>
+              <td>Успех</td>
+              <td><span class="comp">MpDialog</span> / <span class="comp">MpButton</span></td>
+              <td>201 → id, status SUBMITTED; кнопки «Мои записи» → /cabinet/history, «Записаться ещё»</td>
+            </tr>
+            <tr>
+              <td>409 SLOT_TAKEN</td>
+              <td><span class="comp">MpSnackbar</span></td>
+              <td>«Слот только что заняли» → выбор не сбрасывается, neighbor предложение; тест 5.6</td>
+            </tr>
+            <tr>
+              <td>Двойной submit</td>
+              <td><span class="comp">MpButton (disabled)</span></td>
+              <td>кнопка до ответа от сервера; без повторного POST — 5.3 запрет ретраев</td>
+            </tr>
+            <tr>
+              <td>Ошибка сети</td>
+              <td><span class="comp">MpAlert</span></td>
+              <td>Dialog остаётся открытым, текст сохранён, «Повторить»</td>
+            </tr>
           </table>
         </div>
       </div>

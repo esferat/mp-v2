@@ -1,24 +1,81 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Макет · Список врачей /admin/doctors</title>
-<link rel="stylesheet" href="_shared.css">
-<style>
-  .filter-bar { display: flex; gap: var(--sp-lg); align-items: flex-end; flex-wrap: wrap; }
-  .filter-bar .field { min-width: 200px; }
-  .search-control { position: relative; }
-  .search-control .control { padding-left: 32px; }
-  .search-control::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; }
-  .row-doctor { display: flex; align-items: center; gap: var(--sp-lg); }
-  .row-doctor .name { font-weight: 600; }
-  .row-doctor .sub { font-size: 12px; color: var(--text-secondary); }
-  .states-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-xl); }
-  .state-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
-  .state-card .state-title { padding: var(--sp-lg) var(--sp-xl); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; }
-  .state-card .state-body { padding: var(--sp-xl); }
-</style>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <title>Макет · Список врачей /admin/doctors</title>
+  <link href="_shared.css" rel="stylesheet">
+  <style>
+    .filter-bar {
+      display: flex;
+      gap: var(--sp-lg);
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar .field {
+      min-width: 200px;
+    }
+
+    .search-control {
+      position: relative;
+    }
+
+    .search-control .control {
+      padding-left: 32px;
+    }
+
+    .search-control::before {
+      content: '🔍';
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+    }
+
+    .row-doctor {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-lg);
+    }
+
+    .row-doctor .name {
+      font-weight: 600;
+    }
+
+    .row-doctor .sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .states-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-xl);
+    }
+
+    .state-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+
+    .state-card .state-title {
+      padding: var(--sp-lg) var(--sp-xl);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .state-card .state-body {
+      padding: var(--sp-xl);
+    }
+  </style>
 </head>
 <body>
 
@@ -99,49 +156,78 @@
         <section>
           <table class="table">
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>ФИО</th>
-                <th>Специализация</th>
-                <th>Статус</th>
-                <th>Фото</th>
-                <th style="text-align:right">Действия</th>
-              </tr>
+            <tr>
+              <th>ID</th>
+              <th>ФИО</th>
+              <th>Специализация</th>
+              <th>Статус</th>
+              <th>Фото</th>
+              <th style="text-align:right">Действия</th>
+            </tr>
             </thead>
             <tbody>
-              <tr>
-                <td style="color:var(--text-secondary);font-family:monospace;font-size:12px">64de63…</td>
-                <td><div class="row-doctor"><span class="avatar">ИИ</span><div><div class="name">Иванов Иван И.</div><div class="sub">ivanov@clinic.local</div></div></div></td>
-                <td>Хирург</td>
-                <td><span class="status active"><span class="dot"></span>Активен</span></td>
-                <td><span class="avatar">ИИ</span></td>
-                <td><div class="actions">
+            <tr>
+              <td style="color:var(--text-secondary);font-family:monospace;font-size:12px">64de63…</td>
+              <td>
+                <div class="row-doctor"><span class="avatar">ИИ</span>
+                  <div>
+                    <div class="name">Иванов Иван И.</div>
+                    <div class="sub">ivanov@clinic.local</div>
+                  </div>
+                </div>
+              </td>
+              <td>Хирург</td>
+              <td><span class="status active"><span class="dot"></span>Активен</span></td>
+              <td><span class="avatar">ИИ</span></td>
+              <td>
+                <div class="actions">
                   <button class="btn btn-text btn-sm">✎ Редактировать</button>
                   <button class="btn btn-neutral btn-sm">⋯</button>
-                </div></td>
-              </tr>
-              <tr>
-                <td style="color:var(--text-secondary);font-family:monospace;font-size:12px">64de64…</td>
-                <td><div class="row-doctor"><span class="avatar" style="background:var(--info-soft);color:var(--info)">ПМ</span><div><div class="name">Петрова Мария С.</div><div class="sub">petrova@clinic.local</div></div></div></td>
-                <td>Кардиолог</td>
-                <td><span class="status active"><span class="dot"></span>Активен</span></td>
-                <td><span class="avatar" style="background:var(--info-soft);color:var(--info)">ПМ</span></td>
-                <td><div class="actions">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-secondary);font-family:monospace;font-size:12px">64de64…</td>
+              <td>
+                <div class="row-doctor"><span class="avatar"
+                                              style="background:var(--info-soft);color:var(--info)">ПМ</span>
+                  <div>
+                    <div class="name">Петрова Мария С.</div>
+                    <div class="sub">petrova@clinic.local</div>
+                  </div>
+                </div>
+              </td>
+              <td>Кардиолог</td>
+              <td><span class="status active"><span class="dot"></span>Активен</span></td>
+              <td><span class="avatar" style="background:var(--info-soft);color:var(--info)">ПМ</span></td>
+              <td>
+                <div class="actions">
                   <button class="btn btn-text btn-sm">✎ Редактировать</button>
                   <button class="btn btn-neutral btn-sm">⋯</button>
-                </div></td>
-              </tr>
-              <tr>
-                <td style="color:var(--text-secondary);font-family:monospace;font-size:12px">64de65…</td>
-                <td><div class="row-doctor"><span class="avatar" style="background:var(--warning-soft);color:var(--warning)">СП</span><div><div class="name">Сидоров Алексей П.</div><div class="sub">sidorov@clinic.local</div></div></div></td>
-                <td>Травматолог</td>
-                <td><span class="status inactive"><span class="dot"></span>Неактивен</span></td>
-                <td><span class="avatar" style="background:var(--warning-soft);color:var(--warning)">СП</span></td>
-                <td><div class="actions">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-secondary);font-family:monospace;font-size:12px">64de65…</td>
+              <td>
+                <div class="row-doctor"><span class="avatar"
+                                              style="background:var(--warning-soft);color:var(--warning)">СП</span>
+                  <div>
+                    <div class="name">Сидоров Алексей П.</div>
+                    <div class="sub">sidorov@clinic.local</div>
+                  </div>
+                </div>
+              </td>
+              <td>Травматолог</td>
+              <td><span class="status inactive"><span class="dot"></span>Неактивен</span></td>
+              <td><span class="avatar" style="background:var(--warning-soft);color:var(--warning)">СП</span></td>
+              <td>
+                <div class="actions">
                   <button class="btn btn-text btn-sm">✎ Редактировать</button>
                   <button class="btn btn-neutral btn-sm">⋯</button>
-                </div></td>
-              </tr>
+                </div>
+              </td>
+            </tr>
             </tbody>
           </table>
           <div class="pagination">
@@ -153,7 +239,9 @@
             </div>
             <span>На странице: <span class="chip">10 ▾</span></span>
           </div>
-          <div style="padding:8px 12px"><span class="comp">MpTable</span> <span class="comp">MpTableHead</span> <span class="comp">MpTableCell</span> <span class="comp">MpTablePagination</span> <span class="comp">MpStatusBadge</span> <span class="comp">MpAvatar</span> <span class="comp">MpMenu</span></div>
+          <div style="padding:8px 12px"><span class="comp">MpTable</span> <span class="comp">MpTableHead</span> <span
+            class="comp">MpTableCell</span> <span class="comp">MpTablePagination</span> <span
+            class="comp">MpStatusBadge</span> <span class="comp">MpAvatar</span> <span class="comp">MpMenu</span></div>
         </section>
 
         <!-- ================= СОСТОЯНИЯ ================= -->
@@ -162,9 +250,27 @@
           <div class="state-card">
             <div class="state-title">loading — MpSkeleton</div>
             <div class="state-body">
-              <div style="display:flex;gap:12px;align-items:center"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="width:60%"></div><div class="skeleton" style="width:35%;height:10px"></div></div></div>
-              <div style="display:flex;gap:12px;align-items:center;margin-top:12px"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="width:52%"></div><div class="skeleton" style="width:30%;height:10px"></div></div></div>
-              <div style="display:flex;gap:12px;align-items:center;margin-top:12px"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skeleton" style="width:66%"></div><div class="skeleton" style="width:28%;height:10px"></div></div></div>
+              <div style="display:flex;gap:12px;align-items:center">
+                <div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div>
+                <div style="flex:1">
+                  <div class="skeleton" style="width:60%"></div>
+                  <div class="skeleton" style="width:35%;height:10px"></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+                <div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div>
+                <div style="flex:1">
+                  <div class="skeleton" style="width:52%"></div>
+                  <div class="skeleton" style="width:30%;height:10px"></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+                <div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div>
+                <div style="flex:1">
+                  <div class="skeleton" style="width:66%"></div>
+                  <div class="skeleton" style="width:28%;height:10px"></div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="state-card">
@@ -181,9 +287,17 @@
           <div class="state-card">
             <div class="state-title">error — MpAlert / MpSnackbar</div>
             <div class="state-body">
-              <div class="alert error"><span>⚠️</span><div><b>Не удалось загрузить врачей</b><div style="font-size:12px">requestId: 0f3c…a91 · ошибка сети</div></div></div>
-              <div style="text-align:right;margin-top:12px"><button class="btn btn-outlined btn-sm">Повторить</button></div>
-              <div class="alert warning" style="margin-top:12px"><span>🔍</span><div>По запросу «…» ничего не найдено</div></div>
+              <div class="alert error"><span>⚠️</span>
+                <div><b>Не удалось загрузить врачей</b>
+                  <div style="font-size:12px">requestId: 0f3c…a91 · ошибка сети</div>
+                </div>
+              </div>
+              <div style="text-align:right;margin-top:12px">
+                <button class="btn btn-outlined btn-sm">Повторить</button>
+              </div>
+              <div class="alert warning" style="margin-top:12px"><span>🔍</span>
+                <div>По запросу «…» ничего не найдено</div>
+              </div>
             </div>
           </div>
         </div>
@@ -192,18 +306,77 @@
         <h2 style="font-size:15px;margin:8px 0 0">Соответствие компонентов mp-ui-kit</h2>
         <div class="card">
           <table class="map-table">
-            <tr><th>Блок макета</th><th>Компонент mp-ui-kit</th><th>Props / примечание</th></tr>
-            <tr><td>Шапка + сайдбар + контент</td><td><span class="comp">MpAppShell</span></td><td><code>menu</code> (пункты + требуемая роль), <code>logo</code>, <code>title</code>/<code>subtitle</code>, <code>headerActions</code>, <code>mini</code></td></tr>
-            <tr><td>Шапка</td><td><span class="comp">MpAppBar</span></td><td>64 px, аватар <span class="comp">MpAvatar</span>, кнопка «Выйти» → <code>signOut</code> Auth.js (1.1)</td></tr>
-            <tr><td>Боковое меню</td><td><span class="comp">MpNavDrawer</span></td><td><code>selectedId</code>, <code>onSelect</code>, сворачивание 240→72 px; пункты фильтруются по роли (2.1)</td></tr>
-            <tr><td>Заголовок страницы</td><td><span class="comp">MpPageHeader</span></td><td><code>title</code>, <code>subtitle</code>, <code>actions</code> (кнопка «Новый врач» → <code>/admin/doctors/new</code>)</td></tr>
-            <tr><td>Фильтры</td><td><span class="comp">MpTextField</span> <span class="comp">MpSelect</span> <span class="comp">MpAutocomplete</span></td><td>поиск (debounce 300 мс, сброс ✕), селекторы специализации/статуса; значения в query-параметрах URL</td></tr>
-            <tr><td>Таблица</td><td><span class="comp">MpTable</span> + <span class="comp">MpTableHead</span>/<span class="comp">MpTableRow</span>/<span class="comp">MpTableCell</span></td><td>колонки: ID (скрывается &lt; 960), ФИО, специализация, статус, фото, действия; плотная строка 40 px</td></tr>
-            <tr><td>Статус</td><td><span class="comp">MpStatusBadge</span> + <code>mpStatuses</code></td><td><code>ACTIVE</code> (зелёный) / <code>INACTIVE</code> (серый) — регистр статусов врача</td></tr>
-            <tr><td>Фото</td><td><span class="comp">MpAvatar</span></td><td>инициалы, если ключа нет; presigned `photoUrl` (TTL 5 мин)</td></tr>
-            <tr><td>Пагинация</td><td><span class="comp">MpTablePagination</span></td><td>server-side offset/limit, шаги 10/25/50, «Всего: 42»</td></tr>
-            <tr><td>Меню действий</td><td><span class="comp">MpMenu</span></td><td>«Редактировать» → <code>/:id</code>, «Архивировать/Восстановить» → <code>Dialog</code>-подтверждение</td></tr>
-            <tr><td>Состояния</td><td><span class="comp">MpSkeleton</span> <span class="comp">MpEmptyState</span> <span class="comp">MpAlert</span> <span class="comp">MpSnackbar</span></td><td>loading / empty (с действием) / error (тост + «Повторить», таблица сохраняет прошлые данные)</td></tr>
+            <tr>
+              <th>Блок макета</th>
+              <th>Компонент mp-ui-kit</th>
+              <th>Props / примечание</th>
+            </tr>
+            <tr>
+              <td>Шапка + сайдбар + контент</td>
+              <td><span class="comp">MpAppShell</span></td>
+              <td><code>menu</code> (пункты + требуемая роль), <code>logo</code>,
+                <code>title</code>/<code>subtitle</code>, <code>headerActions</code>, <code>mini</code></td>
+            </tr>
+            <tr>
+              <td>Шапка</td>
+              <td><span class="comp">MpAppBar</span></td>
+              <td>64 px, аватар <span class="comp">MpAvatar</span>, кнопка «Выйти» → <code>signOut</code> Auth.js (1.1)
+              </td>
+            </tr>
+            <tr>
+              <td>Боковое меню</td>
+              <td><span class="comp">MpNavDrawer</span></td>
+              <td><code>selectedId</code>, <code>onSelect</code>, сворачивание 240→72 px; пункты фильтруются по роли
+                (2.1)
+              </td>
+            </tr>
+            <tr>
+              <td>Заголовок страницы</td>
+              <td><span class="comp">MpPageHeader</span></td>
+              <td><code>title</code>, <code>subtitle</code>, <code>actions</code> (кнопка «Новый врач» → <code>/admin/doctors/new</code>)
+              </td>
+            </tr>
+            <tr>
+              <td>Фильтры</td>
+              <td><span class="comp">MpTextField</span> <span class="comp">MpSelect</span> <span class="comp">MpAutocomplete</span>
+              </td>
+              <td>поиск (debounce 300 мс, сброс ✕), селекторы специализации/статуса; значения в query-параметрах URL
+              </td>
+            </tr>
+            <tr>
+              <td>Таблица</td>
+              <td><span class="comp">MpTable</span> + <span class="comp">MpTableHead</span>/<span class="comp">MpTableRow</span>/<span
+                class="comp">MpTableCell</span></td>
+              <td>колонки: ID (скрывается &lt; 960), ФИО, специализация, статус, фото, действия; плотная строка 40 px
+              </td>
+            </tr>
+            <tr>
+              <td>Статус</td>
+              <td><span class="comp">MpStatusBadge</span> + <code>mpStatuses</code></td>
+              <td><code>ACTIVE</code> (зелёный) / <code>INACTIVE</code> (серый) — регистр статусов врача</td>
+            </tr>
+            <tr>
+              <td>Фото</td>
+              <td><span class="comp">MpAvatar</span></td>
+              <td>инициалы, если ключа нет; presigned `photoUrl` (TTL 5 мин)</td>
+            </tr>
+            <tr>
+              <td>Пагинация</td>
+              <td><span class="comp">MpTablePagination</span></td>
+              <td>server-side offset/limit, шаги 10/25/50, «Всего: 42»</td>
+            </tr>
+            <tr>
+              <td>Меню действий</td>
+              <td><span class="comp">MpMenu</span></td>
+              <td>«Редактировать» → <code>/:id</code>, «Архивировать/Восстановить» → <code>Dialog</code>-подтверждение
+              </td>
+            </tr>
+            <tr>
+              <td>Состояния</td>
+              <td><span class="comp">MpSkeleton</span> <span class="comp">MpEmptyState</span> <span
+                class="comp">MpAlert</span> <span class="comp">MpSnackbar</span></td>
+              <td>loading / empty (с действием) / error (тост + «Повторить», таблица сохраняет прошлые данные)</td>
+            </tr>
           </table>
         </div>
       </div>
@@ -212,7 +385,8 @@
 </div>
 
 <div class="mock-note">
-  <a href="index.html">← ко всем макетам</a> · текстовая спецификация: <a href="../doctors-list.md">../doctors-list.md</a> ·
+  <a href="index.html">← ко всем макетам</a> · текстовая спецификация: <a
+  href="../doctors-list.md">../doctors-list.md</a> ·
   вёрстка: <code>app/(admin)/admin/doctors/page.tsx</code> + <code>widgets/doctors-table</code> + <code>features/search-doctors</code>
 </div>
 

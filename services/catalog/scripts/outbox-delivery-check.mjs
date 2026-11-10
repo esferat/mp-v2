@@ -119,9 +119,12 @@ if (occurrences !== 1) {
 }
 ok(`событие доставлено ровно один раз (${occurrences})`);
 
-const row = await pool.query(`SELECT status, attempts FROM "OutboxMessage" WHERE id = $1`, [
-  EVENT_ID,
-]);
+const row = await pool.query(
+  `SELECT status, attempts
+                              FROM "OutboxMessage"
+                              WHERE id = $1`,
+  [EVENT_ID],
+);
 await pool.end();
 const [record] = row.rows;
 if (record?.status !== 'PUBLISHED') {

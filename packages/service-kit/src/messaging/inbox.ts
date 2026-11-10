@@ -1,9 +1,9 @@
 import {
+  type DynamicModule,
   Inject,
   Injectable,
-  Module,
-  type DynamicModule,
   type InjectionToken,
+  Module,
 } from '@nestjs/common';
 import type { Logger } from 'pino';
 import { LOGGER } from '../logger/logger.module';
@@ -15,6 +15,7 @@ import { LOGGER } from '../logger/logger.module';
 export interface InboxStore {
   /** Уже обработано? */
   has(messageId: string): Promise<boolean>;
+
   /** Зафиксировать обработку. Дубликат (уникальный индекс) — не ошибка. */
   add(messageId: string, routingKey: string): Promise<void>;
 }
@@ -24,6 +25,7 @@ export const INBOX_STORE = Symbol('MP_INBOX_STORE');
 /** Минимальный профиль делегата Prisma для inbox-модели (см. PrismaOutboxDelegate). */
 export interface PrismaInboxDelegate {
   findUnique(args: unknown): Promise<unknown>;
+
   create(args: unknown): Promise<unknown>;
 }
 

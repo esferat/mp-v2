@@ -11,7 +11,7 @@
  *   node scripts/e2e/presigned-check.mjs
  * TTL задаётся коротким (10 с), чтобы проверка уложилась в ~12 секунд.
  */
-import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const endpoint = process.env.MINIO_ENDPOINT ?? 'http://localhost:9000';

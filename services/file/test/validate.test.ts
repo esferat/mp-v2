@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   ALLOWED_MIMES,
-  MAX_FILE_BYTES,
   buildFileKey,
   detectMime,
   extForMime,
+  MAX_FILE_BYTES,
 } from '../src/entities/file';
 
 const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);

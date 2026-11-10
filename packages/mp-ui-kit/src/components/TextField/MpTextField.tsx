@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import TextField, { type TextFieldProps } from '@mui/material/TextField';
-import { forwardRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { type ChangeEvent, forwardRef, type ReactNode, useState } from 'react';
 
 /** SVG «глаз»: не тянет `@mui/icons-material` как peer-зависимость. */
 function EyeIcon({ open }: { open: boolean }) {

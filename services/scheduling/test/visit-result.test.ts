@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RoutingKeys } from '@mp/contracts';
 import { enterVisitResult } from '../src/features/enter-visit-result';
-import { getVisitResult } from '../src/features/visit-result';
-import { updateVisitResult } from '../src/features/visit-result';
+import { getVisitResult, updateVisitResult } from '../src/features/visit-result';
 import { makeSchedulingContext } from './helpers/in-memory';
 
 const DOCTOR = { sub: 'doctor-user-1', roles: ['DOCTOR'] };

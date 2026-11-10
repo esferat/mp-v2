@@ -1,5 +1,5 @@
 import type { FileDownload } from '@mp/contracts';
-import { checkFileAccess, type AccessPorts, type AccessSubject } from '../../../entities/access';
+import { type AccessPorts, type AccessSubject, checkFileAccess } from '../../../entities/access';
 import type { FileLinkSigner, FileRepository } from '../../../entities/file';
 import { ForbiddenError, NotFoundError } from '../../../shared/model';
 

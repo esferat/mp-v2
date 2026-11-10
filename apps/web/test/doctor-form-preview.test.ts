@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type DoctorFormValues,
   DURATION_OPTIONS,
   schedulePreview,
   validateDoctorForm,
-  type DoctorFormValues,
 } from '../src/features/doctor-form/validate';
 
 const base: DoctorFormValues = {

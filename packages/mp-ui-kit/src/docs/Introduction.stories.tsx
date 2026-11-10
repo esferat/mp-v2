@@ -1,17 +1,17 @@
-import { Box, Divider, Stack, Typography } from '@mui/material';
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { ReactNode } from 'react';
-import { mpTokens as t } from '../theme/tokens';
+import {Box, Divider, Stack, Typography} from '@mui/material';
+import type {Meta, StoryObj} from '@storybook/react-vite';
+import type {ReactNode} from 'react';
+import {mpTokens as t} from '../theme/tokens';
 
 const meta = {
   title: 'Introduction',
-  parameters: { layout: 'padded' },
+  parameters: {layout: 'padded'},
 } satisfies Meta;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Code({ children }: { children: string }) {
+function Code({children}: { children: string }) {
   return (
     <Box
       component="pre"
@@ -33,10 +33,10 @@ function Code({ children }: { children: string }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({title, children}: { title: string; children: ReactNode }) {
   return (
     <Box>
-      <Typography variant="h5" sx={{ mb: 1.5 }}>
+      <Typography variant="h5" sx={{mb: 1.5}}>
         {title}
       </Typography>
       <Stack spacing={1.5}>{children}</Stack>
@@ -46,16 +46,16 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 export const Overview: Story = {
   render: () => (
-    <Stack spacing={4} sx={{ maxWidth: 860 }}>
+    <Stack spacing={4} sx={{maxWidth: 860}}>
       <Box>
-        <Typography sx={{ ...t.typography.scale.display }}>mp-ui-kit</Typography>
-        <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>
+        <Typography sx={{...t.typography.scale.display}}>mp-ui-kit</Typography>
+        <Typography variant="subtitle1" color="text.secondary" sx={{mt: 1}}>
           Дизайн-система и библиотека компонентов на базе Material UI: токены, тема и
           переиспользуемые React-компоненты с опциями доступности из коробки.
         </Typography>
       </Box>
 
-      <Divider />
+      <Divider/>
 
       <Section title="Установка">
         <Code>{`npm install mp-ui-kit @mui/material @emotion/react @emotion/styled react react-dom`}</Code>
@@ -92,11 +92,11 @@ export function App() {
       <Section title="Состав">
         <Typography variant="body2">
           • <b>Токены</b> — цвета, типографика, отступы, радиусы, тени, движение (src/theme/tokens.ts)
-          <br />
+          <br/>
           • <b>Тема</b> — createMpTheme / MpThemeProvider, сборка токенов в тему MUI
-          <br />
+          <br/>
           • <b>Компоненты</b> — Button, TextField, Alert, Chip, Badge, Avatar, Card
-          <br />
+          <br/>
           • <b>Документация</b> — Storybook: Foundations + страницы каждого компонента
         </Typography>
       </Section>

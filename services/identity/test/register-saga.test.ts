@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { RegisterRequest } from '@mp/contracts';
-import { PatientServiceError, type PatientCards } from '../src/entities/registration';
-import { registerUser, type RegisterSagaDeps } from '../src/processes/register-user-saga';
+import { type PatientCards, PatientServiceError } from '../src/entities/registration';
+import { type RegisterSagaDeps, registerUser } from '../src/processes/register-user-saga';
 import { FakeDirectory } from './helpers/fake-directory';
 
 /**

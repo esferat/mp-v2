@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { ApiError, createServerClient } from '@/shared/api';
 import { revalidateCatalog } from '@/shared/api/catalog-cache';
 

@@ -1,6 +1,5 @@
 import { NotFoundError } from '../../../shared/model';
-import type { Patient } from '../../../entities/patient';
-import type { PatientRepository } from '../../../entities/patient';
+import type { Patient, PatientRepository } from '../../../entities/patient';
 
 /**
  * Чтение карточки по Keycloak `sub` (1.4: шаг B саги проверяет,

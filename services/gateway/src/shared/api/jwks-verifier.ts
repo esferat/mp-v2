@@ -1,9 +1,9 @@
-import { createRemoteJWKSet, errors as joseErrors, jwtVerify, type JWTPayload } from 'jose';
+import { createRemoteJWKSet, errors as joseErrors, type JWTPayload, jwtVerify } from 'jose';
 import {
-  ROLES,
-  TokenInvalidError,
   type Role,
+  ROLES,
   type TokenClaims,
+  TokenInvalidError,
   type TokenVerifier,
 } from '../../entities/authorization';
 

@@ -1,8 +1,8 @@
 import { Body, Controller, Inject, Post, Req, UnauthorizedException } from '@nestjs/common';
 import {
-  bookAppointmentSchema,
   type Appointment,
   type BookAppointmentRequest,
+  bookAppointmentSchema,
 } from '@mp/contracts';
 import type { RequestAuth } from '@mp/service-kit';
 import type { AppointmentContext } from '../../../entities/appointment';

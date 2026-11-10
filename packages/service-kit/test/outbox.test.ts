@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { renderMetrics } from '../src/metrics/metrics.module';
 import {
+  createPrismaOutboxStore,
+  type OutboxRecord,
   OutboxRelay,
   OutboxService,
-  createPrismaOutboxStore,
-  retryDelayMs,
-  type OutboxRecord,
   type OutboxStore,
+  retryDelayMs,
 } from '../src/messaging/outbox';
 import type { RabbitService } from '../src/messaging/rabbit.service';
 

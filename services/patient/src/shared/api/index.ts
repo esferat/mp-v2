@@ -1,4 +1,4 @@
-import { Global, Module, type DynamicModule } from '@nestjs/common';
+import { type DynamicModule, Global, Module } from '@nestjs/common';
 import { PATIENT_REPOSITORY, PHOTO_URL_SIGNER } from '../../entities/patient';
 import { UNIT_OF_WORK } from '../../entities/repository';
 import { PrismaService } from './prisma.service';

@@ -1,4 +1,4 @@
-import { loadEnv, type BaseEnv } from '@mp/service-kit';
+import { type BaseEnv, loadEnv } from '@mp/service-kit';
 import { z } from 'zod';
 
 /**

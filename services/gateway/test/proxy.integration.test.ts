@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Server } from 'node:http';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { Test, type INestApplication } from '@nestjs/testing';
+import { type INestApplication, Test } from '@nestjs/testing';
 import supertest from 'supertest';
 import {
   TOKEN_VERIFIER,

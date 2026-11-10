@@ -1,4 +1,4 @@
-import { RoutingKeys, type RegisterRequest, type RegisterResponse } from '@mp/contracts';
+import { type RegisterRequest, type RegisterResponse, RoutingKeys } from '@mp/contracts';
 import { createEvent, type OutboxService } from '@mp/service-kit';
 import {
   EmailExistsError,

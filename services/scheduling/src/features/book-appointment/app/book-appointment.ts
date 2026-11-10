@@ -1,5 +1,5 @@
 import type { Patient } from '@mp/contracts';
-import { RoutingKeys, type Appointment, type BookAppointmentRequest } from '@mp/contracts';
+import { type Appointment, type BookAppointmentRequest, RoutingKeys } from '@mp/contracts';
 import { createEvent } from '@mp/service-kit';
 import type { AppointmentContext } from '../../../entities/appointment';
 import { appointmentEventPayload, toApiAppointment } from '../../../entities/appointment';
@@ -11,6 +11,7 @@ import { ValidationError } from '../../../shared/model';
 /** Минимальный порт пациентов (реализация — shared/api patient-клиент). */
 export interface BookPatientPort {
   findByUser(userId: string): Promise<Patient | null>;
+
   findById(patientId: string): Promise<Patient | null>;
 }
 

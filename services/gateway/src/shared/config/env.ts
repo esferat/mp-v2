@@ -1,6 +1,6 @@
-import { loadEnv, type BaseEnv } from '@mp/service-kit';
+import { type BaseEnv, loadEnv } from '@mp/service-kit';
 import { z } from 'zod';
-import { ROLES, type Role } from '../../entities/authorization';
+import { type Role, ROLES } from '../../entities/authorization';
 
 /**
  * Схема окружения gateway (0.7, 1.2): старт падает с понятной ошибкой,

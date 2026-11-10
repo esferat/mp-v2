@@ -5,8 +5,8 @@ import type {
 } from '@mp/contracts';
 import type { AppointmentRepository } from '../../../entities/appointment';
 import {
-  findDoctorByUser,
   type DoctorCatalogPort,
+  findDoctorByUser,
   type ScheduleCopyRepository,
 } from '../../../entities/schedule-copy';
 import { NotFoundError } from '../../../shared/model';

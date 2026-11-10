@@ -1,8 +1,8 @@
 import type { AppointmentListQuery, AppointmentListResponse } from '@mp/contracts';
-import { toApiAppointment, type AppointmentRepository } from '../../../entities/appointment';
+import { type AppointmentRepository, toApiAppointment } from '../../../entities/appointment';
 import {
-  findDoctorByUser,
   type DoctorCatalogPort,
+  findDoctorByUser,
   type ScheduleCopyRepository,
 } from '../../../entities/schedule-copy';
 import type { AccessSubject } from '@mp/service-kit';

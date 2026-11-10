@@ -1,9 +1,9 @@
 import {
+  type DynamicModule,
   Inject,
   Injectable,
-  Module,
-  type DynamicModule,
   type InjectionToken,
+  Module,
   type OnApplicationBootstrap,
   type OnApplicationShutdown,
 } from '@nestjs/common';
@@ -33,10 +33,13 @@ export interface OutboxRecord {
  */
 export interface OutboxStore {
   enqueue(routingKey: string, payload: unknown): Promise<void>;
+
   /** Строки, готовые к отправке (status=PENDING, nextAttemptAt <= now). */
   claim(limit: number): Promise<OutboxRecord[]>;
+
   /** Пометить пачку опубликованной одним UPDATE (аудит: per-row был ×N). */
   markPublishedMany(ids: string[]): Promise<void>;
+
   /** retryAt = null → статус FAILED (лимит исчерпан). */
   markFailed(id: string, retryAt: Date | null, error?: string): Promise<void>;
 }
@@ -71,8 +74,11 @@ export function retryDelayMs(attempts: number): number {
  *  с ними (бивариантность методов), а сам адаптер не знает о моделях сервиса. */
 export interface PrismaOutboxDelegate {
   create(args: unknown): Promise<unknown>;
+
   findMany(args: unknown): Promise<unknown>;
+
   update(args: unknown): Promise<unknown>;
+
   updateMany(args: unknown): Promise<unknown>;
 }
 
@@ -133,13 +139,13 @@ export function createPrismaOutboxStore(delegate: PrismaOutboxDelegate): OutboxS
 export class OutboxService {
   constructor(@Inject(OUTBOX_STORE) private readonly store: OutboxStore) {}
 
-  enqueue(routingKey: string, payload: unknown): Promise<void> {
-    return this.store.enqueue(routingKey, payload);
-  }
-
   /** Для транзакционной записи: store, привязанный к tx-клиенту. */
   get transactionalStore(): OutboxStore {
     return this.store;
+  }
+
+  enqueue(routingKey: string, payload: unknown): Promise<void> {
+    return this.store.enqueue(routingKey, payload);
   }
 }
 

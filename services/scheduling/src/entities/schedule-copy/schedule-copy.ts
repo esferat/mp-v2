@@ -53,12 +53,16 @@ export interface ScheduleCopyRepository {
    * откатывают более свежие данные.
    */
   applyDoctorEvent(data: DoctorEventData): Promise<{ applied: boolean }>;
+
   /** Все копии специализации (фильтр ACTIVE — на стороне use-case). */
   findForSpecialization(specializationId: string): Promise<DoctorScheduleCopy[]>;
+
   /** Копия врача (проверка перед бронью, 5.3); null — не найдена. */
   findById(doctorId: string): Promise<DoctorScheduleCopy | null>;
+
   /** Копия по Keycloak sub (9.2: свои записи врача); null — привязки нет. */
   findByUserId(userId: string): Promise<DoctorScheduleCopy | null>;
+
   /** Число копий (bootstrap: 0 → импорт из catalog, 5.1). */
   count(): Promise<number>;
 }

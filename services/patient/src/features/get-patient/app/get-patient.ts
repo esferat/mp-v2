@@ -1,5 +1,5 @@
 import type { Patient } from '@mp/contracts';
-import { toPublicPatient, type PatientRepository } from '../../../entities/patient';
+import { type PatientRepository, toPublicPatient } from '../../../entities/patient';
 import { ForbiddenError, NotFoundError } from '../../../shared/model';
 
 /** Кто запрашивает карточку (claims токена, 1.2/4.2). */

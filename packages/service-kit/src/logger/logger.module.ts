@@ -1,4 +1,4 @@
-import { Global, Inject, Module, type DynamicModule } from '@nestjs/common';
+import { type DynamicModule, Global, Inject, Module } from '@nestjs/common';
 import type { LogLevel } from '../config/env';
 import { createLogger } from './logger';
 

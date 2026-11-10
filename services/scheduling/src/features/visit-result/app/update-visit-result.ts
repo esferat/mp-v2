@@ -2,7 +2,7 @@ import type { UpdateVisitResultRequest, VisitResult } from '@mp/contracts';
 import { validateVisitResult, type VisitResultRepository } from '../../../entities/visit-result';
 import type { AccessSubject } from '@mp/service-kit';
 import { NotFoundError } from '../../../shared/model';
-import { requireOwningDoctor, type OwningDoctorDeps } from './require-owning-doctor';
+import { type OwningDoctorDeps, requireOwningDoctor } from './require-owning-doctor';
 
 export type UpdateVisitResultDeps = OwningDoctorDeps & {
   visitResults: VisitResultRepository;

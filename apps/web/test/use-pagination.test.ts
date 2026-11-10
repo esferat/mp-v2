@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { renderHook, act, cleanup } from '@testing-library/react';
+import { act, cleanup, renderHook } from '@testing-library/react';
 import { computePagination, usePagination } from '../src/shared/lib/use-pagination';
 
 // next/navigation подменяется для изоляции хука (URL-синхронизация)

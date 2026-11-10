@@ -1,4 +1,4 @@
-import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { applyTraceIdMiddleware, LoggerModule } from '@mp/service-kit';
 import { TOKEN_VERIFIER } from '../entities/authorization';

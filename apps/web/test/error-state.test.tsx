@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { ErrorState } from '../src/shared/ui';
 import { ApiError } from '../src/shared/api/errors';
 

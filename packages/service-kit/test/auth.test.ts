@@ -3,11 +3,11 @@ import { HttpException } from '@nestjs/common';
 import {
   AUTH_OPTIONS,
   AuthModule,
-  JwtAuthGuard,
   isPublicPath,
+  JwtAuthGuard,
   type RequestAuth,
 } from '../src/auth/auth.module';
-import { TokenInvalidError, matchesAudience } from '../src/auth/jwks-verifier';
+import { matchesAudience, TokenInvalidError } from '../src/auth/jwks-verifier';
 
 /** Фейковый верификатор: токен 'good' проходит, остальные — нет. */
 const fakeVerifier = {

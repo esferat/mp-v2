@@ -1,4 +1,4 @@
-import { Global, Module, type DynamicModule } from '@nestjs/common';
+import { type DynamicModule, Global, Module } from '@nestjs/common';
 import { RABBIT_CONFIG, RabbitService } from './rabbit.service';
 import type { RabbitConfig } from './rabbit.types';
 

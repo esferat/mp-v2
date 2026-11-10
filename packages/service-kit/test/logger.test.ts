@@ -5,9 +5,11 @@ import { getTraceId, newTraceId, runWithTraceId } from '../src/logger/context';
 /** Поток-приёмник логов в памяти (для проверки JSON-формата). */
 class MemoryStream {
   public readonly chunks: string[] = [];
+
   write(chunk: string): void {
     this.chunks.push(chunk);
   }
+
   lines(): Record<string, unknown>[] {
     return this.chunks
       .join('')

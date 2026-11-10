@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type ChangeEvent } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DocumentCategory } from '@mp/contracts';
 import { browserApiClient } from '@/shared/api/browser';
@@ -9,8 +9,8 @@ import {
   MpAlert,
   MpButton,
   MpDialog,
-  MpDialogContent,
   MpDialogActions,
+  MpDialogContent,
   MpSelect,
   Stack,
   Typography,

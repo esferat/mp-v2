@@ -1,7 +1,7 @@
 import type { Appointment, AppointmentRepository } from '../../../entities/appointment';
 import {
-  findDoctorByUser,
   type DoctorCatalogPort,
+  findDoctorByUser,
   type ScheduleCopyRepository,
 } from '../../../entities/schedule-copy';
 import type { AccessSubject } from '@mp/service-kit';

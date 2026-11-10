@@ -1,12 +1,16 @@
 import {
   CanActivate,
+  type ExecutionContext,
   HttpException,
   Inject,
   Injectable,
-  type ExecutionContext,
 } from '@nestjs/common';
-import { TOKEN_VERIFIER, type TokenClaims, type TokenVerifier } from '../../entities/authorization';
-import { findPolicy } from '../../entities/authorization';
+import {
+  findPolicy,
+  TOKEN_VERIFIER,
+  type TokenClaims,
+  type TokenVerifier,
+} from '../../entities/authorization';
 
 /** Профиль HTTP-запроса (без зависимости от типов express). */
 interface RequestLike {

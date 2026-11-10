@@ -1,4 +1,4 @@
-import { PatientServiceError, type PatientCards } from '../../entities/registration';
+import { type PatientCards, PatientServiceError } from '../../entities/registration';
 import type { IdentityEnv } from '../config';
 import type { ClientCredentialsTokenCache } from './token-cache';
 

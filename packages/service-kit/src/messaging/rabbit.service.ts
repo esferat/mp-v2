@@ -5,19 +5,19 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import {
-  connect,
   type Channel,
   type ChannelModel,
   type ConfirmChannel,
+  connect,
   type ConsumeMessage,
 } from 'amqplib';
 import type { Logger } from 'pino';
 import { LOGGER } from '../logger/logger.module';
 import {
-  RabbitUnavailableError,
   type ConsumedEvent,
   type QueueSubscription,
   type RabbitConfig,
+  RabbitUnavailableError,
 } from './rabbit.types';
 
 export const RABBIT_CONFIG = Symbol('MP_RABBIT_CONFIG');

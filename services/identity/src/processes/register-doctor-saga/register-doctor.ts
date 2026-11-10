@@ -1,7 +1,7 @@
 import type { RegisterDoctorRequest, RegisterDoctorResponse } from '@mp/contracts';
 import {
-  EmailExistsError,
   type CatalogDoctors,
+  EmailExistsError,
   type UserDirectory,
 } from '../../entities/registration';
 import { ConflictError } from '../../shared/model';

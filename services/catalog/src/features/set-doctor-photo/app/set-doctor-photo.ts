@@ -1,6 +1,6 @@
 import { RoutingKeys, type SetPhotoResponse } from '@mp/contracts';
 import { createEvent } from '@mp/service-kit';
-import { doctorEventPayload, type DoctorContext } from '../../../entities/doctor';
+import { type DoctorContext, doctorEventPayload } from '../../../entities/doctor';
 import type { UnitOfWork } from '../../../entities/repository';
 import { NotFoundError } from '../../../shared/model';
 

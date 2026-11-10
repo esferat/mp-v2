@@ -1,8 +1,8 @@
 import { Body, Controller, Inject, Param, Put } from '@nestjs/common';
 import {
-  cancelAppointmentSchema,
   type Appointment,
   type CancelAppointmentRequest,
+  cancelAppointmentSchema,
 } from '@mp/contracts';
 import type { AppointmentContext } from '../../../entities/appointment';
 import { UNIT_OF_WORK, type UnitOfWork } from '../../../entities/repository';

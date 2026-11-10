@@ -2,8 +2,8 @@ import { Controller, Get, Inject, Param, Req, UnauthorizedException } from '@nes
 import type { FileDownload } from '@mp/contracts';
 import { LOGGER, type Logger, type RequestAuth } from '@mp/service-kit';
 import { ACCESS_PORTS, type AccessPorts } from '../../../entities/access';
-import { FILE_REPOSITORY, LINK_SIGNER } from '../../../entities/file';
 import type { FileLinkSigner, FileRepository } from '../../../entities/file';
+import { FILE_REPOSITORY, LINK_SIGNER } from '../../../entities/file';
 import { getFileLink } from '../app/get-file-link';
 
 type AuthedRequest = { auth?: RequestAuth };

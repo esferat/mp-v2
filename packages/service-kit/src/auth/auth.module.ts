@@ -1,11 +1,11 @@
 import {
+  type CanActivate,
+  type DynamicModule,
+  type ExecutionContext,
   HttpException,
   Inject,
   Injectable,
   Module,
-  type CanActivate,
-  type DynamicModule,
-  type ExecutionContext,
 } from '@nestjs/common';
 import { JwksTokenVerifier, TokenInvalidError, type VerifiedToken } from './jwks-verifier';
 import { loadEnv } from '../config/env';

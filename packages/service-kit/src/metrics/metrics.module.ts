@@ -1,5 +1,5 @@
 import { Controller, Get, Header, Module } from '@nestjs/common';
-import { Registry, collectDefaultMetrics, Gauge } from 'prom-client';
+import { collectDefaultMetrics, Gauge, Registry } from 'prom-client';
 
 /**
  * Метрики Prometheus (0.9 / наблюдаемость): единый реестр на процесс, endpoint

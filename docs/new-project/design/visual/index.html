@@ -1,52 +1,150 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>mp-v2 · Визуальные макеты страниц</title>
-<link rel="stylesheet" href="_shared.css">
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <title>mp-v2 · Визуальные макеты страниц</title>
+  <link href="_shared.css" rel="stylesheet">
 </head>
 <body>
 <div class="titlebar">
   <span class="page-name">Визуальные макеты mp-v2</span>
-  <span class="meta">Источник токенов — библиотека <b>mp-ui-kit</b> · макеты открываются в браузере, сборка не нужна</span>
+  <span
+    class="meta">Источник токенов — библиотека <b>mp-ui-kit</b> · макеты открываются в браузере, сборка не нужна</span>
 </div>
 
 <div class="mock-note">
   <h2 style="color:var(--text)">Как пользоваться</h2>
   <p>Каждый файл — готовый графический макет страницы. Синие пунктирные бейджи <span class="comp">Mp*</span> —
-  соответствующие компоненты библиотеки <code>mp-ui-kit</code>: вёрстка страницы собирается из них.
-  Внизу каждого макета — таблица «Блок → компонент → props/примечание» и ключевые состояния
-  (loading / empty / error). Текстовые спецификации и логика — в <code>../&lt;имя&gt;.md</code>.</p>
+    соответствующие компоненты библиотеки <code>mp-ui-kit</code>: вёрстка страницы собирается из них.
+    Внизу каждого макета — таблица «Блок → компонент → props/примечание» и ключевые состояния
+    (loading / empty / error). Текстовые спецификации и логика — в <code>../&lt;имя&gt;.md</code>.</p>
 
   <h2 style="color:var(--text)">Макеты</h2>
   <table class="map-table">
-    <tr><th>Макет</th><th>Страница / маршрут</th><th>Ключевые компоненты</th><th>Специфика</th></tr>
-    <tr><td><a href="layout.html">layout.html</a></td><td>Оболочка (все защищённые страницы)</td><td><span class="comp">MpAppShell</span> <span class="comp">MpAppBar</span> <span class="comp">MpNavDrawer</span> <span class="comp">MpPageHeader</span></td><td><a href="../layout.md">layout.md</a></td></tr>
-    <tr><td><a href="auth-login.html">auth-login.html</a></td><td>Вход — страница темы Keycloak</td><td><span class="comp">MpTextField</span> <span class="comp">MpButton</span> <span class="comp">MpAlert</span></td><td><a href="../auth-login.md">auth-login.md</a></td></tr>
-    <tr><td><a href="auth-register.html">auth-register.html</a></td><td>Регистрация (Keycloak) + добор профиля</td><td><span class="comp">MpTextField</span> <span class="comp">MpDatePicker</span> <span class="comp">MpButton</span></td><td><a href="../auth-signup.md">auth-signup.md</a></td></tr>
-    <tr><td><a href="profile.html">profile.html</a></td><td>Личный профиль — все роли</td><td><span class="comp">MpTextField</span> <span class="comp">MpAvatar</span> <span class="comp">MpButton</span></td><td><a href="../profile.md">profile.md</a></td></tr>
-    <tr><td><a href="doctors-list.html">doctors-list.html</a></td><td>Список врачей <code>/admin/doctors</code></td><td><span class="comp">MpTable</span> <span class="comp">MpStatusBadge</span> <span class="comp">MpEmptyState</span></td><td><a href="../doctors-list.md">doctors-list.md</a></td></tr>
-    <tr><td><a href="doctor-form.html">doctor-form.html</a></td><td>Карточка/форма врача</td><td><span class="comp">MpTextField</span> <span class="comp">MpSelect</span> <span class="comp">MpCheckbox</span> <span class="comp">MpDialog</span></td><td><a href="../doctor-form.md">doctor-form.md</a></td></tr>
-    <tr><td><a href="appointments.html">appointments.html</a></td><td>Управление записями <code>/admin/schedule</code></td><td><span class="comp">MpTable</span> <span class="comp">MpDialog</span> <span class="comp">MpStatusBadge</span></td><td><a href="../appointments.md">appointments.md</a></td></tr>
-    <tr><td><a href="booking.html">booking.html</a></td><td>Мастер записи <code>/cabinet/record</code></td><td><span class="comp">MpSelect</span> <span class="comp">MpDatePicker</span> <span class="comp">MpChip</span> <span class="comp">MpDialog</span></td><td><a href="../booking.md">booking.md</a></td></tr>
-    <tr><td><a href="history.html">history.html</a></td><td>История записей <code>/cabinet/history</code></td><td><span class="comp">MpTable</span> <span class="comp">MpStatusBadge</span> <span class="comp">MpButton</span></td><td><a href="../history.md">history.md</a></td></tr>
-    <tr><td><a href="doctor-schedule.html">doctor-schedule.html</a></td><td>Кабинет врача: приёмы</td><td><span class="comp">MpTable</span> <span class="comp">MpSelect</span> <span class="comp">MpStatusBadge</span></td><td><a href="../doctor-schedule.md">doctor-schedule.md</a></td></tr>
-    <tr><td><a href="visit-result.html">visit-result.html</a></td><td>Диалог «Результат приёма»</td><td><span class="comp">MpDialog</span> <span class="comp">MpTextField</span> <span class="comp">MpButton</span></td><td><a href="../visit-result.md">visit-result.md</a></td></tr>
-    <tr><td><a href="doctor-patients.html">doctor-patients.html</a></td><td>Пациенты врача и документы</td><td><span class="comp">MpTable</span> <span class="comp">MpChip</span> <span class="comp">MpEmptyState</span></td><td><a href="../doctor-patients.md">doctor-patients.md</a></td></tr>
+    <tr>
+      <th>Макет</th>
+      <th>Страница / маршрут</th>
+      <th>Ключевые компоненты</th>
+      <th>Специфика</th>
+    </tr>
+    <tr>
+      <td><a href="layout.html">layout.html</a></td>
+      <td>Оболочка (все защищённые страницы)</td>
+      <td><span class="comp">MpAppShell</span> <span class="comp">MpAppBar</span> <span class="comp">MpNavDrawer</span>
+        <span class="comp">MpPageHeader</span></td>
+      <td><a href="../layout.md">layout.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="auth-login.html">auth-login.html</a></td>
+      <td>Вход — страница темы Keycloak</td>
+      <td><span class="comp">MpTextField</span> <span class="comp">MpButton</span> <span class="comp">MpAlert</span>
+      </td>
+      <td><a href="../auth-login.md">auth-login.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="auth-register.html">auth-register.html</a></td>
+      <td>Регистрация (Keycloak) + добор профиля</td>
+      <td><span class="comp">MpTextField</span> <span class="comp">MpDatePicker</span> <span
+        class="comp">MpButton</span></td>
+      <td><a href="../auth-signup.md">auth-signup.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="profile.html">profile.html</a></td>
+      <td>Личный профиль — все роли</td>
+      <td><span class="comp">MpTextField</span> <span class="comp">MpAvatar</span> <span class="comp">MpButton</span>
+      </td>
+      <td><a href="../profile.md">profile.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="doctors-list.html">doctors-list.html</a></td>
+      <td>Список врачей <code>/admin/doctors</code></td>
+      <td><span class="comp">MpTable</span> <span class="comp">MpStatusBadge</span> <span
+        class="comp">MpEmptyState</span></td>
+      <td><a href="../doctors-list.md">doctors-list.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="doctor-form.html">doctor-form.html</a></td>
+      <td>Карточка/форма врача</td>
+      <td><span class="comp">MpTextField</span> <span class="comp">MpSelect</span> <span class="comp">MpCheckbox</span>
+        <span class="comp">MpDialog</span></td>
+      <td><a href="../doctor-form.md">doctor-form.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="appointments.html">appointments.html</a></td>
+      <td>Управление записями <code>/admin/schedule</code></td>
+      <td><span class="comp">MpTable</span> <span class="comp">MpDialog</span> <span class="comp">MpStatusBadge</span>
+      </td>
+      <td><a href="../appointments.md">appointments.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="booking.html">booking.html</a></td>
+      <td>Мастер записи <code>/cabinet/record</code></td>
+      <td><span class="comp">MpSelect</span> <span class="comp">MpDatePicker</span> <span class="comp">MpChip</span>
+        <span class="comp">MpDialog</span></td>
+      <td><a href="../booking.md">booking.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="history.html">history.html</a></td>
+      <td>История записей <code>/cabinet/history</code></td>
+      <td><span class="comp">MpTable</span> <span class="comp">MpStatusBadge</span> <span class="comp">MpButton</span>
+      </td>
+      <td><a href="../history.md">history.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="doctor-schedule.html">doctor-schedule.html</a></td>
+      <td>Кабинет врача: приёмы</td>
+      <td><span class="comp">MpTable</span> <span class="comp">MpSelect</span> <span class="comp">MpStatusBadge</span>
+      </td>
+      <td><a href="../doctor-schedule.md">doctor-schedule.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="visit-result.html">visit-result.html</a></td>
+      <td>Диалог «Результат приёма»</td>
+      <td><span class="comp">MpDialog</span> <span class="comp">MpTextField</span> <span class="comp">MpButton</span>
+      </td>
+      <td><a href="../visit-result.md">visit-result.md</a></td>
+    </tr>
+    <tr>
+      <td><a href="doctor-patients.html">doctor-patients.html</a></td>
+      <td>Пациенты врача и документы</td>
+      <td><span class="comp">MpTable</span> <span class="comp">MpChip</span> <span class="comp">MpEmptyState</span></td>
+      <td><a href="../doctor-patients.md">doctor-patients.md</a></td>
+    </tr>
   </table>
 
   <h2 style="color:var(--text)">Бренд-токены (источник — <code>mp-ui-kit/src/theme/tokens.ts</code>)</h2>
   <div class="card">
     <h3>Палитра brand (teal) — primary #0D9488</h3>
     <div class="row" style="gap:8px">
-      <div style="min-width:0;flex:1"><div style="height:48px;border-radius:8px;background:#f0fdfa;border:1px solid var(--border)"></div><div style="font-size:11px">50 · #f0fdfa</div></div>
-      <div style="min-width:0;flex:1"><div style="height:48px;border-radius:8px;background:#ccfbf1"></div><div style="font-size:11px">100 · #ccfbf1</div></div>
-      <div style="min-width:0;flex:1"><div style="height:48px;border-radius:8px;background:#5eead4"></div><div style="font-size:11px">300 · #5eead4</div></div>
-      <div style="min-width:0;flex:1"><div style="height:48px;border-radius:8px;background:#14b8a6"></div><div style="font-size:11px">500 · #14b8a6</div></div>
-      <div style="min-width:0;flex:1"><div style="height:48px;border-radius:8px;background:#0d9488"></div><div style="font-size:11px">600 · #0d9488 <b>primary</b></div></div>
-      <div style="min-width:0;flex:1"><div style="height:48px;border-radius:8px;background:#0f766e"></div><div style="font-size:11px">700 · #0f766e</div></div>
-      <div style="min-width:0;flex:1"><div style="height:48px;border-radius:8px;background:#134e4a"></div><div style="font-size:11px">900 · #134e4a</div></div>
+      <div style="min-width:0;flex:1">
+        <div style="height:48px;border-radius:8px;background:#f0fdfa;border:1px solid var(--border)"></div>
+        <div style="font-size:11px">50 · #f0fdfa</div>
+      </div>
+      <div style="min-width:0;flex:1">
+        <div style="height:48px;border-radius:8px;background:#ccfbf1"></div>
+        <div style="font-size:11px">100 · #ccfbf1</div>
+      </div>
+      <div style="min-width:0;flex:1">
+        <div style="height:48px;border-radius:8px;background:#5eead4"></div>
+        <div style="font-size:11px">300 · #5eead4</div>
+      </div>
+      <div style="min-width:0;flex:1">
+        <div style="height:48px;border-radius:8px;background:#14b8a6"></div>
+        <div style="font-size:11px">500 · #14b8a6</div>
+      </div>
+      <div style="min-width:0;flex:1">
+        <div style="height:48px;border-radius:8px;background:#0d9488"></div>
+        <div style="font-size:11px">600 · #0d9488 <b>primary</b></div>
+      </div>
+      <div style="min-width:0;flex:1">
+        <div style="height:48px;border-radius:8px;background:#0f766e"></div>
+        <div style="font-size:11px">700 · #0f766e</div>
+      </div>
+      <div style="min-width:0;flex:1">
+        <div style="height:48px;border-radius:8px;background:#134e4a"></div>
+        <div style="font-size:11px">900 · #134e4a</div>
+      </div>
     </div>
     <h3 style="margin-top:16px">Семантика статусов (mpStatuses)</h3>
     <div class="comp-list" style="gap:16px">
@@ -70,8 +168,10 @@
     <p style="margin:0;color:var(--text-secondary);font-size:13px">
       <code>app/**/page.tsx</code> — только композиция · <code>widgets/*</code> — блоки макета (таблица, шапка, форма) ·
       <code>features/*</code> — действия («Перенести», «Внести результат», «Сохранить») ·
-      <code>shared/ui</code> — точка применения темы над <code>mp-ui-kit</code>; прямой импорт <code>@mui/*</code> запрещён
-      (см. <a href="../../fsd.md">fsd.md</a> §3). Недостающий компонент добавляется в <b>mp-ui-kit</b>, а не дублируется в <code>web</code>.
+      <code>shared/ui</code> — точка применения темы над <code>mp-ui-kit</code>; прямой импорт <code>@mui/*</code>
+      запрещён
+      (см. <a href="../../fsd.md">fsd.md</a> §3). Недостающий компонент добавляется в <b>mp-ui-kit</b>, а не дублируется
+      в <code>web</code>.
     </p>
   </div>
 </div>

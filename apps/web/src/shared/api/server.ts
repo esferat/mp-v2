@@ -1,10 +1,10 @@
 import type { Specialization } from '@mp/contracts';
 import { getWebEnv } from '@/shared/config';
 import { getSessionTokens } from '@/shared/config/session-tokens';
-import { createApiClient, type ApiClient } from './client';
+import { type ApiClient, createApiClient } from './client';
 import { getSpecializationsCached } from './catalog-cache';
 import { ApiError } from './errors';
-import { createApi, type Api } from './namespaces';
+import { type Api, createApi } from './namespaces';
 
 /**
  * Фабрика серверного HTTP-клиента (задачи 2.3/2.6): gateway напрямую

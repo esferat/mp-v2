@@ -1,8 +1,7 @@
 import { Inject, Injectable, type OnApplicationBootstrap } from '@nestjs/common';
 import type { Logger } from '@mp/service-kit';
-import { HealthRegistry, LOGGER } from '@mp/service-kit';
+import { HealthRegistry, LOGGER, RabbitService } from '@mp/service-kit';
 import { PrismaService } from '../../shared/api';
-import { RabbitService } from '@mp/service-kit';
 
 /**
  * Регистрация проверок готовности сервиса (0.7): /readyz отдаёт 503,

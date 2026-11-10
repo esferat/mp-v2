@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import Keycloak from 'next-auth/providers/keycloak';
 import { getWebEnv } from './env';
-import { msUntilExpiry, refreshAccessToken, resolveRoles, type JwtState } from './auth-callbacks';
+import { type JwtState, msUntilExpiry, refreshAccessToken, resolveRoles } from './auth-callbacks';
 
 /**
  * Конфигурация Auth.js (задача 1.1): Keycloak + PKCE, JWT-стратегия,

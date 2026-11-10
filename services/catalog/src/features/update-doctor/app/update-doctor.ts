@@ -1,6 +1,6 @@
-import { RoutingKeys, type DoctorListItem, type UpdateDoctorRequest } from '@mp/contracts';
+import { type DoctorListItem, RoutingKeys, type UpdateDoctorRequest } from '@mp/contracts';
 import { createEvent } from '@mp/service-kit';
-import { doctorEventPayload, type DoctorContext } from '../../../entities/doctor';
+import { type DoctorContext, doctorEventPayload } from '../../../entities/doctor';
 import type { SpecializationRepository } from '../../../entities/specialization';
 import type { UnitOfWork } from '../../../entities/repository';
 import { validateSchedule } from '../../../entities/schedule';

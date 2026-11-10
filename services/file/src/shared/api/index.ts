@@ -1,4 +1,4 @@
-import { Global, Module, type DynamicModule } from '@nestjs/common';
+import { type DynamicModule, Global, Module } from '@nestjs/common';
 import { ClientCredentialsTokenCache } from '@mp/service-kit';
 import { ACCESS_PORTS } from '../../entities/access';
 import { FILE_REPOSITORY, LINK_SIGNER, OBJECT_STORE, PHOTO_LINKER } from '../../entities/file';

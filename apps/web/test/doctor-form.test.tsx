@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { DoctorForm } from '../src/features/doctor-form';
 import { ToastProvider } from '../src/shared/ui';
 import { ApiError } from '../src/shared/api/errors';

@@ -1,6 +1,9 @@
 # mp-v2 — монорепозиторий нового медицинского портала
 
-Код нового проекта (вариант архитектуры **C**). Документация лежит рядом с кодом: [`docs/new-project/`](docs/new-project/README.md) — обзор, [functional-spec.md](docs/new-project/functional-spec.md) — бэклог, [architecture.md](docs/new-project/architecture.md) — архитектура, [fsd.md](docs/new-project/fsd.md) — обязательные конвенции кода, [estimates.md](docs/new-project/estimates.md) — оценки трудозатрат.
+Код нового проекта (вариант архитектуры **C**). Документация лежит рядом с кодом: [
+`docs/new-project/`](docs/new-project/README.md) — обзор, [functional-spec.md](docs/new-project/functional-spec.md) —
+бэклог, [architecture.md](docs/new-project/architecture.md) — архитектура, [fsd.md](docs/new-project/fsd.md) —
+обязательные конвенции кода, [estimates.md](docs/new-project/estimates.md) — оценки трудозатрат.
 
 ## Структура
 
@@ -50,7 +53,9 @@ node scripts/generate-service.mjs <name> --desc "…" --db db_<name> --port <n> 
 
 ## Запуск через Docker
 
-Весь стек живёт в Docker Compose: инфраструктура (PostgreSQL, Keycloak, RabbitMQ, MinIO, nginx, ELK, Mailpit), 8 сервисов и витрина `web`. Образы собирают код внутри себя — для чистого запуска локальный Node/pnpm не нужен (они нужны только для разработки и тестов).
+Весь стек живёт в Docker Compose: инфраструктура (PostgreSQL, Keycloak, RabbitMQ, MinIO, nginx, ELK, Mailpit), 8
+сервисов и витрина `web`. Образы собирают код внутри себя — для чистого запуска локальный Node/pnpm не нужен (они нужны
+только для разработки и тестов).
 
 ### Первый запуск
 
@@ -62,7 +67,8 @@ node scripts/generate-service.mjs <name> --desc "…" --db db_<name> --port <n> 
 ./infra/up.sh
 ```
 
-Скрипт подхватывает `.env` из корня репозитория, а если его нет — использует `.env.example` (dev-значения). Сам проверяет `docker compose config -q`, поднимает всё `-d` и ждёт healthcheck'и (по умолчанию 10 минут).
+Скрипт подхватывает `.env` из корня репозитория, а если его нет — использует `.env.example` (dev-значения). Сам
+проверяет `docker compose config -q`, поднимает всё `-d` и ждёт healthcheck'и (по умолчанию 10 минут).
 
 Тот же результат вручную (команды выполняются из корня `mp-v2/`):
 
@@ -72,7 +78,9 @@ docker compose --env-file .env.example -f infra/docker-compose.yml up -d       #
 docker compose --env-file .env.example -f infra/docker-compose.yml ps          # статус: сервис / состояние / health
 ```
 
-Порядок зависимостей соблюдается сам: джобы `migrate-<сервис>` применяют Prisma-миграции до старта сервиса (`service_completed_successfully`), сервисы стартуют после health своих зависимостей (postgres, rabbitmq, keycloak), `nginx` — после `web` и `gateway`.
+Порядок зависимостей соблюдается сам: джобы `migrate-<сервис>` применяют Prisma-миграции до старта сервиса
+(`service_completed_successfully`), сервисы стартуют после health своих зависимостей (postgres, rabbitmq, keycloak),
+`nginx` — после `web` и `gateway`.
 
 ### Пересборка после изменения кода
 
@@ -86,7 +94,9 @@ docker compose --env-file .env.example -f infra/docker-compose.yml up -d --force
 
 ### Тема Keycloak (вход / регистрация / сброс пароля)
 
-Страницы аутентификации оформляет кастомная тема `mp-portal` — пакет `packages/keycloak-theme` (Keycloakify: React-страницы Keycloak в стиле портала). Тема запекается в образ Keycloak (`infra/keycloak/Dockerfile` → `/opt/keycloak/providers/mp-portal.jar`), поэтому после правок в пакете пересобираются образ и контейнер:
+Страницы аутентификации оформляет кастомная тема `mp-portal` — пакет `packages/keycloak-theme` (Keycloakify:
+React-страницы Keycloak в стиле портала). Тема запекается в образ Keycloak (`infra/keycloak/Dockerfile` →
+`/opt/keycloak/providers/mp-portal.jar`), поэтому после правок в пакете пересобираются образ и контейнер:
 
 ```bash
 pnpm --filter @mp/keycloak-theme build
@@ -94,7 +104,9 @@ docker compose --env-file .env.example -f infra/docker-compose.yml build keycloa
 docker compose --env-file .env.example -f infra/docker-compose.yml up -d --force-recreate keycloak
 ```
 
-JAR монтировать в контейнер нельзя: JVM держит его открытым, и переименование файла при следующей сборке темы падает с EPERM. Реалм ссылается на тему через `loginTheme: "mp-portal"` (`infra/keycloak/realm-medical-portal.json`; у живого реалма правится через Admin API — импорт работает только на пустой БД).
+JAR монтировать в контейнер нельзя: JVM держит его открытым, и переименование файла при следующей сборке темы падает с
+EPERM. Реалм ссылается на тему через `loginTheme: "mp-portal"` (`infra/keycloak/realm-medical-portal.json`; у живого
+реалма правится через Admin API — импорт работает только на пустой БД).
 
 ### Миграции Prisma
 
@@ -105,7 +117,8 @@ docker compose --env-file .env.example -f infra/docker-compose.yml build migrate
 docker compose --env-file .env.example -f infra/docker-compose.yml run --rm migrate-scheduling
 ```
 
-Важно: после добавления миграции джоб **обязательно пересобрать** — со старым образом он печатает «No pending» и ничего не применяет.
+Важно: после добавления миграции джоб **обязательно пересобрать** — со старым образом он печатает «No pending» и ничего
+не применяет.
 
 ### Логи, остановка, сброс
 
@@ -162,10 +175,14 @@ node scripts/e2e-stage2.mjs                 # e2e-сценарии против 
 
 Примечания:
 
-- **`AUTH_URL` не задаётся** — Auth.js берёт origin из запроса (`trustHost`), иначе вход всегда уводил бы на `localhost`;
-  в route-хендлере `app/api/auth/[...nextauth]/route.ts` origin восстанавливается из `X-Forwarded-*`/`Host` (Next standalone строит `request.url` из `HOSTNAME` контейнера).
-- Домены портал/апекс прописаны в `redirectUris` клиента `next-web` (манифест `infra/keycloak/realm-medical-portal.json`; в живой реалм — через Admin API, импорт не перезаписывает).
-- **Keycloak сознательно без домена**: `KC_HOSTNAME` зафиксирован на `http://localhost:8180` — issuer в токенах должен быть стабильным для проверки всеми сервисами; страницы логина доступны на `http://localhost:8180`.
+- **`AUTH_URL` не задаётся** — Auth.js берёт origin из запроса (`trustHost`), иначе вход всегда уводил бы на
+  `localhost`;
+  в route-хендлере `app/api/auth/[...nextauth]/route.ts` origin восстанавливается из `X-Forwarded-*`/`Host` (Next
+  standalone строит `request.url` из `HOSTNAME` контейнера).
+- Домены портал/апекс прописаны в `redirectUris` клиента `next-web` (манифест
+  `infra/keycloak/realm-medical-portal.json`; в живой реалм — через Admin API, импорт не перезаписывает).
+- **Keycloak сознательно без домена**: `KC_HOSTNAME` зафиксирован на `http://localhost:8180` — issuer в токенах должен
+  быть стабильным для проверки всеми сервисами; страницы логина доступны на `http://localhost:8180`.
 - Доступ без hosts сохраняется: `http://localhost:8080` (nginx) и `http://localhost:3000` (web напрямую).
 
 ## Тестовые аккаунты (dev)
@@ -197,13 +214,14 @@ curl -s -X POST http://localhost:8180/realms/medical-portal/protocol/openid-conn
   cut -d. -f2 | base64 -d 2>/dev/null | jq .realm_access.roles
 ```
 
-Назначение ролей при «ручном» создании пользователя — в Keycloak Admin API
-(`POST .../users/{id}/role-mappings/realm`); сага `POST /api/identity/doctors`
+Назначение ролей при «ручном» создании пользователя — в Keycloak Admin API (`POST .../users/{id}/role-mappings/realm`);
+сага `POST /api/identity/doctors`
 (9.1) делает это сама при создании врача из админки.
 
 ## Правила
 
-- **FSD обязателен** во всех проектах ([fsd.md](docs/new-project/fsd.md)); границы проверяет `pnpm lint` (eslint-plugin-boundaries).
+- **FSD обязателен** во всех проектах ([fsd.md](docs/new-project/fsd.md)); границы проверяет `pnpm lint`
+  (eslint-plugin-boundaries).
 - **BFF + SSR**: браузер ходит только в `/api/bff/*`, токен не покидает сервер `web`.
 - **Контракты** — только из `@mp/contracts` (Zod): событие без схемы или локальный DTO = нарушение.
 - **События** — через outbox (`packages/service-kit`), потребители идемпотентны (inbox).

@@ -1,5 +1,4 @@
-import type { Patient, PatientRepository } from '../../src/entities/patient';
-import type { PatientContext } from '../../src/entities/patient';
+import type { Patient, PatientContext, PatientRepository } from '../../src/entities/patient';
 import type { UnitOfWork } from '../../src/entities/repository';
 import type { OutboxWriter } from '../../src/shared/model';
 import { ConflictError, NotFoundError } from '../../src/shared/model';

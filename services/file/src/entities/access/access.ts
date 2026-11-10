@@ -24,12 +24,14 @@ export interface AccessTarget {
 export interface AccessPorts {
   /** Карточка пациента по Keycloak sub; null — карточки нет. */
   findPatientByUser(userId: string): Promise<{ id: string } | null>;
+
   /**
    * Связь «врач-пациент» (9.3): есть ли у врача (по sub) действующая
    * запись с пациентом (APPROVED/COMPLETED в scheduling). Реализация —
    * HTTP к scheduling (relations/check).
    */
   hasDoctorRelation(doctorUserId: string, patientId: string): Promise<boolean>;
+
   /**
    * Привязка sub → doctorId (9.3): решает, свои ли файлы врача запрашиваются.
    * Реализация — HTTP к scheduling (relations/doctor/:userId); null — привязки нет.
@@ -86,5 +88,6 @@ export async function checkFileAccess(
 
   return deny('файлы врачей доступны только админу');
 }
+
 /** DI-токен привязки реализации (сборка — в app/app.module.ts). */
 export const ACCESS_PORTS = Symbol('FileAccessPorts');

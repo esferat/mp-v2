@@ -8,9 +8,11 @@ export const TRACE_HEADER = 'x-request-id';
 interface HttpRequestLike {
   header(name: string): string | undefined;
 }
+
 interface HttpResponseLike {
   setHeader(name: string, value: string): void;
 }
+
 type NextFunctionLike = () => void;
 
 export type TraceIdMiddlewareFn = (

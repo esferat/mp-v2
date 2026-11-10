@@ -180,7 +180,10 @@ const psql = (sql) =>
   ).trim();
 for (const id of appointmentIds) {
   const count = psql(
-    `SELECT count(*) FROM "OutboxMessage" WHERE "routingKey" = 'appointment.submitted.v1' AND payload->'payload'->>'appointmentId' = '${id}'`,
+    `SELECT count(*)
+     FROM "OutboxMessage"
+     WHERE "routingKey" = 'appointment.submitted.v1'
+       AND payload - > 'payload' ->>'appointmentId' = '${id}'`,
   );
   if (count !== '1') fail(`событий для ${id}: ${count} (ожидалось 1)`);
 }

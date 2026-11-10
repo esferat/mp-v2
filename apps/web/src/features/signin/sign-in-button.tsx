@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@/shared/ui';
 import type { ButtonProps } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 import { signIn } from 'next-auth/react';
 
 /**

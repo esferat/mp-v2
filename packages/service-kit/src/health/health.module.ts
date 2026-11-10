@@ -14,6 +14,8 @@ export interface ReadinessResponse {
 
 @Controller()
 class HealthController {
+  constructor(private readonly registry: HealthRegistry) {}
+
   /** Liveness: процесс жив — 200 независимо от зависимостей. */
   @Get('healthz')
   healthz(): LivenessResponse {
@@ -34,8 +36,6 @@ class HealthController {
     }
     return { status: 'ready', checks };
   }
-
-  constructor(private readonly registry: HealthRegistry) {}
 }
 
 /**

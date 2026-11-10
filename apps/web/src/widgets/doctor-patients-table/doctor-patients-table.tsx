@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { DoctorPatientList } from '@mp/contracts';
-import { Box, DataTable, MpTextField, LinkButton, Typography } from '@/shared/ui';
+import { Box, DataTable, LinkButton, MpTextField, Typography } from '@/shared/ui';
 import { formatRuDate } from '@/shared/lib';
 
 /**

@@ -10,7 +10,6 @@ import { HealthRegistry, LOGGER } from '@mp/service-kit';
 export class RegisterHealthChecks implements OnApplicationBootstrap {
   constructor(
     private readonly registry: HealthRegistry,
-
     @Inject(LOGGER) private readonly log: Logger,
   ) {}
 

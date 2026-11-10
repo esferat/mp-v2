@@ -1,15 +1,29 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Макет · Кабинет врача /doctor/schedule</title>
-<link rel="stylesheet" href="_shared.css">
-<style>
-  .time { font-family: monospace; font-size: 13px; }
-  .overdue { background: var(--warning-soft); }
-  .day-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); padding: 10px 12px; background: var(--neutral-100); border-bottom: 1px solid var(--border); }
-</style>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <title>Макет · Кабинет врача /doctor/schedule</title>
+  <link href="_shared.css" rel="stylesheet">
+  <style>
+    .time {
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .overdue {
+      background: var(--warning-soft);
+    }
+
+    .day-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      padding: 10px 12px;
+      background: var(--neutral-100);
+      border-bottom: 1px solid var(--border);
+    }
+  </style>
 </head>
 <body>
 
@@ -27,7 +41,9 @@
     <div class="logo">МП</div>
     <div class="brand">Медицинский портал<small>Кабинет врача · Иванов И. И. · Хирург</small></div>
     <div class="spacer"></div>
-    <div class="actions"><span class="avatar">ИИ</span><button class="btn btn-text btn-sm">Выйти</button><span class="comp">MpAppBar</span></div>
+    <div class="actions"><span class="avatar">ИИ</span>
+      <button class="btn btn-text btn-sm">Выйти</button>
+      <span class="comp">MpAppBar</span></div>
   </header>
 
   <div class="shell">
@@ -41,7 +57,9 @@
 
     <main class="main">
       <div class="page-header">
-        <div><h1>Приёмы</h1><div class="sub">Сегодня: 05.11 · всего 12 · doctorId строго из токена</div></div>
+        <div><h1>Приёмы</h1>
+          <div class="sub">Сегодня: 05.11 · всего 12 · doctorId строго из токена</div>
+        </div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn btn-outlined">Пациенты и документы →</button>
           <span class="comp">MpPageHeader</span>
@@ -51,8 +69,12 @@
       <div class="content">
         <section class="card">
           <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-            <div class="field"><label>Период</label><div class="control filled select">Сегодня</div></div>
-            <div class="field"><label>Статус</label><div class="control filled select">Все</div></div>
+            <div class="field"><label>Период</label>
+              <div class="control filled select">Сегодня</div>
+            </div>
+            <div class="field"><label>Статус</label>
+              <div class="control filled select">Все</div>
+            </div>
             <button class="btn btn-neutral">Сбросить</button>
             <span class="comp">MpSelect ×2</span>
             <span class="helper" style="margin-left:auto;align-self:center">URL-параметры, F5 — восстанавливается</span>
@@ -63,63 +85,129 @@
           <div class="day-title">СЕГОДНЯ · 05.11</div>
           <table class="table">
             <thead>
-              <tr><th>Время</th><th>Пациент</th><th>Статус</th><th>Результат</th><th style="text-align:right">Действия</th></tr>
+            <tr>
+              <th>Время</th>
+              <th>Пациент</th>
+              <th>Статус</th>
+              <th>Результат</th>
+              <th style="text-align:right">Действия</th>
+            </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="time">09:00</td><td>Иванов П. П.</td>
-                <td><span class="status approved"><span class="dot"></span>Принята</span></td>
-                <td>—</td>
-                <td><div class="actions"><button class="btn btn-contained btn-sm">Внести результат</button></div></td>
-              </tr>
-              <tr>
-                <td class="time">09:30</td><td>Петрова М. А.</td>
-                <td><span class="status completed"><span class="dot"></span>Приём завершён</span></td>
-                <td><span class="status active"><span class="dot"></span>✓ Есть</span></td>
-                <td><div class="actions"><button class="btn btn-outlined btn-sm">Посмотреть</button></div></td>
-              </tr>
-              <tr class="overdue">
-                <td class="time">10:00</td><td>Сидоров К. Л.</td>
-                <td><span class="status submitted"><span class="dot"></span>В ожидании</span></td>
-                <td>—</td>
-                <td><div class="hint-cause">⛔ без действий (только админ подтверждает)</div></td>
-              </tr>
-              <tr>
-                <td class="time">06.11 09:00</td><td>Козлова Н. Н.</td>
-                <td><span class="status approved"><span class="dot"></span>Принята</span></td>
-                <td>—</td>
-                <td><div class="actions"><button class="btn btn-contained btn-sm">Внести результат</button></div></td>
-              </tr>
+            <tr>
+              <td class="time">09:00</td>
+              <td>Иванов П. П.</td>
+              <td><span class="status approved"><span class="dot"></span>Принята</span></td>
+              <td>—</td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-contained btn-sm">Внести результат</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="time">09:30</td>
+              <td>Петрова М. А.</td>
+              <td><span class="status completed"><span class="dot"></span>Приём завершён</span></td>
+              <td><span class="status active"><span class="dot"></span>✓ Есть</span></td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-outlined btn-sm">Посмотреть</button>
+                </div>
+              </td>
+            </tr>
+            <tr class="overdue">
+              <td class="time">10:00</td>
+              <td>Сидоров К. Л.</td>
+              <td><span class="status submitted"><span class="dot"></span>В ожидании</span></td>
+              <td>—</td>
+              <td>
+                <div class="hint-cause">⛔ без действий (только админ подтверждает)</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="time">06.11 09:00</td>
+              <td>Козлова Н. Н.</td>
+              <td><span class="status approved"><span class="dot"></span>Принята</span></td>
+              <td>—</td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-contained btn-sm">Внести результат</button>
+                </div>
+              </td>
+            </tr>
             </tbody>
           </table>
           <div class="pagination">
             <span>Всего: 12</span>
-            <div class="pages"><button class="btn btn-neutral btn-sm" disabled>‹</button><span>Стр. 1 из 2</span><button class="btn btn-neutral btn-sm">›</button></div>
+            <div class="pages">
+              <button class="btn btn-neutral btn-sm" disabled>‹</button>
+              <span>Стр. 1 из 2</span>
+              <button class="btn btn-neutral btn-sm">›</button>
+            </div>
             <span>На странице: <span class="chip">10 ▾</span></span>
           </div>
         </section>
 
         <h2 style="font-size:15px">Состояния</h2>
         <div class="states-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
-          <div class="state-card"><div class="state-title">empty / 409</div><div class="state-body">
-            <div class="alert info">Приёмов за период нет — «Сбросить фильтры»</div>
-            <div class="alert warning" style="margin-top:10px"><b>Запись уже обработана</b><div style="font-size:12px">409 (не APPROVED / чужая) → «Повторить» + строка обновляется</div></div>
-          </div></div>
-          <div class="state-card"><div class="state-title">forbidden / «просрочен результат»</div><div class="state-body">
-            <div class="alert error"><b>403</b><div class="hint-cause">не DOCTOR (или USER) — 403-страница</div></div>
-            <div class="alert warning" style="margin-top:10px"><b>⚠ Просрочен результат</b><div style="font-size:12px">прошедший приём без результата подсвечивается warning</div></div>
-          </div></div>
+          <div class="state-card">
+            <div class="state-title">empty / 409</div>
+            <div class="state-body">
+              <div class="alert info">Приёмов за период нет — «Сбросить фильтры»</div>
+              <div class="alert warning" style="margin-top:10px"><b>Запись уже обработана</b>
+                <div style="font-size:12px">409 (не APPROVED / чужая) → «Повторить» + строка обновляется</div>
+              </div>
+            </div>
+          </div>
+          <div class="state-card">
+            <div class="state-title">forbidden / «просрочен результат»</div>
+            <div class="state-body">
+              <div class="alert error"><b>403</b>
+                <div class="hint-cause">не DOCTOR (или USER) — 403-страница</div>
+              </div>
+              <div class="alert warning" style="margin-top:10px"><b>⚠ Просрочен результат</b>
+                <div style="font-size:12px">прошедший приём без результата подсвечивается warning</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <h2 style="font-size:15px">Соответствие компонентов mp-ui-kit</h2>
         <div class="card">
           <table class="map-table">
-            <tr><th>Блок</th><th>Компонент</th><th>Props / примечание</th></tr>
-            <tr><td>Шапка</td><td><span class="comp">MpAppBar</span></td><td>имя врача + специализация — из сессии/профиля (10.1)</td></tr>
-            <tr><td>Фильтры (URL)</td><td><span class="comp">MpSelect ×2</span></td><td>URL-параметры, F5 восстанавливает; features/get-doctor-appointments</td></tr>
-            <tr><td>Таблица</td><td><span class="comp">MpTable</span> <span class="comp">MpStatusBadge</span></td><td>doctorId из токена; группировка «Сегодня» — заголовок 9.2</td></tr>
-            <tr><td>Результат</td><td><span class="comp">MpChip</span> «✓ Есть»</td><td>наличие visit-result — агрегация BFF (read-only)</td></tr>
-            <tr><td>Действия</td><td><span class="comp">MpButton</span></td><td>«Внести результат» — только APPROVED; «Посмотреть» — COMPLETED (visit-result.md); встреча SUBMITTED — без действи (подтверждает админ): 409 — тост</td></tr>
+            <tr>
+              <th>Блок</th>
+              <th>Компонент</th>
+              <th>Props / примечание</th>
+            </tr>
+            <tr>
+              <td>Шапка</td>
+              <td><span class="comp">MpAppBar</span></td>
+              <td>имя врача + специализация — из сессии/профиля (10.1)</td>
+            </tr>
+            <tr>
+              <td>Фильтры (URL)</td>
+              <td><span class="comp">MpSelect ×2</span></td>
+              <td>URL-параметры, F5 восстанавливает; features/get-doctor-appointments</td>
+            </tr>
+            <tr>
+              <td>Таблица</td>
+              <td><span class="comp">MpTable</span> <span class="comp">MpStatusBadge</span></td>
+              <td>doctorId из токена; группировка «Сегодня» — заголовок 9.2</td>
+            </tr>
+            <tr>
+              <td>Результат</td>
+              <td><span class="comp">MpChip</span> «✓ Есть»</td>
+              <td>наличие visit-result — агрегация BFF (read-only)</td>
+            </tr>
+            <tr>
+              <td>Действия</td>
+              <td><span class="comp">MpButton</span></td>
+              <td>«Внести результат» — только APPROVED; «Посмотреть» — COMPLETED (visit-result.md); встреча SUBMITTED —
+                без действи (подтверждает админ): 409 — тост
+              </td>
+            </tr>
           </table>
         </div>
       </div>

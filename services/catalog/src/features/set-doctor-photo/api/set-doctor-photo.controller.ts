@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Param, Put } from '@nestjs/common';
-import { setPhotoRequestSchema, type SetPhotoRequest, type SetPhotoResponse } from '@mp/contracts';
+import { type SetPhotoRequest, setPhotoRequestSchema, type SetPhotoResponse } from '@mp/contracts';
 import { type DoctorContext } from '../../../entities/doctor';
 import { UNIT_OF_WORK, type UnitOfWork } from '../../../entities/repository';
 import { ZodPipe } from '../../../shared/lib';

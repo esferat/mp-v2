@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import {
   DataTable,
   EmptyState,
   FormField,
   StatusBadge,
-  useToast,
   ToastProvider,
+  useToast,
 } from '../src/shared/ui';
 
 describe('StatusBadge (2.2: бейдж статуса)', () => {
@@ -45,6 +45,7 @@ describe('DataTable (2.2: состояния таблицы)', () => {
     id: string;
     name: string;
   }
+
   const columns = [{ key: 'name', header: 'Имя' }];
   const rows: Row[] = [
     { id: '1', name: 'Иван' },
@@ -101,6 +102,7 @@ describe('FormField (2.2: инпут с label/ошибкой)', () => {
         />
       );
     }
+
     render(<Harness />);
 
     const input = screen.getByLabelText('Email');

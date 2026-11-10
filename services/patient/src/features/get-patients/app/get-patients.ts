@@ -1,8 +1,8 @@
 import type { PatientListItem, PatientListQuery, PatientListResponse } from '@mp/contracts';
 import {
-  toPublicPatient,
   type PatientRepository,
   type PhotoUrlSigner,
+  toPublicPatient,
 } from '../../../entities/patient';
 
 /**

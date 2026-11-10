@@ -1,6 +1,6 @@
-import { RoutingKeys, type Patient, type UpdatePatientRequest } from '@mp/contracts';
+import { type Patient, RoutingKeys, type UpdatePatientRequest } from '@mp/contracts';
 import { createEvent } from '@mp/service-kit';
-import { toPublicPatient, type PatientContext } from '../../../entities/patient';
+import { type PatientContext, toPublicPatient } from '../../../entities/patient';
 import type { UnitOfWork } from '../../../entities/repository';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../../shared/model';
 

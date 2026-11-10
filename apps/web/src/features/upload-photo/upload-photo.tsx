@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type ChangeEvent } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { OwnerType } from '@mp/contracts';
 import type { Area } from 'react-easy-crop';

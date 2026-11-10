@@ -36,9 +36,12 @@ export interface CreateFileData {
 /** Порт реестра (hexagonal: реализация — shared/api, тесты — in-memory). */
 export interface FileRepository {
   findByKey(key: string): Promise<FileMeta | null>;
+
   create(data: CreateFileData): Promise<FileMeta>;
+
   /** Удаление записи; true — строка была (повтор безопасен). */
   deleteByKey(key: string): Promise<boolean>;
+
   /** Файлы владельца, новые сверху (4.5/9.3: списки документов). */
   findByOwner(ownerType: OwnerType, ownerId: string): Promise<{ items: FileMeta[]; total: number }>;
 }

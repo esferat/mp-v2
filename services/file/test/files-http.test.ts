@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { APP_FILTER } from '@nestjs/core';
-import { Test, type NestApplication } from '@nestjs/testing';
+import { type NestApplication, Test } from '@nestjs/testing';
 import request from 'supertest';
 import { LOGGER, type Logger } from '@mp/service-kit';
 import { ApiErrorFilter } from '../src/app/kernel';

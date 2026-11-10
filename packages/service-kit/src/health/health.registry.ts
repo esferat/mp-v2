@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 /** Проверка готовности: бросает исключение, если компонент недоступен. */
 export interface HealthCheck {
   name: string;
+
   check(): Promise<void>;
 }
 

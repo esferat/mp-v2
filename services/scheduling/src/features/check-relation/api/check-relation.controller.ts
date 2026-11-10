@@ -1,8 +1,8 @@
 import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
 import {
-  doctorRelationQuerySchema,
   type DoctorByUserResponse,
   type DoctorRelationQuery,
+  doctorRelationQuerySchema,
   type DoctorRelationResponse,
 } from '@mp/contracts';
 import { APPOINTMENT_REPOSITORY, type AppointmentRepository } from '../../../entities/appointment';

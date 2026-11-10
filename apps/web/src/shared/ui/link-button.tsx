@@ -1,8 +1,8 @@
 'use client';
 
 import NextLink from 'next/link';
-import { Button } from '@mui/material';
 import type { ButtonProps } from '@mui/material';
+import { Button } from '@mui/material';
 
 /**
  * Кнопка-ссылка со soft navigation (next/link): `<Button href>` рендерит

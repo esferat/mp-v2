@@ -1,8 +1,8 @@
 import type { SlotList, SlotsQuery } from '@mp/contracts';
 import {
+  type DoctorCatalogPort,
   importCopiesFromCatalog,
   isActiveCopy,
-  type DoctorCatalogPort,
   type ScheduleCopyRepository,
 } from '../../../entities/schedule-copy';
 import type { AppointmentRepository } from '../../../entities/appointment';

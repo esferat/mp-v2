@@ -59,6 +59,7 @@ declare module '@mui/material/styles' {
   interface TypographyVariants {
     mono: CSSProperties;
   }
+
   interface TypographyVariantsOptions {
     mono?: CSSProperties;
   }

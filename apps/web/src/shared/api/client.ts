@@ -25,10 +25,15 @@ export interface RequestOptions extends Omit<RequestInit, 'headers'> {
 /** Публичный контракт клиента (им импортируют потребители). */
 export interface ApiClient {
   request<T>(path: string, init?: RequestOptions): Promise<T>;
+
   get<T>(path: string, init?: RequestOptions): Promise<T>;
+
   post<T>(path: string, body?: unknown, init?: RequestOptions): Promise<T>;
+
   put<T>(path: string, body?: unknown, init?: RequestOptions): Promise<T>;
+
   patch<T>(path: string, body?: unknown, init?: RequestOptions): Promise<T>;
+
   del<T>(path: string, init?: RequestOptions): Promise<T>;
 }
 

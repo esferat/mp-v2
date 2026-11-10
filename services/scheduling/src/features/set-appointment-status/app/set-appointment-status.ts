@@ -1,10 +1,10 @@
-import { RoutingKeys, type Appointment, type SetAppointmentStatusRequest } from '@mp/contracts';
+import { type Appointment, RoutingKeys, type SetAppointmentStatusRequest } from '@mp/contracts';
 import { createEvent } from '@mp/service-kit';
 import {
   applyTransition,
+  type AppointmentContext,
   appointmentEventPayload,
   toApiAppointment,
-  type AppointmentContext,
 } from '../../../entities/appointment';
 import type { UnitOfWork } from '../../../entities/repository';
 import { ValidationError } from '../../../shared/model';

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   extractRoles,
+  type JwtState,
   msUntilExpiry,
   refreshAccessToken,
   resolveRoles,
-  type JwtState,
 } from '../src/shared/config/auth-callbacks';
 
 const issuer = 'http://localhost:8180/realms/medical-portal';

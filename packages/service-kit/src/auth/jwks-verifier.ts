@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, errors as joseErrors, jwtVerify, type JWTPayload } from 'jose';
+import { createRemoteJWKSet, errors as joseErrors, type JWTPayload, jwtVerify } from 'jose';
 
 /**
  * Проверка JWT по jwks реалма (защита в глубину, AC 1.2): подписали,

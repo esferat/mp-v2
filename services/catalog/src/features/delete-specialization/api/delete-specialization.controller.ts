@@ -1,7 +1,7 @@
 import { Controller, Delete, Inject, Param } from '@nestjs/common';
 import { okSchema } from '@mp/contracts';
-import { UNIT_OF_WORK } from '../../../entities/repository';
 import type { UnitOfWork } from '../../../entities/repository';
+import { UNIT_OF_WORK } from '../../../entities/repository';
 import type { SpecializationContext } from '../../../entities/specialization';
 import { deleteSpecialization } from '../app/delete-specialization';
 

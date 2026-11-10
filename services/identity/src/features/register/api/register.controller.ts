@@ -1,14 +1,14 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { registerRequestSchema, type RegisterRequest, type RegisterResponse } from '@mp/contracts';
+import { type RegisterRequest, registerRequestSchema, type RegisterResponse } from '@mp/contracts';
 import { OutboxService } from '@mp/service-kit';
 import {
   PATIENT_CARDS,
-  USER_DIRECTORY,
   type PatientCards,
+  USER_DIRECTORY,
   type UserDirectory,
 } from '../../../entities/registration';
 import { ZodPipe } from '../../../shared/lib';
-import { registerUser, type RegisterSagaDeps } from '../../../processes/register-user-saga';
+import { type RegisterSagaDeps, registerUser } from '../../../processes/register-user-saga';
 
 /**
  * Адаптер входа (fsd.md §4.2): Zod-валидация контракта (в т.ч. birthDate

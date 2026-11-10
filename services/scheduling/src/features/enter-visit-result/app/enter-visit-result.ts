@@ -1,18 +1,18 @@
-import { RoutingKeys, type EnterVisitResultRequest, type VisitResult } from '@mp/contracts';
+import { type EnterVisitResultRequest, RoutingKeys, type VisitResult } from '@mp/contracts';
+import type { AccessSubject } from '@mp/service-kit';
 import { createEvent } from '@mp/service-kit';
 import {
   applyTransition,
-  appointmentEventPayload,
   type AppointmentContext,
+  appointmentEventPayload,
 } from '../../../entities/appointment';
 import {
-  findDoctorByUser,
   type DoctorCatalogPort,
+  findDoctorByUser,
   type ScheduleCopyRepository,
 } from '../../../entities/schedule-copy';
 import { validateVisitResult, type VisitResultContext } from '../../../entities/visit-result';
 import type { UnitOfWork } from '../../../entities/repository';
-import type { AccessSubject } from '@mp/service-kit';
 import { ForbiddenError, NotFoundError } from '../../../shared/model';
 
 export interface EnterVisitResultDeps {

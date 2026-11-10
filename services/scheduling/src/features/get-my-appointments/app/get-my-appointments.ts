@@ -1,5 +1,5 @@
 import type { AppointmentListQuery, AppointmentListResponse, Patient } from '@mp/contracts';
-import { toApiAppointment, type AppointmentRepository } from '../../../entities/appointment';
+import { type AppointmentRepository, toApiAppointment } from '../../../entities/appointment';
 
 /** Минимальный порт пациентов (реализация — shared/api patient-клиент). */
 export interface MyAppointmentsPatientPort {

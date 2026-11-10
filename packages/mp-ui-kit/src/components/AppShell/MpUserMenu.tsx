@@ -4,7 +4,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Typography from '@mui/material/Typography';
-import { useState, type MouseEvent, type ReactNode } from 'react';
+import { type MouseEvent, type ReactNode, useState } from 'react';
 import { MpAvatar } from '../Avatar/MpAvatar';
 
 /** Пункт меню профиля («Профиль», «Выйти»). */

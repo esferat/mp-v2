@@ -1,14 +1,28 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" contents="width=device-width, initial-scale=1">
-<title>Макет · История записей /cabinet/history</title>
-<link rel="stylesheet" href="_shared.css">
-<style>
-  .time { font-family: monospace; font-size: 13px; }
-  .badge-upcoming { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--info-soft); color: var(--info); font-weight: 600; }
-</style>
+  <meta charset="utf-8">
+  <meta contents="width=device-width, initial-scale=1" name="viewport">
+  <title>Макет · История записей /cabinet/history</title>
+  <link href="_shared.css" rel="stylesheet">
+  <style>
+    .time {
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .badge-upcoming {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--info-soft);
+      color: var(--info);
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
 
@@ -26,7 +40,9 @@
     <div class="logo">МП</div>
     <div class="brand">Медицинский портал<small>Медицинский портал · USER</small></div>
     <div class="spacer"></div>
-    <div class="actions"><span class="avatar">ИП</span><button class="btn btn-text btn-sm">Выйти</button><span class="comp">MpAppBar</span></div>
+    <div class="actions"><span class="avatar">ИП</span>
+      <button class="btn btn-text btn-sm">Выйти</button>
+      <span class="comp">MpAppBar</span></div>
   </header>
 
   <div class="shell">
@@ -40,17 +56,26 @@
 
     <main class="main">
       <div class="page-header">
-        <div><h1>История записей</h1><div class="sub">Всего: 17 записей</div></div>
-        <button class="btn btn-contained">＋ Записаться к врачу</button> <span class="comp">MpPageHeader</span>
+        <div><h1>История записей</h1>
+          <div class="sub">Всего: 17 записей</div>
+        </div>
+        <button class="btn btn-contained">＋ Записаться к врачу</button>
+        <span class="comp">MpPageHeader</span>
       </div>
 
       <div class="content">
         <!-- ================= ФИЛЬТРЫ ================= -->
         <section class="card">
           <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-            <div class="field"><label>Период</label><div class="control">Все</div></div>
-            <div class="field"><label>Статус</label><div class="control filled select">Все</div></div>
-            <div class="field"><label>Специализация</label><div class="control filled select">Все</div></div>
+            <div class="field"><label>Период</label>
+              <div class="control">Все</div>
+            </div>
+            <div class="field"><label>Статус</label>
+              <div class="control filled select">Все</div>
+            </div>
+            <div class="field"><label>Специализация</label>
+              <div class="control filled select">Все</div>
+            </div>
             <button class="btn btn-neutral">Сбросить</button>
             <span class="comp">MpSelect ×3 · MpDatePicker</span>
           </div>
@@ -60,42 +85,70 @@
         <section class="card" style="padding:0;overflow:hidden">
           <table class="table">
             <thead>
-              <tr><th>Дата и время</th><th>Врач</th><th>Специализация</th><th>Статус</th><th>Причина / результат</th><th style="text-align:right">Действие</th></tr>
+            <tr>
+              <th>Дата и время</th>
+              <th>Врач</th>
+              <th>Специализация</th>
+              <th>Статус</th>
+              <th>Причина / результат</th>
+              <th style="text-align:right">Действие</th>
+            </tr>
             </thead>
             <tbody>
-              <tr>
-                <td><span class="badge-upcoming">⏭ Предстоящая</span> <div class="time">07.11 09:30</div></td>
-                <td>Иванов И. И.</td><td>Хирург</td>
-                <td><span class="status approved"><span class="dot"></span>Принята</span></td>
-                <td class="hint-cause">—</td>
-                <td style="text-align:right"><button class="btn btn-text btn-sm">История переносов →</button></td>
-              </tr>
-              <tr>
-                <td class="time">05.11 09:00</td>
-                <td>Иванов И. И.</td><td>Хирург</td>
-                <td><span class="status completed"><span class="dot"></span>Приём завершён</span></td>
-                <td><div class="alert success" style="padding:6px 10px;font-size:12px"><b>Результат приёма</b> <button class="btn btn-text btn-sm">Посмотреть</button></div></td>
-                <td style="text-align:right"><span class="hint-cause">результат приходит агрегацией из BFF (read-only)</span></td>
-              </tr>
-              <tr>
-                <td class="time">12.10 09:00</td>
-                <td>Петрова М. С.</td><td>Кардиолог</td>
-                <td><span class="status declined"><span class="dot"></span>Отклонена</span></td>
-                <td>Врач на смене</td>
-                <td style="text-align:right"><button class="btn btn-text btn-sm">Повторная запись</button></td>
-              </tr>
-              <tr>
-                <td class="time">30.09 14:00</td>
-                <td>Сидоров А. П.</td><td>Травматолог</td>
-                <td><span class="status cancelled"><span class="dot"></span>Отменена</span></td>
-                <td>Отменено админом</td>
-                <td style="text-align:right"><button class="btn btn-text btn-sm">Повторная запись</button></td>
-              </tr>
+            <tr>
+              <td><span class="badge-upcoming">⏭ Предстоящая</span>
+                <div class="time">07.11 09:30</div>
+              </td>
+              <td>Иванов И. И.</td>
+              <td>Хирург</td>
+              <td><span class="status approved"><span class="dot"></span>Принята</span></td>
+              <td class="hint-cause">—</td>
+              <td style="text-align:right">
+                <button class="btn btn-text btn-sm">История переносов →</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="time">05.11 09:00</td>
+              <td>Иванов И. И.</td>
+              <td>Хирург</td>
+              <td><span class="status completed"><span class="dot"></span>Приём завершён</span></td>
+              <td>
+                <div class="alert success" style="padding:6px 10px;font-size:12px"><b>Результат приёма</b>
+                  <button class="btn btn-text btn-sm">Посмотреть</button>
+                </div>
+              </td>
+              <td style="text-align:right"><span
+                class="hint-cause">результат приходит агрегацией из BFF (read-only)</span></td>
+            </tr>
+            <tr>
+              <td class="time">12.10 09:00</td>
+              <td>Петрова М. С.</td>
+              <td>Кардиолог</td>
+              <td><span class="status declined"><span class="dot"></span>Отклонена</span></td>
+              <td>Врач на смене</td>
+              <td style="text-align:right">
+                <button class="btn btn-text btn-sm">Повторная запись</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="time">30.09 14:00</td>
+              <td>Сидоров А. П.</td>
+              <td>Травматолог</td>
+              <td><span class="status cancelled"><span class="dot"></span>Отменена</span></td>
+              <td>Отменено админом</td>
+              <td style="text-align:right">
+                <button class="btn btn-text btn-sm">Повторная запись</button>
+              </td>
+            </tr>
             </tbody>
           </table>
           <div class="pagination">
             <span>Всего: 17</span>
-            <div class="pages"><button class="btn btn-neutral btn-sm" disabled>‹</button><span>Страница 1 из 2</span><button class="btn btn-neutral btn-sm">›</button></div>
+            <div class="pages">
+              <button class="btn btn-neutral btn-sm" disabled>‹</button>
+              <span>Страница 1 из 2</span>
+              <button class="btn btn-neutral btn-sm">›</button>
+            </div>
             <span>На странице: <span class="chip">10 ▾</span></span>
           </div>
         </section>
@@ -103,24 +156,65 @@
         <!-- ================= СОСТОЯНИЯ ================= -->
         <h2 style="font-size:15px;margin:8px 0 0">Состояния / обновления</h2>
         <div class="grid-2">
-          <div class="state-card"><div class="state-title">empty</div><div class="state-body">
-            <div class="empty"><div class="icon">📜</div><h3>Записей пока нет</h3><p>После записи к врачу она появится здесь.</p><button class="btn btn-contained">Записаться к врачу</button></div>
-          </div></div>
-          <div class="state-card"><div class="state-title">обновления (без websockets)</div><div class="state-body">
-            <div class="alert info">⏳ refetch по событию <code>appointment.approved/declined/cancelled.v1</code> или focus/таймеру 60 с — новые статусы в таблице</div>
-            <div class="alert error" style="margin-top:10px"><b>Ошибка загрузки</b><div>requestId … · «Повторить» — таблица сохраняет прошлые данные</div></div>
-          </div></div>
+          <div class="state-card">
+            <div class="state-title">empty</div>
+            <div class="state-body">
+              <div class="empty">
+                <div class="icon">📜</div>
+                <h3>Записей пока нет</h3>
+                <p>После записи к врачу она появится здесь.</p>
+                <button class="btn btn-contained">Записаться к врачу</button>
+              </div>
+            </div>
+          </div>
+          <div class="state-card">
+            <div class="state-title">обновления (без websockets)</div>
+            <div class="state-body">
+              <div class="alert info">⏳ refetch по событию <code>appointment.approved/declined/cancelled.v1</code> или
+                focus/таймеру 60 с — новые статусы в таблице
+              </div>
+              <div class="alert error" style="margin-top:10px"><b>Ошибка загрузки</b>
+                <div>requestId … · «Повторить» — таблица сохраняет прошлые данные</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <h2 style="font-size:15px">Соответствие компонентов mp-ui-kit</h2>
         <div class="card">
           <table class="map-table">
-            <tr><th>Блок</th><th>Компонент</th><th>Props / примечание</th></tr>
-            <tr><td>Список</td><td><span class="comp">MpTable</span> <span class="comp">MpTablePagination</span></td><td>GET /api/scheduling/appointments/me — patientId строго из токена; сортировка по дате убыв., будущие сверху</td></tr>
-            <tr><td>Статусы</td><td><span class="comp">MpStatusBadge</span></td><td>те же цвета, что и для админа; будущие — бейдж «Предстоящая»</td></tr>
-            <tr><td>Результат приёма</td><td><span class="comp">MpDialog</span> (read-only диалог visit-result)</td><td>COMPLETED — агрегация из BFF (9.2; по TD-35 без показа результата история-тесты падают)</td></tr>
-            <tr><td>Повторная запись</td><td><span class="comp">MpButton</span></td><td>предзаполненное направление → /cabinet/record (опционально)</td></tr>
-            <tr><td>История переносов</td><td><span class="comp">MpButton (text)</span></td><td>перенесённая запись → диалог журнала (10.3)</td></tr>
+            <tr>
+              <th>Блок</th>
+              <th>Компонент</th>
+              <th>Props / примечание</th>
+            </tr>
+            <tr>
+              <td>Список</td>
+              <td><span class="comp">MpTable</span> <span class="comp">MpTablePagination</span></td>
+              <td>GET /api/scheduling/appointments/me — patientId строго из токена; сортировка по дате убыв., будущие
+                сверху
+              </td>
+            </tr>
+            <tr>
+              <td>Статусы</td>
+              <td><span class="comp">MpStatusBadge</span></td>
+              <td>те же цвета, что и для админа; будущие — бейдж «Предстоящая»</td>
+            </tr>
+            <tr>
+              <td>Результат приёма</td>
+              <td><span class="comp">MpDialog</span> (read-only диалог visit-result)</td>
+              <td>COMPLETED — агрегация из BFF (9.2; по TD-35 без показа результата история-тесты падают)</td>
+            </tr>
+            <tr>
+              <td>Повторная запись</td>
+              <td><span class="comp">MpButton</span></td>
+              <td>предзаполненное направление → /cabinet/record (опционально)</td>
+            </tr>
+            <tr>
+              <td>История переносов</td>
+              <td><span class="comp">MpButton (text)</span></td>
+              <td>перенесённая запись → диалог журнала (10.3)</td>
+            </tr>
           </table>
         </div>
 

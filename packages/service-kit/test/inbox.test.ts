@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { InboxService, createPrismaInboxStore, type InboxStore } from '../src/messaging/inbox';
+import { createPrismaInboxStore, InboxService, type InboxStore } from '../src/messaging/inbox';
 
-const silentLog = { debug() {}, info() {}, warn() {}, error() {} };
+const silentLog = {
+  debug() {},
+  info() {},
+  warn() {},
+  error() {},
+};
 
 class FakeInboxStore implements InboxStore {
   readonly processed = new Map<string, string>();

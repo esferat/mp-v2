@@ -1,7 +1,7 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
 import {
-  createSpecializationSchema,
   type CreateSpecializationRequest,
+  createSpecializationSchema,
   type Specialization,
 } from '@mp/contracts';
 import { UNIT_OF_WORK, type UnitOfWork } from '../../../entities/repository';

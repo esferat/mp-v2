@@ -39,12 +39,6 @@ export class VisitResultController {
     private readonly catalog: CatalogHttpClient,
   ) {}
 
-  private subject(request: AuthedRequest): { sub: string; roles: readonly string[] } {
-    const auth = request.auth;
-    if (!auth) throw new UnauthorizedException('Требуется токен доступа');
-    return { sub: auth.sub, roles: auth.realmRoles };
-  }
-
   @Get('appointments/:id/result')
   get(@Param('id') id: string, @Req() request: AuthedRequest): Promise<VisitResult> {
     return getVisitResult(
@@ -76,5 +70,11 @@ export class VisitResultController {
       body ?? {},
       this.subject(request),
     );
+  }
+
+  private subject(request: AuthedRequest): { sub: string; roles: readonly string[] } {
+    const auth = request.auth;
+    if (!auth) throw new UnauthorizedException('Требуется токен доступа');
+    return { sub: auth.sub, roles: auth.realmRoles };
   }
 }

@@ -9,6 +9,7 @@ export interface ObjectStore {
     body: Uint8Array;
     contentType: string;
   }): Promise<void>;
+
   /** Идемпотентно: отсутствующий ключ не ошибка. */
   remove(bucket: string, key: string): Promise<void>;
 }

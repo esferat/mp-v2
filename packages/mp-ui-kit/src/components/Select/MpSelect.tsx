@@ -4,12 +4,12 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { type SelectProps } from '@mui/material/Select';
 import {
-  forwardRef,
-  useId,
   type ForwardedRef,
+  forwardRef,
   type ReactElement,
   type ReactNode,
   type Ref,
+  useId,
 } from 'react';
 
 export interface MpSelectOption<T extends string | number = string> {

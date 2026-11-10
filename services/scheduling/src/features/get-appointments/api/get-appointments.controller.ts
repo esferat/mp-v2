@@ -1,7 +1,7 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import {
-  appointmentListQuerySchema,
   type AppointmentListQuery,
+  appointmentListQuerySchema,
   type AppointmentListResponse,
 } from '@mp/contracts';
 import { APPOINTMENT_REPOSITORY, type AppointmentRepository } from '../../../entities/appointment';

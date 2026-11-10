@@ -1,11 +1,11 @@
 import { Inject, Injectable, Module, type OnApplicationBootstrap } from '@nestjs/common';
 import { RoutingKeys } from '@mp/contracts';
 import {
+  type ConsumedEvent,
   InboxService,
   LOGGER,
-  RabbitService,
-  type ConsumedEvent,
   type Logger,
+  RabbitService,
 } from '@mp/service-kit';
 import { APPOINTMENT_REPOSITORY, type AppointmentRepository } from '../../entities/appointment';
 import { applyPatientEvent } from './app/apply-patient-event';

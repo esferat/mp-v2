@@ -2,9 +2,9 @@ import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { doctorListQuerySchema, type DoctorListResponse } from '@mp/contracts';
 import {
   DOCTOR_REPOSITORY,
-  PHOTO_URL_SIGNER,
   type DoctorListQuery,
   type DoctorRepository,
+  PHOTO_URL_SIGNER,
   type PhotoUrlSigner,
 } from '../../../entities/doctor';
 import { ZodPipe } from '../../../shared/lib';

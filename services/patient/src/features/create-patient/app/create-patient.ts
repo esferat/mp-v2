@@ -1,4 +1,4 @@
-import { RoutingKeys, type CreatePatientRequest, type Patient } from '@mp/contracts';
+import { type CreatePatientRequest, type Patient, RoutingKeys } from '@mp/contracts';
 import { createEvent } from '@mp/service-kit';
 import type { PatientContext } from '../../../entities/patient';
 import type { UnitOfWork } from '../../../entities/repository';

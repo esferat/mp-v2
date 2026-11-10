@@ -1,5 +1,9 @@
 {
-  "vhosts": [{ "name": "/" }],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
   "users": [
     {
       "name": "guest",
@@ -8,7 +12,13 @@
     }
   ],
   "permissions": [
-    { "user": "guest", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" }
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
   ],
   "exchanges": [
     {

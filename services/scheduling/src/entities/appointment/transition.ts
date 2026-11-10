@@ -1,6 +1,6 @@
 import type { AppointmentStatus } from '@mp/contracts';
 import { InvalidTransitionError, NotFoundError } from '../../shared/model';
-import { canTransition, type Appointment, type AppointmentContext } from './appointment';
+import { type Appointment, type AppointmentContext, canTransition } from './appointment';
 
 export interface TransitionResult {
   appointment: Appointment;

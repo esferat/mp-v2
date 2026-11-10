@@ -1,7 +1,7 @@
 import { Controller, Delete, Inject, Param, Req, UnauthorizedException } from '@nestjs/common';
 import { LOGGER, type Logger, type RequestAuth } from '@mp/service-kit';
 import { ACCESS_PORTS, type AccessPorts } from '../../../entities/access';
-import { OBJECT_STORE, type FileContext, type ObjectStore } from '../../../entities/file';
+import { type FileContext, OBJECT_STORE, type ObjectStore } from '../../../entities/file';
 import { UNIT_OF_WORK, type UnitOfWork } from '../../../entities/repository';
 import { ForbiddenError } from '../../../shared/model';
 import { deleteFile } from '../app/delete-file';

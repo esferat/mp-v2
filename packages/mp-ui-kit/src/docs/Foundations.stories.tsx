@@ -1,18 +1,18 @@
-import { Box, Stack, Typography, useTheme } from '@mui/material';
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { mpTokens as t } from '../theme/tokens';
+import {Box, Stack, Typography, useTheme} from '@mui/material';
+import type {Meta, StoryObj} from '@storybook/react-vite';
+import {mpTokens as t} from '../theme/tokens';
 
 const meta = {
   title: 'Foundations',
-  parameters: { layout: 'padded' },
+  parameters: {layout: 'padded'},
 } satisfies Meta;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Swatch({ name, value }: { name: string; value: string }) {
+function Swatch({name, value}: { name: string; value: string }) {
   return (
-    <Box sx={{ textAlign: 'center', minWidth: 80 }}>
+    <Box sx={{textAlign: 'center', minWidth: 80}}>
       <Box
         sx={{
           width: 64,
@@ -24,25 +24,25 @@ function Swatch({ name, value }: { name: string; value: string }) {
           borderColor: 'divider',
         }}
       />
-      <Typography variant="caption" sx={{ display: 'block', mt: 0.75 }}>
+      <Typography variant="caption" sx={{display: 'block', mt: 0.75}}>
         {name}
       </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontFamily: 'monospace' }}>
+      <Typography variant="caption" color="text.secondary" sx={{display: 'block', fontFamily: 'monospace'}}>
         {value}
       </Typography>
     </Box>
   );
 }
 
-function ColorScale({ title, scale }: { title: string; scale: Record<string, string> }) {
+function ColorScale({title, scale}: { title: string; scale: Record<string, string> }) {
   return (
     <Box>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+      <Typography variant="subtitle2" sx={{mb: 1}}>
         {title}
       </Typography>
-      <Stack direction="row" spacing={1.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={1.5} useFlexGap sx={{flexWrap: 'wrap'}}>
         {Object.entries(scale).map(([step, value]) => (
-          <Swatch key={step} name={step} value={value} />
+          <Swatch key={step} name={step} value={value}/>
         ))}
       </Stack>
     </Box>
@@ -51,20 +51,20 @@ function ColorScale({ title, scale }: { title: string; scale: Record<string, str
 
 export const Colors: Story = {
   render: () => (
-    <Stack spacing={3} sx={{ maxWidth: 980 }}>
+    <Stack spacing={3} sx={{maxWidth: 980}}>
       <Typography variant="h4">Цвета</Typography>
-      <ColorScale title="brand (indigo)" scale={{ ...t.brand }} />
-      <ColorScale title="neutral (slate)" scale={{ ...t.neutral }} />
+      <ColorScale title="brand (indigo)" scale={{...t.brand}}/>
+      <ColorScale title="neutral (slate)" scale={{...t.neutral}}/>
       <Box>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>
+        <Typography variant="subtitle2" sx={{mb: 1}}>
           semantic
         </Typography>
-        <Stack direction="row" spacing={3} useFlexGap sx={{ flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={3} useFlexGap sx={{flexWrap: 'wrap'}}>
           {Object.entries(t.semantic).map(([name, color]) => (
             <Stack key={name} direction="row" spacing={1}>
-              <Swatch name={`${name}.main`} value={color.main} />
-              <Swatch name={`${name}.light`} value={color.light} />
-              <Swatch name={`${name}.dark`} value={color.dark} />
+              <Swatch name={`${name}.main`} value={color.main}/>
+              <Swatch name={`${name}.light`} value={color.light}/>
+              <Swatch name={`${name}.dark`} value={color.dark}/>
             </Stack>
           ))}
         </Stack>
@@ -110,29 +110,29 @@ function TypographyDoc() {
   ];
 
   return (
-    <Stack spacing={2} sx={{ maxWidth: 980 }}>
+    <Stack spacing={2} sx={{maxWidth: 980}}>
       <Typography variant="h4">Типографика</Typography>
       <Typography variant="body2" color="text.secondary">
         Шрифт: {theme.typography.fontFamily}
       </Typography>
 
-      <Stack direction="row" spacing={2} sx={{ alignItems: 'baseline' }}>
-        <Box sx={{ width: 110, flexShrink: 0 }}>
+      <Stack direction="row" spacing={2} sx={{alignItems: 'baseline'}}>
+        <Box sx={{width: 110, flexShrink: 0}}>
           <Typography variant="caption" color="text.secondary">
             display
           </Typography>
         </Box>
-        <Typography sx={{ ...t.typography.scale.display }}>Съешь ещё этих мягких булок</Typography>
+        <Typography sx={{...t.typography.scale.display}}>Съешь ещё этих мягких булок</Typography>
       </Stack>
 
       {rows.map(([label, variant]) => (
-        <Stack key={label} direction="row" spacing={2} sx={{ alignItems: 'baseline' }}>
-          <Box sx={{ width: 110, flexShrink: 0 }}>
+        <Stack key={label} direction="row" spacing={2} sx={{alignItems: 'baseline'}}>
+          <Box sx={{width: 110, flexShrink: 0}}>
             <Typography variant="caption" color="text.secondary">
               {label}
             </Typography>
           </Box>
-          <Typography variant={variant} noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <Typography variant={variant} noWrap sx={{overflow: 'hidden', textOverflow: 'ellipsis'}}>
             Съешь ещё этих мягких булок
           </Typography>
         </Stack>
@@ -142,16 +142,16 @@ function TypographyDoc() {
 }
 
 export const TypographyScale: Story = {
-  render: () => <TypographyDoc />,
+  render: () => <TypographyDoc/>,
 };
 
 function RadiusAndSpacingDoc() {
   return (
-    <Stack spacing={3} sx={{ maxWidth: 980 }}>
+    <Stack spacing={3} sx={{maxWidth: 980}}>
       <Typography variant="h4">Скругления</Typography>
-      <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={2} useFlexGap sx={{flexWrap: 'wrap'}}>
         {Object.entries(t.radius).map(([name, value]) => (
-          <Box key={name} sx={{ textAlign: 'center' }}>
+          <Box key={name} sx={{textAlign: 'center'}}>
             <Box
               sx={{
                 width: 72,
@@ -162,23 +162,23 @@ function RadiusAndSpacingDoc() {
                 borderColor: 'divider',
               }}
             />
-            <Typography variant="caption" sx={{ display: 'block', mt: 0.75 }}>
+            <Typography variant="caption" sx={{display: 'block', mt: 0.75}}>
               {name} = {value}
             </Typography>
           </Box>
         ))}
       </Stack>
 
-      <Typography variant="h4" sx={{ mt: 2 }}>
+      <Typography variant="h4" sx={{mt: 2}}>
         Отступы
       </Typography>
       <Stack spacing={1}>
         {Object.entries(t.spacing).map(([name, value]) => (
-          <Stack key={name} direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <Typography variant="caption" sx={{ width: 48, fontFamily: 'monospace' }}>
+          <Stack key={name} direction="row" spacing={2} sx={{alignItems: 'center'}}>
+            <Typography variant="caption" sx={{width: 48, fontFamily: 'monospace'}}>
               {name}
             </Typography>
-            <Box sx={{ width: value * 4, height: 12, bgcolor: t.brand[600], borderRadius: 0.75 }} />
+            <Box sx={{width: value * 4, height: 12, bgcolor: t.brand[600], borderRadius: 0.75}}/>
             <Typography variant="caption" color="text.secondary">
               {value}px
             </Typography>
@@ -190,7 +190,7 @@ function RadiusAndSpacingDoc() {
 }
 
 export const RadiusAndSpacing: Story = {
-  render: () => <RadiusAndSpacingDoc />,
+  render: () => <RadiusAndSpacingDoc/>,
 };
 
 function ShadowsDoc() {
@@ -203,11 +203,11 @@ function ShadowsDoc() {
   ];
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 980 }}>
+    <Stack spacing={3} sx={{maxWidth: 980}}>
       <Typography variant="h4">Тени</Typography>
-      <Stack direction="row" spacing={3} useFlexGap sx={{ flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={3} useFlexGap sx={{flexWrap: 'wrap'}}>
         {levels.map(([name, level]) => (
-          <Box key={name} sx={{ textAlign: 'center' }}>
+          <Box key={name} sx={{textAlign: 'center'}}>
             <Box
               sx={{
                 width: 140,
@@ -219,7 +219,7 @@ function ShadowsDoc() {
                 boxShadow: theme.shadows[level],
               }}
             />
-            <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
+            <Typography variant="caption" sx={{display: 'block', mt: 1}}>
               {name} — shadows[{level}]
             </Typography>
           </Box>
@@ -234,5 +234,5 @@ function ShadowsDoc() {
 }
 
 export const Shadows: Story = {
-  render: () => <ShadowsDoc />,
+  render: () => <ShadowsDoc/>,
 };

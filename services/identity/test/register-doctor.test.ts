@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { registerDoctor } from '../src/processes/register-doctor-saga';
 import {
-  EmailExistsError,
   type CatalogDoctors,
+  EmailExistsError,
   type UserDirectory,
 } from '../src/entities/registration';
 

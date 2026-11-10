@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { HttpException, type ExecutionContext } from '@nestjs/common';
+import { type ExecutionContext, HttpException } from '@nestjs/common';
 import { JwtAuthGuard } from '../src/features/authenticate';
 import { RolesGuard } from '../src/features/authorize';
 import {
-  TokenInvalidError,
   type TokenClaims,
+  TokenInvalidError,
   type TokenVerifier,
 } from '../src/entities/authorization';
 

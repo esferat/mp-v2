@@ -1,7 +1,7 @@
 import { Controller, Get, Inject, Query, Req, UnauthorizedException } from '@nestjs/common';
 import {
-  appointmentListQuerySchema,
   type AppointmentListQuery,
+  appointmentListQuerySchema,
   type AppointmentListResponse,
 } from '@mp/contracts';
 import type { RequestAuth } from '@mp/service-kit';

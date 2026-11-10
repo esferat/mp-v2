@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { Alert, Snackbar } from '@mui/material';
 
 /**
@@ -23,7 +23,9 @@ interface ToastState {
 
 interface ToastApi {
   show(message: string, tone?: ToastTone, requestId?: string): void;
+
   success(message: string): void;
+
   error(message: string, requestId?: string): void;
 }
 

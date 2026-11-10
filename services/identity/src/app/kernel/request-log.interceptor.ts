@@ -1,8 +1,8 @@
 import {
   CallHandler,
+  type ExecutionContext,
   Inject,
   Injectable,
-  type ExecutionContext,
   type NestInterceptor,
 } from '@nestjs/common';
 import type { Observable } from 'rxjs';

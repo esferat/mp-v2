@@ -1,9 +1,9 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { createDoctorSchema, type CreateDoctorRequest } from '@mp/contracts';
+import { type CreateDoctorRequest, createDoctorSchema } from '@mp/contracts';
 import type { DoctorListItem } from '../../../entities/doctor';
 import { type DoctorContext } from '../../../entities/doctor';
-import { SPECIALIZATION_REPOSITORY } from '../../../entities/specialization';
 import type { SpecializationRepository } from '../../../entities/specialization';
+import { SPECIALIZATION_REPOSITORY } from '../../../entities/specialization';
 import { UNIT_OF_WORK, type UnitOfWork } from '../../../entities/repository';
 import { ZodPipe } from '../../../shared/lib';
 import { createDoctor } from '../app/create-doctor';

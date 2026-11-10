@@ -7,11 +7,15 @@ import type { Specialization } from './specialization';
 export interface SpecializationRepository {
   /** Все специализации с числом врачей (для админ-списка). */
   findAll(): Promise<Specialization[]>;
+
   /** Поиск по названию без учёта регистра (проверка дубликата). */
   findByName(name: string): Promise<Specialization | null>;
+
   findById(id: string): Promise<Specialization | null>;
+
   /** Создание; дубликат (уникальный индекс по нижнему регистру) → ConflictError. */
   create(name: string): Promise<Specialization>;
+
   /** Удаление; отсутствие — тихо (идемпотентность). */
   delete(id: string): Promise<void>;
 }

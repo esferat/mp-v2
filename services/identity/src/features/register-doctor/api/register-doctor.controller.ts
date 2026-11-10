@@ -8,13 +8,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
-  registerDoctorRequestSchema,
   type RegisterDoctorRequest,
+  registerDoctorRequestSchema,
   type RegisterDoctorResponse,
 } from '@mp/contracts';
 import type { RequestAuth } from '@mp/service-kit';
-import { CATALOG_DOCTORS, USER_DIRECTORY } from '../../../entities/registration';
 import type { CatalogDoctors, UserDirectory } from '../../../entities/registration';
+import { CATALOG_DOCTORS, USER_DIRECTORY } from '../../../entities/registration';
 import { ZodPipe } from '../../../shared/lib';
 import { registerDoctor } from '../../../processes/register-doctor-saga';
 

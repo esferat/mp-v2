@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
-import { slotsQuerySchema, type SlotList, type SlotsQuery } from '@mp/contracts';
+import { type SlotList, type SlotsQuery, slotsQuerySchema } from '@mp/contracts';
 import { LOGGER, type Logger } from '@mp/service-kit';
 import { APPOINTMENT_REPOSITORY, type AppointmentRepository } from '../../../entities/appointment';
 import {

@@ -1,13 +1,13 @@
-import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import {
   applyTraceIdMiddleware,
   AuthModule,
+  createPrismaOutboxStore,
   JwtAuthGuard,
   LoggerModule,
-  RabbitModule,
   OutboxModule,
-  createPrismaOutboxStore,
+  RabbitModule,
 } from '@mp/service-kit';
 import { PrismaService, SharedApiModule } from '../shared/api';
 import { ApiErrorFilter, RequestLogInterceptor } from './kernel';

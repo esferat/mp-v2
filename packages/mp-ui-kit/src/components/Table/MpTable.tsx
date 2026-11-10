@@ -5,7 +5,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableFooter from '@mui/material/TableFooter';
 import TableHead from '@mui/material/TableHead';
 import TableRow, { type TableRowProps } from '@mui/material/TableRow';
-import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
+import { type ComponentPropsWithoutRef, forwardRef, type ReactNode } from 'react';
 
 export type { TableProps, TableCellProps, TableRowProps };
 

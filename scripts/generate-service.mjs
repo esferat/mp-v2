@@ -192,6 +192,7 @@ function block(nameParts) {
   void nameParts;
   return out;
 }
+
 const blocks = block();
 
 /** Применяет {{токены}} к содержимому файла. */

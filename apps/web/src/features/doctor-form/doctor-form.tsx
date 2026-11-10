@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DoctorListItem, Specialization } from '@mp/contracts';
 import {
@@ -19,6 +19,7 @@ import {
 } from '@/shared/ui';
 import { ApiError, toApiError } from '@/shared/api/errors';
 import { browserApi } from '@/shared/api/browser';
+import type { DoctorFormErrors, DoctorFormField, DoctorFormValues } from './validate';
 import {
   DAY_LABELS,
   DURATION_OPTIONS,
@@ -26,7 +27,6 @@ import {
   schedulePreview,
   validateDoctorForm,
 } from './validate';
-import type { DoctorFormField, DoctorFormErrors, DoctorFormValues } from './validate';
 
 /**
  * Форма врача (3.2): создание и редактирование в одном компоненте

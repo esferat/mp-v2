@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { APP_FILTER } from '@nestjs/core';
-import { Test, type NestApplication } from '@nestjs/testing';
+import { type NestApplication, Test } from '@nestjs/testing';
 import request from 'supertest';
 import { LOGGER, type Logger } from '@mp/service-kit';
 import { ApiErrorFilter } from '../src/app/kernel';
@@ -10,7 +10,7 @@ import { UNIT_OF_WORK as UOW_TOKEN } from '../src/entities/repository';
 import { CreateDoctorController } from '../src/features/create-doctor/api/create-doctor.controller';
 import { UpdateDoctorController } from '../src/features/update-doctor/api/update-doctor.controller';
 import { GetDoctorController } from '../src/features/get-doctor/api/get-doctor.controller';
-import { makeCatalogContext, type InMemoryDoctorRepository } from './helpers/in-memory';
+import { type InMemoryDoctorRepository, makeCatalogContext } from './helpers/in-memory';
 
 /**
  * HTTP-уровневый тест (3.2 AC: невалидное расписание -> 400, а не 500):

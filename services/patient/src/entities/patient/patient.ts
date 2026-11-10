@@ -22,15 +22,19 @@ export interface Patient {
 export interface PatientRepository {
   /** Поиск по Keycloak `sub`; null — карточки ещё нет. */
   findByUserId(userId: string): Promise<Patient | null>;
+
   /** Поиск по id карточки; null — не найдена. */
   findById(id: string): Promise<Patient | null>;
+
   /** Установка/очистка ключа фото (key = null); null — карточки нет. */
   setPhoto(id: string, key: string | null): Promise<Patient | null>;
+
   /**
    * Идемпотентное создание: если карточка с userId/email уже есть —
    * возвращается существующая (двойной submit → одна карточка, 1.4 AC).
    */
   createIfAbsent(data: Omit<Patient, 'id' | 'registeredAt'>): Promise<Patient>;
+
   /**
    * Обновление данных (4.2): email/ФИО/дата рождения; занятый email →
    * ConflictError. userId не меняется (привязка к Keycloak фиксирована).
@@ -45,6 +49,7 @@ export interface PatientRepository {
       birthDate: string;
     },
   ): Promise<Patient>;
+
   /** Страница списка для админки (4.1): поиск по ФИО/email, offset/limit. */
   findPage(query: {
     offset: number;

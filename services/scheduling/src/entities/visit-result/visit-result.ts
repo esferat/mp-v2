@@ -60,8 +60,10 @@ export function validateVisitResult(input: { conclusion: string; recommendations
 export interface VisitResultRepository {
   /** Результат записи; null — ещё не внесён. */
   findByAppointmentId(appointmentId: string): Promise<VisitResult | null>;
+
   /** Создание; дубль по appointmentId (unique) → ConflictError. */
   create(data: CreateVisitResultData): Promise<VisitResult>;
+
   /** Правка текста уже существующего результата. */
   update(
     appointmentId: string,

@@ -1,8 +1,8 @@
 import {
-  toPublicDoctor,
   type DoctorListItem,
   type DoctorRepository,
   type PhotoUrlSigner,
+  toPublicDoctor,
 } from '../../../entities/doctor';
 import { NotFoundError } from '../../../shared/model';
 

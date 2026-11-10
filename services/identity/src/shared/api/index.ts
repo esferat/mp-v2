@@ -1,4 +1,4 @@
-import { Global, Module, type DynamicModule } from '@nestjs/common';
+import { type DynamicModule, Global, Module } from '@nestjs/common';
 import type { Logger } from '@mp/service-kit';
 import { LOGGER } from '@mp/service-kit';
 import { CATALOG_DOCTORS, PATIENT_CARDS, USER_DIRECTORY } from '../../entities/registration';

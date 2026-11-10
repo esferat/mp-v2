@@ -1,4 +1,4 @@
-import { CanActivate, ForbiddenException, Injectable, type ExecutionContext } from '@nestjs/common';
+import { CanActivate, type ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import type { TokenClaims } from '../../entities/authorization';
 import { findPolicy } from '../../entities/authorization';
 

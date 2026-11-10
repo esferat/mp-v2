@@ -1,10 +1,10 @@
 import {
   ArgumentsHost,
   Catch,
+  type ExceptionFilter,
   HttpException,
   Inject,
   Injectable,
-  type ExceptionFilter,
 } from '@nestjs/common';
 import { getTraceId, LOGGER, type Logger } from '@mp/service-kit';
 import { DomainError } from '../../shared/model';
@@ -12,6 +12,7 @@ import { DomainError } from '../../shared/model';
 /** Профиль HTTP-ответа без зависимости от типов express. */
 interface HttpResponseLike {
   status(code: number): HttpResponseLike;
+
   json(body: unknown): unknown;
 }
 

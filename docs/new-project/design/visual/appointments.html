@@ -1,16 +1,30 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Макет · Управление записями /admin/schedule</title>
-<link rel="stylesheet" href="_shared.css">
-<style>
-  .time { font-family: monospace; font-size: 13px; }
-  .inline-acts { display: flex; gap: 6px; }
-  .inline-acts .btn-sm { height: 26px; }
-  .hint-cause { font-size: 12px; color: var(--text-secondary); }
-</style>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <title>Макет · Управление записями /admin/schedule</title>
+  <link href="_shared.css" rel="stylesheet">
+  <style>
+    .time {
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .inline-acts {
+      display: flex;
+      gap: 6px;
+    }
+
+    .inline-acts .btn-sm {
+      height: 26px;
+    }
+
+    .hint-cause {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+  </style>
 </head>
 <body>
 
@@ -28,7 +42,9 @@
     <div class="logo">МП</div>
     <div class="brand">Медицинский портал<small>MP Admin-Panel · ADMIN</small></div>
     <div class="spacer"></div>
-    <div class="actions"><span class="avatar">ИИ</span><button class="btn btn-text btn-sm">Выйти</button><span class="comp">MpAppBar</span></div>
+    <div class="actions"><span class="avatar">ИИ</span>
+      <button class="btn btn-text btn-sm">Выйти</button>
+      <span class="comp">MpAppBar</span></div>
   </header>
 
   <div class="shell">
@@ -45,7 +61,9 @@
 
     <main class="main">
       <div class="page-header">
-        <div><h1>Управление записями</h1><div class="sub">ID — в моноширинном шрифте; скрывается &lt; 960</div></div>
+        <div><h1>Управление записями</h1>
+          <div class="sub">ID — в моноширинном шрифте; скрывается &lt; 960</div>
+        </div>
         <span class="comp">MpPageHeader</span>
       </div>
 
@@ -53,12 +71,23 @@
         <!-- ================= ФИЛЬТРЫ ================= -->
         <section class="card">
           <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-            <div class="field"><label>Период</label><div style="display:flex;gap:8px;align-items:center">
-              <div class="control filled">01.11.2026</div>–<div class="control filled">30.11.2026</div>
-            </div><div class="helper">F5: значения в query-параметрах URL</div></div>
-            <div class="field"><label>Статус</label><div class="control filled select">Все</div></div>
-            <div class="field"><label>Спец.</label><div class="control filled select">Все</div></div>
-            <div class="field"><label>Врач</label><div class="control filled select">Все</div></div>
+            <div class="field"><label>Период</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <div class="control filled">01.11.2026</div>
+                –
+                <div class="control filled">30.11.2026</div>
+              </div>
+              <div class="helper">F5: значения в query-параметрах URL</div>
+            </div>
+            <div class="field"><label>Статус</label>
+              <div class="control filled select">Все</div>
+            </div>
+            <div class="field"><label>Спец.</label>
+              <div class="control filled select">Все</div>
+            </div>
+            <div class="field"><label>Врач</label>
+              <div class="control filled select">Все</div>
+            </div>
             <button class="btn btn-neutral">Сбросить</button>
             <span class="comp" style="margin-left:auto">MpDatePicker ×2 · MpSelect ×3</span>
           </div>
@@ -68,39 +97,71 @@
         <section class="card" style="padding:0;overflow:hidden">
           <table class="table">
             <thead>
-              <tr><th>ID записи</th><th>Пациент</th><th>Врач</th><th>Спец.</th><th>Время приёма</th><th>Статус</th><th style="text-align:right">Действия</th></tr>
+            <tr>
+              <th>ID записи</th>
+              <th>Пациент</th>
+              <th>Врач</th>
+              <th>Спец.</th>
+              <th>Время приёма</th>
+              <th>Статус</th>
+              <th style="text-align:right">Действия</th>
+            </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="time" style="color:var(--text-secondary);font-size:12px">ap-8f21</td>
-                <td>Иванов П. П.</td><td>Иванов И. И.</td><td>Хирург</td><td class="time">05.11 10:00</td>
-                <td><span class="status submitted"><span class="dot"></span>В ожидании</span></td>
-                <td><div class="actions"><div class="inline-acts">
-                  <button class="btn btn-contained btn-sm">✓ Принять</button>
-                  <button class="btn btn-danger btn-sm">✗ Отклонить</button>
-                  <button class="btn btn-neutral btn-sm">⋯</button>
-                </div></div></td>
-              </tr>
-              <tr>
-                <td class="time" style="color:var(--text-secondary);font-size:12px">ap-8f22</td>
-                <td>Петрова М. А.</td><td>Сидоров А. П.</td><td>Кардиолог</td><td class="time">05.11 11:30</td>
-                <td><span class="status approved"><span class="dot"></span>Принята</span></td>
-                <td><div class="actions"><div class="inline-acts">
-                  <span class="hint-cause">APPROVED → ⋯</span>
-                  <button class="btn btn-neutral btn-sm">⋯</button>
-                </div></div></td>
-              </tr>
-              <tr>
-                <td class="time" style="color:var(--text-secondary);font-size:12px">ap-8f23</td>
-                <td>Сидоров К. Л.</td><td>Иванов И. И.</td><td>Хирург</td><td class="time">06.11 09:00</td>
-                <td><span class="status declined"><span class="dot"></span>Откл.</span><div class="hint-cause">Врач на смене — tooltip</span></div>
-                <td><div class="actions"><span class="hint-cause">— (без действий)</span></div></td>
-              </tr>
+            <tr>
+              <td class="time" style="color:var(--text-secondary);font-size:12px">ap-8f21</td>
+              <td>Иванов П. П.</td>
+              <td>Иванов И. И.</td>
+              <td>Хирург</td>
+              <td class="time">05.11 10:00</td>
+              <td><span class="status submitted"><span class="dot"></span>В ожидании</span></td>
+              <td>
+                <div class="actions">
+                  <div class="inline-acts">
+                    <button class="btn btn-contained btn-sm">✓ Принять</button>
+                    <button class="btn btn-danger btn-sm">✗ Отклонить</button>
+                    <button class="btn btn-neutral btn-sm">⋯</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="time" style="color:var(--text-secondary);font-size:12px">ap-8f22</td>
+              <td>Петрова М. А.</td>
+              <td>Сидоров А. П.</td>
+              <td>Кардиолог</td>
+              <td class="time">05.11 11:30</td>
+              <td><span class="status approved"><span class="dot"></span>Принята</span></td>
+              <td>
+                <div class="actions">
+                  <div class="inline-acts">
+                    <span class="hint-cause">APPROVED → ⋯</span>
+                    <button class="btn btn-neutral btn-sm">⋯</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="time" style="color:var(--text-secondary);font-size:12px">ap-8f23</td>
+              <td>Сидоров К. Л.</td>
+              <td>Иванов И. И.</td>
+              <td>Хирург</td>
+              <td class="time">06.11 09:00</td>
+              <td><span class="status declined"><span class="dot"></span>Откл.</span>
+                <div class="hint-cause">Врач на смене — tooltip</span></div>
+              <td>
+                <div class="actions"><span class="hint-cause">— (без действий)</span></div>
+              </td>
+            </tr>
             </tbody>
           </table>
           <div class="pagination">
             <span>Всего: 128</span>
-            <div class="pages"><button class="btn btn-neutral btn-sm" disabled>‹</button><span>Страница 1 из 13</span><button class="btn btn-neutral btn-sm">›</button></div>
+            <div class="pages">
+              <button class="btn btn-neutral btn-sm" disabled>‹</button>
+              <span>Страница 1 из 13</span>
+              <button class="btn btn-neutral btn-sm">›</button>
+            </div>
             <span>На странице: <span class="chip">10 ▾</span></span>
           </div>
         </section>
@@ -108,42 +169,108 @@
         <!-- ================= МЕНЮ «⋯» (перенос / отмена / история) ================= -->
         <h2 style="font-size:15px;margin:8px 0 0">Меню строки «⋯» — 10.3 (перенос, журнал) + отмена</h2>
         <div class="grid-2">
-          <div class="state-card"><div class="state-title">«Перенести запись» — диалог выбора</div><div class="state-body">
-            <div class="backdrop" style="padding:16px">
-              <div class="dialog">
-                <div class="dialog-title">Перенести запись ap-8f22</div>
-                <div class="dialog-content">
-                  <div class="field"><label>Врач (опц.)</label><div class="control filled select">Сидоров А. П. (Кардиолог → Травматолог)</div></div>
-                  <div class="field"><label>Новая дата / слот</label><div class="control filled">07.11 · 09:30–10:00</div></div>
-                  <div class="field"><label>Причина (опц.)</label><div class="control">Производственная необходимость</div></div>
+          <div class="state-card">
+            <div class="state-title">«Перенести запись» — диалог выбора</div>
+            <div class="state-body">
+              <div class="backdrop" style="padding:16px">
+                <div class="dialog">
+                  <div class="dialog-title">Перенести запись ap-8f22</div>
+                  <div class="dialog-content">
+                    <div class="field"><label>Врач (опц.)</label>
+                      <div class="control filled select">Сидоров А. П. (Кардиолог → Травматолог)</div>
+                    </div>
+                    <div class="field"><label>Новая дата / слот</label>
+                      <div class="control filled">07.11 · 09:30–10:00</div>
+                    </div>
+                    <div class="field"><label>Причина (опц.)</label>
+                      <div class="control">Производственная необходимость</div>
+                    </div>
+                  </div>
+                  <div class="dialog-actions">
+                    <button class="btn btn-text">Отмена</button>
+                    <button class="btn btn-contained">Подтвердить перенос</button>
+                  </div>
+                  <div style="padding:0 20px 16px;font-size:11px;color:var(--text-secondary)">409 SLOT_TAKEN (конфликт
+                    слота) / 409 INVALID_TRANSITION; журнал фикс. каждый фактический перенос
+                  </div>
                 </div>
-                <div class="dialog-actions"><button class="btn btn-text">Отмена</button><button class="btn btn-contained">Подтвердить перенос</button></div>
-                <div style="padding:0 20px 16px;font-size:11px;color:var(--text-secondary)">409 SLOT_TAKEN (конфликт слота) / 409 INVALID_TRANSITION; журнал фикс. каждый фактический перенос</div>
               </div>
             </div>
-          </div></div>
-          <div class="state-card"><div class="state-title">«История переносов» (read-only) / отмена</div><div class="state-body">
-            <table class="table">
-              <tr><th style="font-size:11px">Когда</th><th style="font-size:11px">Кто</th><th style="font-size:11px">Изменение</th></tr>
-              <tr><td class="time" style="font-size:11px">04.11 15:02</td><td>Админ И. И.</td><td class="time" style="font-size:11px">05.11 09:00 → 07.11 09:30</td></tr>
-              <tr><td class="time" style="font-size:11px">02.11 11:40</td><td>Админ М. М.</td><td style="font-size:11px">Создана запись (SUBMITTED)</td></tr>
-            </table>
-            <div class="alert warning" style="margin-top:12px"><span>🗑</span><div><b>Отменить запись</b><div style="font-size:12px">Dialog-подтверждение; причина — опционально; только SUBMITTED/APPROVED</div></div></div>
-          </div></div>
+          </div>
+          <div class="state-card">
+            <div class="state-title">«История переносов» (read-only) / отмена</div>
+            <div class="state-body">
+              <table class="table">
+                <tr>
+                  <th style="font-size:11px">Когда</th>
+                  <th style="font-size:11px">Кто</th>
+                  <th style="font-size:11px">Изменение</th>
+                </tr>
+                <tr>
+                  <td class="time" style="font-size:11px">04.11 15:02</td>
+                  <td>Админ И. И.</td>
+                  <td class="time" style="font-size:11px">05.11 09:00 → 07.11 09:30</td>
+                </tr>
+                <tr>
+                  <td class="time" style="font-size:11px">02.11 11:40</td>
+                  <td>Админ М. М.</td>
+                  <td style="font-size:11px">Создана запись (SUBMITTED)</td>
+                </tr>
+              </table>
+              <div class="alert warning" style="margin-top:12px"><span>🗑</span>
+                <div><b>Отменить запись</b>
+                  <div style="font-size:12px">Dialog-подтверждение; причина — опционально; только SUBMITTED/APPROVED
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- ================= КАРТА КОМПОНЕНТОВ ================= -->
         <h2 style="font-size:15px;margin:8px 0 0">Соответствие компонентов mp-ui-kit</h2>
         <div class="card">
           <table class="map-table">
-            <tr><th>Блок</th><th>Компонент</th><th>Props / примечание</th></tr>
-            <tr><td>Фильтры</td><td><span class="comp">MpDatePicker ×2</span> <span class="comp">MpSelect ×3</span></td><td>в URL-параметрах (F5 восстанавливает); features/get-appointments</td></tr>
-            <tr><td>Таблица</td><td><span class="comp">MpTable</span> <span class="comp">MpTablePagination</span></td><td>серверная пагинация по 10; время — <span class="comp">MpTableCell</span> mono</td></tr>
-            <tr><td>Статусы</td><td><span class="comp">MpStatusBadge</span></td><td>SUBMITTED (жёлтый) / APPROVED (зелёный) / DECLINED (красный) / CANCELLED (серый)</td></tr>
-            <tr><td>Действия строки</td><td><span class="comp">MpButton</span> + <span class="comp">MpMenu</span></td><td>Принять/Отклонить — только для SUBMITTED; идемпотентно (второй → та же settled / 409)</td></tr>
-            <tr><td>Диалог переноса</td><td><span class="comp">MpDialog</span> <span class="comp">MpSelect</span></td><td>10.3: врач + дата + слот; 409 → «слот занят»; врач-компоненты 5.2/5.3</td></tr>
-            <tr><td>История переносов</td><td><span class="comp">MpDialog</span></td><td>read-only из appointment_reschedule_log (кто/когда было→стало)</td></tr>
-            <tr><td>Тосты</td><td><span class="comp">MpSnackbar</span></td><td>«Запись уже обработана», «Слот занят — выберите соседний» + тихая перезагрузка строки</td></tr>
+            <tr>
+              <th>Блок</th>
+              <th>Компонент</th>
+              <th>Props / примечание</th>
+            </tr>
+            <tr>
+              <td>Фильтры</td>
+              <td><span class="comp">MpDatePicker ×2</span> <span class="comp">MpSelect ×3</span></td>
+              <td>в URL-параметрах (F5 восстанавливает); features/get-appointments</td>
+            </tr>
+            <tr>
+              <td>Таблица</td>
+              <td><span class="comp">MpTable</span> <span class="comp">MpTablePagination</span></td>
+              <td>серверная пагинация по 10; время — <span class="comp">MpTableCell</span> mono</td>
+            </tr>
+            <tr>
+              <td>Статусы</td>
+              <td><span class="comp">MpStatusBadge</span></td>
+              <td>SUBMITTED (жёлтый) / APPROVED (зелёный) / DECLINED (красный) / CANCELLED (серый)</td>
+            </tr>
+            <tr>
+              <td>Действия строки</td>
+              <td><span class="comp">MpButton</span> + <span class="comp">MpMenu</span></td>
+              <td>Принять/Отклонить — только для SUBMITTED; идемпотентно (второй → та же settled / 409)</td>
+            </tr>
+            <tr>
+              <td>Диалог переноса</td>
+              <td><span class="comp">MpDialog</span> <span class="comp">MpSelect</span></td>
+              <td>10.3: врач + дата + слот; 409 → «слот занят»; врач-компоненты 5.2/5.3</td>
+            </tr>
+            <tr>
+              <td>История переносов</td>
+              <td><span class="comp">MpDialog</span></td>
+              <td>read-only из appointment_reschedule_log (кто/когда было→стало)</td>
+            </tr>
+            <tr>
+              <td>Тосты</td>
+              <td><span class="comp">MpSnackbar</span></td>
+              <td>«Запись уже обработана», «Слот занят — выберите соседний» + тихая перезагрузка строки</td>
+            </tr>
           </table>
         </div>
       </div>
@@ -153,7 +280,8 @@
 
 <div class="mock-note">
   <a href="index.html">← ко всем макетам</a> · спецификация: <a href="../appointments.md">../appointments.md</a> ·
-  канон статусной машины §1 (реализация 10.3): перемещение счётчика отчёта из APPROVED, no-op — без события и записи в журнал
+  канон статусной машины §1 (реализация 10.3): перемещение счётчика отчёта из APPROVED, no-op — без события и записи в
+  журнал
 </div>
 
 </body>

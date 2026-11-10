@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkFileAccess, type AccessSubject } from '../src/entities/access';
+import { type AccessSubject, checkFileAccess } from '../src/entities/access';
 import { InMemoryAccess } from './helpers/in-memory';
 
 const ADMIN: AccessSubject = { sub: 'admin-1', roles: ['ADMIN'] };

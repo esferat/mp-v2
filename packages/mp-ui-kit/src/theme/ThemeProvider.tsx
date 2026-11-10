@@ -1,6 +1,6 @@
 import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider, useTheme, type Theme } from '@mui/material/styles';
-import { useMemo, type ReactNode } from 'react';
+import { type Theme, ThemeProvider, useTheme } from '@mui/material/styles';
+import { type ReactNode, useMemo } from 'react';
 import { createMpTheme, type MpColorMode, type MpThemeConfig } from './createTheme';
 
 export interface MpThemeProviderProps {

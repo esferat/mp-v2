@@ -1,9 +1,9 @@
-import { RoutingKeys, type Appointment, type CancelAppointmentRequest } from '@mp/contracts';
+import { type Appointment, type CancelAppointmentRequest, RoutingKeys } from '@mp/contracts';
 import { createEvent } from '@mp/service-kit';
 import {
   applyTransition,
-  toApiAppointment,
   type AppointmentContext,
+  toApiAppointment,
 } from '../../../entities/appointment';
 import type { UnitOfWork } from '../../../entities/repository';
 

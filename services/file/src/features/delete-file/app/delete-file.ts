@@ -1,6 +1,6 @@
 import { RoutingKeys } from '@mp/contracts';
 import { createEvent } from '@mp/service-kit';
-import { checkFileAccess, type AccessPorts, type AccessSubject } from '../../../entities/access';
+import { type AccessPorts, type AccessSubject, checkFileAccess } from '../../../entities/access';
 import type { FileContext, ObjectStore } from '../../../entities/file';
 import type { UnitOfWork } from '../../../entities/repository';
 import { ForbiddenError, NotFoundError } from '../../../shared/model';
