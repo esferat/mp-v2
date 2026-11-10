@@ -1,0 +1,63 @@
+# Алерты mp-v2 (6.1/6.3): лаг outbox, сбои публикации, рост DLQ.
+# Подключены через rule_files в prometheus.yml; Alertmanager в dev-стенде
+# не развёрнут — состояния правил видны в UI Prometheus (/alerts).
+groups:
+  - name: mp-v2-outbox
+    rules:
+      - alert: OutboxLagHigh
+        # Спека 6.1: алерт при лаге > 30 с (AC — лаг p95 < 5 с под нагрузкой)
+        expr: outbox_lag_seconds > 30
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Лаг публикации outbox > 30 с ({{ $value }} с)'
+          description: >
+            Relay не публикует события вовремя: проверить брокер и доступность
+            БД у продьюсера. События не теряются (at-least-once), но отстают.
+
+      - alert: OutboxPublishFailures
+        # 6.1: «не потерять молча» — каждая неудачная попытка публикации
+        expr: increase(outbox_failed_total[10m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Ошибки публикации событий outbox ({{ $value }} за 10 мин)'
+          description: >
+            Есть записи, которые не удалось опубликовать. При исчерпании попыток
+            запись остаётся FAILED в OutboxMessage (lastError) — сверить с очередью.
+
+  - name: mp-v2-consumers
+    rules:
+      - alert: DlqGrowing
+        # 6.3: отравленные/несрабатываемые сообщения копятся в DLQ
+        expr: dlq_depth > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'DLQ не пуст: {{ $labels.queue }} = {{ $value }}'
+          description: >
+            Сообщение уходит в DLQ после ретраев (нарушение схемы или сбой
+            обработчика). Разобрать и выполнить replay (scripts/replay-dlq.mjs).
+
+      - alert: ConsumerErrors
+        expr: increase(consumer_errors_total[10m]) > 5
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Ошибки обработки сообщений в {{ $labels.queue }}'
+          description: >
+            Растёт число сбоев обработчиков. Часть сообщений уходит в DLQ —
+            проверить зависимости сервиса (SMTP, patient-service, БД).
+
+      - alert: QueueBacklog
+        expr: queue_depth > 100
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: 'Очередь {{ $labels.queue }}: {{ $value }} сообщений'
+          description: >
+            Очередь растёт — потребитель не успевает или недоступен. Сообщения
+            копятся и будут доставлены после восстановления (без потерь).

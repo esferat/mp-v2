@@ -1,5 +1,4 @@
 import { parseEvent } from '@mp/contracts';
-import type { ConsumedEvent } from '@mp/service-kit';
 import type { AppointmentRepository } from '../../../entities/appointment';
 
 /**
@@ -11,24 +10,28 @@ import type { AppointmentRepository } from '../../../entities/appointment';
  * на момент записи, 3.2). Повтор события идемпотентен: имя уже новое →
  * 0 изменений; вдобавок обработку дублей гасит InboxService.
  *
+ * Валидация схемы (Zod, parseEvent) выполняется ДО вызова — в общей
+ * консьюмер-обёртке (service-kit/createConsumerHandler, 6.3): нарушение
+ * схемы уходит в DLQ без записи в inbox и без ретраев.
+ *
  * ПОРЯДОК: «последнее событие побеждает» гарантируется строгой
  * последовательностью обработки (RABBITMQ_PREFETCH=1 в scheduling —
  * иначе параллельные сообщения могут примениться в обратном порядке).
  */
+export interface PatientEventEnvelope {
+  occurredAt: string;
+  payload: {
+    patientId: string;
+    firstName: string;
+    lastName: string;
+    middleName?: string;
+  };
+}
+
 export async function applyPatientEvent(
   repository: AppointmentRepository,
-  event: ConsumedEvent,
+  envelope: PatientEventEnvelope,
 ): Promise<{ updated: number }> {
-  const envelope = parseEvent(event.routingKey as Parameters<typeof parseEvent>[0], event.body) as {
-    occurredAt: string;
-    payload: {
-      patientId: string;
-      firstName: string;
-      lastName: string;
-      middleName?: string;
-    };
-  };
-
   const patientName = [
     envelope.payload.lastName,
     envelope.payload.firstName,
@@ -39,4 +42,9 @@ export async function applyPatientEvent(
 
   const updated = await repository.updatePatientName(envelope.payload.patientId, patientName);
   return { updated };
+}
+
+/** Zod-валидация конверта события patient.* (используется потребителем). */
+export function parsePatientEvent(routingKey: string, body: unknown): PatientEventEnvelope {
+  return parseEvent(routingKey as Parameters<typeof parseEvent>[0], body) as PatientEventEnvelope;
 }

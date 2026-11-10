@@ -8,7 +8,7 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import type { Logger } from 'pino';
-import { setOutboxLagSeconds } from '../metrics/metrics.module';
+import { incOutboxFailed, setOutboxLagSeconds } from '../metrics/metrics.module';
 import { LOGGER } from '../logger/logger.module';
 import { RabbitService } from './rabbit.service';
 
@@ -240,6 +240,8 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
     const exhausted = attemptsAfter >= this.options.maxAttempts;
     const retryAt = exhausted ? null : new Date(Date.now() + retryDelayMs(record.attempts));
     const message = error instanceof Error ? error.message : String(error);
+    // 6.1: каждая неудачная попытка видна в метрике (алерт «не потерять молча»).
+    incOutboxFailed();
 
     this.log.warn(
       {
@@ -273,13 +275,21 @@ export class OutboxRelay implements OnApplicationBootstrap, OnApplicationShutdow
 
   /**
    * Адаптивный интервал: пока есть сообщения — базовый; пустые проходы
-   * удваивают задержку до 30 с (6 сервисов × 2 опроса/сек → ~0.2/сек вхолостую).
+   * удваивают задержку, но не дольше MAX_IDLE_DELAY_MS (6 сервисов × опрос
+   * каждые 3 с → ~2 опроса/сек вхолостую на весь стенд).
+   *
+   * Потолок нужен AC 6.1 «лаг p95 < 5 с под нагрузкой»: без него очередь
+   * после простоя ждала бы первый тик до 30 с — событие, пришедшее сразу
+   * после простоя, копило бы лаг вплоть до алерта.
    */
   private nextDelayMs(): number {
     if (this.emptyStreak === 0) return this.options.intervalMs;
-    return Math.min(this.options.intervalMs * 2 ** this.emptyStreak, 30_000);
+    return Math.min(this.options.intervalMs * 2 ** this.emptyStreak, MAX_IDLE_DELAY_MS);
   }
 }
+
+/** Максимальная пауза опроса при пустом outbox (см. nextDelayMs). */
+const MAX_IDLE_DELAY_MS = 3000;
 
 // -------------------------------------------------------------------- модуль
 

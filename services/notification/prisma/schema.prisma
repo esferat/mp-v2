@@ -1,0 +1,20 @@
+// Схема БД сервиса notification (db_notification) — владение notification-service (architecture.md §5).
+// URL берётся из prisma.config.ts (env DATABASE_URL), а не отсюда (Prisma 7).
+// У сервиса нет своих доменных данных и outbox (только потребитель событий),
+// поэтому в схеме — только служебная таблица inbox (0.9/6.3).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Inbox: idempotency-key потребителя (0.9/6.3) — повтор события не шлёт письмо дважды.
+model InboxMessage {
+  messageId   String    @id
+  routingKey  String
+  processedAt DateTime  @default(now())
+}

@@ -57,7 +57,7 @@ paths:
       tags:
         - file
       summary: Загрузка файла (multipart, валидация MIME/размера)
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: "Успех:"

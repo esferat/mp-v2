@@ -86,7 +86,9 @@ describe('HistoryTable (5.5: результат приёма в истории)'
 
     // Диалог открылся с данными строки списка (без отдельного запроса);
     // заголовок диалога — heading, чтобы не путать с заголовком колонки
-    expect(screen.getByRole('heading', { name: 'Результат приёма' })).toBeTruthy();
+    // Заголовок диалога теперь несёт контекст (дата/время/специализация) —
+    // проверяем префикс, чтобы не ломать на уточнении заголовка.
+    expect(screen.getByRole('heading', { name: /^Результат приёма/ })).toBeTruthy();
     expect(screen.getByDisplayValue('Здоров, наблюдение')).toBeTruthy();
     expect(screen.getByDisplayValue('Повторный осмотр через год')).toBeTruthy();
     expect(getMyAppointments.mock.calls.length).toBe(callsBefore);

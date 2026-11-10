@@ -80,7 +80,7 @@ paths:
       tags:
         - scheduling
       summary: Забронировать слот (гонка → 409 SLOT_TAKEN)
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -662,7 +662,7 @@ paths:
       tags:
         - scheduling
       summary: "Пациенты врача (9.3: distinct из записей)"
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: "Успех:"

@@ -37,15 +37,26 @@ export { HealthModule } from './health/health.module';
 export type { LivenessResponse, ReadinessResponse } from './health/health.module';
 export {
   MetricsModule,
+  consumerErrorsTotal,
+  dlqDepth,
+  incConsumerErrors,
+  incOutboxFailed,
+  outboxFailedTotal,
   outboxLagSeconds,
+  queueDepth,
   renderMetrics,
   setOutboxLagSeconds,
+  setQueueDepths,
 } from './metrics/metrics.module';
 
 // Сообщения: RabbitMQ + outbox/inbox
 export { RABBIT_CONFIG, RabbitService } from './messaging/rabbit.service';
 export { RabbitModule } from './messaging/rabbit.module';
-export { RabbitUnavailableError } from './messaging/rabbit.types';
+export {
+  PermanentConsumerError,
+  RabbitUnavailableError,
+  TransientConsumerError,
+} from './messaging/rabbit.types';
 export { createEvent, createEventMeta } from './messaging/event';
 export type { EventMeta } from './messaging/event';
 export type {
@@ -54,6 +65,8 @@ export type {
   QueueSubscription,
   RabbitConfig,
 } from './messaging/rabbit.types';
+export { createConsumerHandler } from './messaging/consumer';
+export type { ConsumerOptions } from './messaging/consumer';
 export {
   OUTBOX_OPTIONS,
   OUTBOX_STORE,

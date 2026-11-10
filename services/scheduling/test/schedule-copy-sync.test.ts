@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { RoutingKeys } from '@mp/contracts';
-import type { ConsumedEvent } from '@mp/service-kit';
-import { applyDoctorEvent } from '../src/features/schedule-copy-sync/app/apply-doctor-event';
+import {
+  applyDoctorEvent,
+  type DoctorEventEnvelope,
+} from '../src/features/schedule-copy-sync/app/apply-doctor-event';
 import { importCopiesFromCatalog } from '../src/entities/schedule-copy';
 import { makeSchedulingContext } from './helpers/in-memory';
 
@@ -17,7 +18,7 @@ function doctorEvent(overrides: {
     specializationName: string;
     schedule: { startTime: string; endTime: string; durationMinutes: number; workDays: number[] };
   }>;
-}): ConsumedEvent {
+}): DoctorEventEnvelope {
   const payload = {
     doctorId: 'doc-1',
     status: 'ACTIVE',
@@ -34,13 +35,9 @@ function doctorEvent(overrides: {
     ...overrides.payload,
   };
   return {
-    routingKey: RoutingKeys.DoctorCreated,
-    body: {
-      eventId: overrides.eventId ?? '00000000-0000-4000-8000-000000000001',
-      occurredAt: overrides.occurredAt,
-      payload,
-    },
-    raw: {} as ConsumedEvent['raw'],
+    eventId: overrides.eventId ?? '00000000-0000-4000-8000-000000000001',
+    occurredAt: overrides.occurredAt,
+    payload,
   };
 }
 

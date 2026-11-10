@@ -504,6 +504,16 @@ services:
       start_period: 20s
     restart: unless-stopped
 
+  migrate-notification:
+    logging: *default-logging
+    build: { context: .., dockerfile: services/notification/Dockerfile, target: migrate }
+    command: ['pnpm', '--filter', '@mp/notification', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://svc_notification:${SVC_NOTIFICATION_PASSWORD:-svc_notification_pw}@postgres:5432/db_notification
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+
   notification:
     logging: *default-logging
     build: { context: .., dockerfile: services/notification/Dockerfile }
@@ -512,10 +522,26 @@ services:
       SERVICE_NAME: notification
       PORT: '4007'
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+      # inbox идемпотентности (6.3): db_notification, владение notification (§5)
+      DATABASE_URL: postgresql://svc_notification:${SVC_NOTIFICATION_PASSWORD:-svc_notification_pw}@postgres:5432/db_notification
+      # dev-SMTP (6.2): Mailpit, фиксированный from по спеке
+      SMTP_HOST: mailpit
+      SMTP_PORT: '1025'
+      SMTP_FROM: ${SMTP_FROM:-no-reply@test.mp}
+      SMTP_SECURE: 'false'
+      # Резолв email пациента по patientId (6.2: в событии email нет)
+      PATIENT_SERVICE_URL: http://patient:4003
+      KEYCLOAK_SVC_BACKEND_CLIENT_ID: ${KEYCLOAK_SVC_BACKEND_CLIENT_ID:-svc-backend}
+      KEYCLOAK_SVC_BACKEND_SECRET: ${KEYCLOAK_SVC_BACKEND_SECRET:-dev-backend-secret}
+      # env-whitelist тестовых адресов (6.2): письма им не шлются
+      NOTIFY_SKIP_RECIPIENTS: ${NOTIFY_SKIP_RECIPIENTS:-}
     ports:
       - '4007:4007'
     depends_on:
+      postgres: { condition: service_healthy }
       rabbitmq: { condition: service_healthy }
+      patient: { condition: service_healthy }
+      migrate-notification: { condition: service_completed_successfully }
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4007/healthz || exit 1']
       interval: 10s
@@ -687,6 +713,7 @@ services:
       - '${PROMETHEUS_PORT:-9090}:9090'
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
       - prometheusdata:/prometheus
     healthcheck:
       # в образе busybox есть wget; /-/ready отвечает после применения конфига

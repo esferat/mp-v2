@@ -81,7 +81,7 @@ paths:
       tags:
         - catalog
       summary: Создать врача с расписанием
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -243,7 +243,7 @@ paths:
       tags:
         - catalog
       summary: "Карточка своего врача по токену (10.4: форма расписания)"
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: "Успех:"
@@ -274,7 +274,7 @@ paths:
       tags:
         - catalog
       summary: "Расписание врача (10.4: врач правит своё, sub из токена)"
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -317,7 +317,7 @@ paths:
       tags:
         - catalog
       summary: Список специализаций
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: "Успех:"
@@ -349,7 +349,7 @@ paths:
       tags:
         - catalog
       summary: Создать специализацию
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:

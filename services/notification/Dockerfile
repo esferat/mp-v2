@@ -25,12 +25,21 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 FROM deps AS build
 COPY packages ./packages
 COPY services/notification ./services/notification
-# contracts: генерация dist + openapi/gateway.json; service-kit: tsc → dist
+# contracts: генерация dist + openapi; service-kit: tsc → dist;
+# notification: prisma generate (клиент inbox) + tsc
 RUN pnpm --filter @mp/contracts gen \
   && pnpm --filter @mp/service-kit build \
+  && pnpm --filter @mp/notification gen \
   && pnpm --filter @mp/notification build \
   # Чистый prod-набор зависимостей сервиса (включая workspace-пакеты)
   && pnpm --filter @mp/notification deploy --prod /prod/notification
+
+# ------------------------------------------------------------------- migrate
+# Отдельный слой для compose-джобы db:migrate: prisma CLI требует node_modules
+# (devDependency попадает в deps), а таск-скрипты — tsc-сборку не требуют.
+FROM deps AS migrate
+COPY services/notification/prisma ./services/notification/prisma
+COPY services/notification/prisma.config.ts ./services/notification/prisma.config.ts
 
 # ---------------------------------------------------------------------- runtime
 FROM node:24-alpine AS runtime

@@ -3,13 +3,22 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import {
   applyTraceIdMiddleware,
   AuthModule,
+  createPrismaInboxStore,
+  InboxModule,
   JwtAuthGuard,
   LoggerModule,
   RabbitModule,
 } from '@mp/service-kit';
+import { PrismaService, SharedApiModule } from '../shared/api';
 import { ApiErrorFilter, RequestLogInterceptor } from './kernel';
 import { getNotificationEnv } from '../shared/config';
 import { HealthFeatureModule } from '../features/health';
+import { NotifyUserRegisteredModule } from '../features/notify-user-registered';
+import { NotifyAppointmentSubmittedModule } from '../features/notify-appointment-submitted';
+import { NotifyAppointmentStatusModule } from '../features/notify-appointment-status';
+import { NotifyAppointmentRescheduledModule } from '../features/notify-appointment-rescheduled';
+import { NotifyAppointmentCompletedModule } from '../features/notify-appointment-completed';
+import { NotifyDocumentUploadedModule } from '../features/notify-document-uploaded';
 
 /**
  * Composition root (fsd.md §4.1): только регистрация слайсов и глобальных
@@ -32,8 +41,24 @@ const env = getNotificationEnv();
       dlxExchange: env.RABBITMQ_DLX_EXCHANGE,
       prefetch: env.RABBITMQ_PREFETCH,
     }),
-    // Слайсы
+    // Адаптеры портов entities: Prisma (inbox), SMTP, patient-service (6.2)
+    SharedApiModule.forRoot(),
+    // Идемпотентность потребителя по eventId (0.9/6.3)
+    InboxModule.forRootAsync({
+      inject: [PrismaService],
+      useFactory: (prisma: PrismaService) => ({
+        store: createPrismaInboxStore(prisma.inboxMessage),
+      }),
+    }),
+
+    // Слайсы (6.2): очередь q.notification.* на тип события
     HealthFeatureModule,
+    NotifyUserRegisteredModule,
+    NotifyAppointmentSubmittedModule,
+    NotifyAppointmentStatusModule,
+    NotifyAppointmentRescheduledModule,
+    NotifyAppointmentCompletedModule,
+    NotifyDocumentUploadedModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

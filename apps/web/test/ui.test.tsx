@@ -11,15 +11,16 @@ import {
 } from '../src/shared/ui';
 
 describe('StatusBadge (2.2: бейдж статуса)', () => {
-  it('рендерит текст и применяет тон через тему', () => {
+  it('рендерит текст и точку-индикатор (2.2: «точка + цветной текст»)', () => {
     const { container } = render(<StatusBadge label="APPROVED" tone="success" />);
     expect(screen.getByText('APPROVED')).toBeTruthy();
-    expect(container.querySelector('.MuiChip-colorSuccess')).toBeTruthy();
+    expect(container.querySelector('.StatusBadge-dot')).toBeTruthy();
   });
 
-  it('нейтральный тон по умолчанию', () => {
+  it('по умолчанию нейтральный тон: label рендерится, точка на месте', () => {
     const { container } = render(<StatusBadge label="SUBMITTED" />);
-    expect(container.querySelector('.MuiChip-colorDefault')).toBeTruthy();
+    expect(screen.getByText('SUBMITTED')).toBeTruthy();
+    expect(container.querySelector('.StatusBadge-dot')).toBeTruthy();
   });
 });
 

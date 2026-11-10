@@ -10,7 +10,7 @@ paths:
       tags:
         - identity
       summary: "Регистрация (сага: Keycloak + карточка пациента)"
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -53,7 +53,7 @@ paths:
       tags:
         - identity
       summary: Сага врача с учётной записью DOCTOR (9.1, только ADMIN)
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -96,7 +96,7 @@ paths:
       tags:
         - identity
       summary: "Профиль текущего пользователя (10.1: email/ФИО из Keycloak)"
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: "Успех:"
@@ -126,7 +126,7 @@ paths:
       tags:
         - identity
       summary: "Правка своих данных (10.1: email/ФИО, занятый email → 409)"
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:

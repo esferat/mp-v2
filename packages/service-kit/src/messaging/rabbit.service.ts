@@ -18,11 +18,15 @@ import {
   type QueueSubscription,
   type RabbitConfig,
   RabbitUnavailableError,
+  TransientConsumerError,
 } from './rabbit.types';
+import { incConsumerErrors, setQueueDepths } from '../metrics/metrics.module';
 
 export const RABBIT_CONFIG = Symbol('MP_RABBIT_CONFIG');
 
 const RECONNECT_DELAY_MS = 5000;
+/** Период опроса глубин очередей в метрики (6.1). */
+const QUEUE_DEPTH_INTERVAL_MS = 15_000;
 
 /**
  * Клиент RabbitMQ (0.9): один коннект на сервис, topology (exchange/очереди/DLQ)
@@ -39,6 +43,7 @@ export class RabbitService implements OnApplicationBootstrap, OnApplicationShutd
   private confirmChannel: ConfirmChannel | null = null;
   private readonly subscriptions: QueueSubscription[] = [];
   private reconnectTimer: NodeJS.Timeout | null = null;
+  private depthTimer: NodeJS.Timeout | null = null;
   private connecting = false;
   private stopped = false;
 
@@ -50,6 +55,7 @@ export class RabbitService implements OnApplicationBootstrap, OnApplicationShutd
   async onApplicationBootstrap(): Promise<void> {
     // Брокер может подниматься дольше сервиса: не валем процесс, а ретраимся.
     await this.connectWithRetry();
+    this.startQueueDepthSampler();
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -57,6 +63,10 @@ export class RabbitService implements OnApplicationBootstrap, OnApplicationShutd
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
+    }
+    if (this.depthTimer) {
+      clearInterval(this.depthTimer);
+      this.depthTimer = null;
     }
     try {
       await this.connection?.close();
@@ -187,6 +197,36 @@ export class RabbitService implements OnApplicationBootstrap, OnApplicationShutd
     this.reconnectTimer.unref?.();
   }
 
+  /**
+   * Опрос глубин очередей (6.1: метрики `queue_depth`/`dlq_depth` для алертов
+   * на рост DLQ). Период 15 с совпадает с scrape-интервалом Prometheus;
+   * при отсутствии канала/очередей пропускается без ошибок.
+   */
+  private startQueueDepthSampler(): void {
+    if (this.depthTimer) return;
+    this.depthTimer = setInterval(() => {
+      void this.sampleQueueDepths();
+    }, QUEUE_DEPTH_INTERVAL_MS);
+    this.depthTimer.unref?.();
+  }
+
+  private async sampleQueueDepths(): Promise<void> {
+    const channel = this.channel;
+    if (!channel || this.subscriptions.length === 0) return;
+
+    for (const subscription of this.subscriptions) {
+      try {
+        const [queue, dlq] = await Promise.all([
+          channel.checkQueue(subscription.queue),
+          channel.checkQueue(`${subscription.queue}.dlq`),
+        ]);
+        setQueueDepths(subscription.queue, queue.messageCount, dlq.messageCount);
+      } catch {
+        // Очередь ещё не объявлена (реконнект в процессе) — пропускаем тик.
+      }
+    }
+  }
+
   private async assertTopology(channel: Channel): Promise<void> {
     await channel.assertExchange(this.config.exchange, 'topic', { durable: true });
     await channel.assertExchange(this.config.dlxExchange, 'direct', { durable: true });
@@ -236,6 +276,7 @@ export class RabbitService implements OnApplicationBootstrap, OnApplicationShutd
         { err: error, queue: subscription.queue },
         'некорректный JSON — сообщение в DLQ',
       );
+      incConsumerErrors(subscription.queue);
       this.nack(channel, message);
       return;
     }
@@ -250,6 +291,27 @@ export class RabbitService implements OnApplicationBootstrap, OnApplicationShutd
       await subscription.handler(event);
       channel?.ack(message);
     } catch (error) {
+      incConsumerErrors(subscription.queue);
+
+      if (error instanceof TransientConsumerError) {
+        // 6.2/6.3: временный сбой (SMTP/брокер/сервис) — сообщение копится в
+        // очереди и доставляется после восстановления, без потерь. Задержка
+        // до возврата гасит горячий цикл немедленных requeue.
+        const delay = subscription.requeueDelayMs ?? DEFAULT_REQUEUE_DELAY_MS;
+        this.log.warn(
+          {
+            err: error,
+            queue: subscription.queue,
+            routingKey: event.routingKey,
+            requeueInMs: delay,
+          },
+          'временный сбой обработки — сообщение вернётся в очередь',
+        );
+        await sleep(delay);
+        this.nack(channel, message, true);
+        return;
+      }
+
       // Идемпотентность — забота потребителя (inbox); сюда попадает только сбой.
       this.log.error(
         { err: error, queue: subscription.queue, routingKey: event.routingKey },
@@ -259,14 +321,18 @@ export class RabbitService implements OnApplicationBootstrap, OnApplicationShutd
     }
   }
 
-  private nack(channel: Channel | null, message: ConsumeMessage): void {
+  private nack(channel: Channel | null, message: ConsumeMessage, requeue = false): void {
     try {
-      channel?.nack(message, false, false);
+      channel?.nack(message, false, requeue);
     } catch (error) {
-      this.log.warn({ err: error }, 'не удалось отправить сообщение в DLQ');
+      this.log.warn({ err: error, requeue }, 'не удалось вернуть сообщение в DLQ/очередь');
     }
   }
 }
+
+const DEFAULT_REQUEUE_DELAY_MS = 5000;
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** messageId конверта события — по нему работает inbox-дедупликация. */
 function extractMessageId(message: unknown): string | undefined {

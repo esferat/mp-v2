@@ -1,20 +1,22 @@
 import { Inject, Injectable, Module, type OnApplicationBootstrap } from '@nestjs/common';
 import { RoutingKeys } from '@mp/contracts';
 import {
-  type ConsumedEvent,
+  createConsumerHandler,
   InboxService,
   LOGGER,
   type Logger,
   RabbitService,
 } from '@mp/service-kit';
 import { APPOINTMENT_REPOSITORY, type AppointmentRepository } from '../../entities/appointment';
-import { applyPatientEvent } from './app/apply-patient-event';
+import { applyPatientEvent, parsePatientEvent } from './app/apply-patient-event';
 
 /**
  * Потребитель patient.* (4.6): обновляет ФИО пациента в записях —
  * списки/история показывают текущее имя (правило — в app/apply-patient-event).
- * Идемпотентность: InboxService.runOnce по eventId + безвредность повтора
- * самого обновления (AC 4.6: повтор события не создаёт дублей).
+ *
+ * Подключение к очереди и весь пайплайн 6.3 (валидация Zod → inbox по eventId
+ * → обработчик → ретраи с backoff → DLQ) даёт общая обёртка
+ * createConsumerHandler из service-kit — слайс описывает только parse/handler.
  *
  * InboxModule подключается глобально из app/app.module.ts (forRootAsync).
  */
@@ -33,21 +35,22 @@ export class PatientSync implements OnApplicationBootstrap {
     this.rabbit.subscribe({
       queue: 'scheduling.patient-sync',
       bindings: [RoutingKeys.PatientCreated, RoutingKeys.PatientUpdated],
-      handler: (event) => this.handle(event),
+      handler: createConsumerHandler({
+        queue: 'scheduling.patient-sync',
+        parse: (event) => parsePatientEvent(event.routingKey, event.body),
+        handler: async (envelope, event) => {
+          const { updated } = await applyPatientEvent(this.appointments, envelope);
+          if (updated > 0) {
+            this.log.debug(
+              { updated, routingKey: event.routingKey },
+              'ФИО пациента обновлено в записях (4.6)',
+            );
+          }
+        },
+        inbox: this.inbox,
+        log: this.log,
+      }),
     });
-  }
-
-  private async handle(event: ConsumedEvent): Promise<void> {
-    const body = event.body as { eventId?: string };
-    if (!body?.eventId) {
-      throw new Error('у события нет eventId (конверт повреждён) — в DLQ');
-    }
-    const result = await this.inbox.runOnce(body.eventId, event.routingKey, () =>
-      applyPatientEvent(this.appointments, event),
-    );
-    if (result.executed && result.result && result.result.updated > 0) {
-      this.log.debug({ updated: result.result.updated }, 'ФИО пациента обновлено в записях (4.6)');
-    }
   }
 }
 

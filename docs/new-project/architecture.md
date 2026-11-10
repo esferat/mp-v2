@@ -31,7 +31,7 @@
 | API-слой         | `gateway` — NestJS: валидация JWT, роли, rate-limit, агрегация, `x-request-id`                                                                                                          |
 | Доменные сервисы | NestJS + TS strict + Prisma, FSD                                                                                                                                                        |
 | События          | RabbitMQ: topic exchange `medical.dlx` → DLX, на каждую фичу очередь + DLQ                                                                                                              |
-| Данные           | PostgreSQL — одна БД на сервис (`db_identity`, `db_catalog`, `db_patients`, `db_files`, `db_schedule`, `db_report`)                                                                     |
+| Данные           | PostgreSQL — одна БД на сервис (`db_identity`, `db_catalog`, `db_patients`, `db_files`, `db_schedule`, `db_report`, `db_notification`)                     |
 | Файлы            | MinIO: `patient-photos`, `doctor-photos`, `patient-docs`; доступ через presigned URL                                                                                                    |
 | Идентичность     | Keycloak: реалм `medical-portal`, OIDC (web), client-credentials (сервисы)                                                                                                              |
 | Контракты        | `packages/contracts`: OpenAPI + Zod-схемы событий → генерация TS-типов                                                                                                                  |
@@ -85,7 +85,7 @@
                     │                          │
    ┌────────────────▼──────────────────────────▼────────────────────┐
    │  PostgreSQL: db_identity · db_catalog · db_patients · db_files  │
-   │            db_schedule · db_report          │
+   │            db_schedule · db_report · db_notification            │
    │  MinIO: patient-photos · doctor-photos · patient-docs           │
    └─────────────────────────────────────────────────────────────────┘
 ```
@@ -102,7 +102,7 @@
 | `file-service`         | Реестр объектов (вкл. категорию, автора), presigned URL, валидация типа/размера, проверка прав (владелец / `ADMIN` / врач с приёмом) | `db_files`    | REST gateway/сервисов | MinIO, события `document.*`               |
 | `scheduling-service`   | Слоты, бронирование, статусы записей, **результаты приёма**, отмена                                                                  | `db_schedule` | REST gateway          | события `appointment.*`                   |
 | `report-service`       | CQRS read-model, агрегаты посещений, экспорт                                                                                         | `db_report`   | REST gateway          | — (читает события)                        |
-| `notification-service` | Email-уведомления по событиям                                                                                                        | —             | события               | SMTP (Mailpit в dev)                      |
+| `notification-service` | Email-уведомления по событиям                                                                                                        | `db_notification` (только inbox) | события               | SMTP (Mailpit в dev)                      |
 
 **Внешние:** Keycloak, MinIO, PostgreSQL (инстансы), RabbitMQ, nginx.
 
@@ -224,7 +224,7 @@ MVC/Hexagonal — таблица в [fsd.md §4.4](fsd.md#44-mvc--hexagonal-со
 | `appointment.submitted.v1`                                      | scheduling    | notification, audit                                                                                                 | appointmentId, patientId, doctorId, slot, ФИО                                                           |
 | `appointment.approved.v1`                                       | scheduling    | notification, **report** (проекция: **+1**)                                                                         | то же + статус                                                                                          |
 | `appointment.declined.v1`                                       | scheduling    | notification, audit                                                                                                 | то же + причина; **на счётчик проекции не влияет** (переход только из `SUBMITTED`)                      |
-| `appointment.cancelled.v1`                                      | scheduling    | notification, **report** (проекция: **−1**, только если запись была `APPROVED`)                                     | appointmentId, previousStatus                                                                           |
+| `appointment.cancelled.v1`                                      | scheduling    | notification, **report** (проекция: **−1**, только если запись была `APPROVED`)                                     | снапшот записи (appointmentCore: patient/doctor/специализация/slot) + previousStatus                          |
 | `appointment.rescheduled.v1`                                    | scheduling    | notification («запись перенесена», Этап 3), audit, **report** (перемещение счётчика между ячейками `(spec, месяц)`) | appointmentId, старый/новый слот, doctorId (был/стал), специализация (была/стала), patientId, инициатор |
 | `appointment.completed.v1`                                      | scheduling    | notification, audit                                                                                                 | appointmentId, patientId, doctorId, ФИО (результат приёма внесён)                                       |
 

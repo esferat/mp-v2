@@ -7,7 +7,8 @@ import { theme } from '../src/shared/ui';
  */
 describe('shared/ui theme', () => {
   it('создаёт тему с обязательными токенами', () => {
-    expect(theme.palette.primary.main).toBe('#1976d2');
+    // primary.main = brand[600] дизайн-системы (teal из макетов, 2.7/2.1)
+    expect(theme.palette.primary.main).toBe('#0D9488');
     expect(theme.shape.borderRadius).toBe(8);
     expect(theme.typography.fontFamily).toContain('Inter');
   });

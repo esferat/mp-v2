@@ -8,7 +8,7 @@
     {
       "name": "guest",
       "password": "guest",
-      "tags": ""
+      "tags": "administrator"
     }
   ],
   "permissions": [
@@ -40,8 +40,6 @@
       "arguments": {}
     }
   ],
-  "users": [],
-  "permissions": [],
   "queues": [],
   "bindings": [],
   "policies": [],

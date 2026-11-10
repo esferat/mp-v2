@@ -65,7 +65,8 @@ describe('DoctorsTable (3.1: таблица, поиск без перезагр�
     expect(screen.getByText('Иванов Имя')).toBeTruthy();
     expect(screen.getByText('Петров Имя')).toBeTruthy();
     expect(screen.getAllByText('Терапевт')).toHaveLength(2);
-    expect(screen.getAllByText('ACTIVE')).toHaveLength(2);
+    // MpStatusBadge (2.7) рендерит русскую лейбу статуса, а не сырой код
+    expect(screen.getAllByText('Активен')).toHaveLength(2);
   });
 
   it('поиск дёргает BFF (shared/api) с debounce, а не перезагружает страницу', async () => {

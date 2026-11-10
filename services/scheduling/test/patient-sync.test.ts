@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { RoutingKeys } from '@mp/contracts';
-import type { ConsumedEvent } from '@mp/service-kit';
-import { applyPatientEvent } from '../src/features/patient-sync/app/apply-patient-event';
+import {
+  applyPatientEvent,
+  type PatientEventEnvelope,
+} from '../src/features/patient-sync/app/apply-patient-event';
 import { makeSchedulingContext } from './helpers/in-memory';
 
 function patientEvent(payload: {
@@ -9,15 +10,10 @@ function patientEvent(payload: {
   firstName: string;
   lastName: string;
   middleName?: string;
-}): ConsumedEvent {
+}): PatientEventEnvelope {
   return {
-    routingKey: RoutingKeys.PatientUpdated,
-    body: {
-      eventId: '11111111-1111-4111-8111-111111111111',
-      occurredAt: '2026-11-07T10:00:00.000Z',
-      payload: { userId: 'u-1', birthDate: '1990-01-01', email: 'p@test.mp', ...payload },
-    },
-    raw: {} as ConsumedEvent['raw'],
+    occurredAt: '2026-11-07T10:00:00.000Z',
+    payload,
   };
 }
 

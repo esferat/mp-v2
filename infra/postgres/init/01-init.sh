@@ -71,6 +71,7 @@ create_service_user "svc_patients"  "${SVC_PATIENTS_PASSWORD:-}"
 create_service_user "svc_files"     "${SVC_FILES_PASSWORD:-}"
 create_service_user "svc_schedule"  "${SVC_SCHEDULE_PASSWORD:-}"
 create_service_user "svc_report"    "${SVC_REPORT_PASSWORD:-}"
+create_service_user "svc_notification" "${SVC_NOTIFICATION_PASSWORD:-}"
 
 # Базы: одна на сервис, права — только у владельца
 create_service_db "db_identity"  "svc_identity"
@@ -79,6 +80,7 @@ create_service_db "db_patients"  "svc_patients"
 create_service_db "db_files"     "svc_files"
 create_service_db "db_schedule"  "svc_schedule"
 create_service_db "db_report"    "svc_report"
+create_service_db "db_notification" "svc_notification"
 
 echo "=== mp-v2: инициализация БД завершена ==="
 echo "--- базы:"

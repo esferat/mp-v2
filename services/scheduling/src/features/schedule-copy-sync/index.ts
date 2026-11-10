@@ -1,7 +1,7 @@
 import { Inject, Injectable, Module, type OnApplicationBootstrap } from '@nestjs/common';
 import { RoutingKeys } from '@mp/contracts';
 import {
-  type ConsumedEvent,
+  createConsumerHandler,
   InboxService,
   LOGGER,
   type Logger,
@@ -13,7 +13,7 @@ import {
   type ScheduleCopyRepository,
 } from '../../entities/schedule-copy';
 import { CATALOG_CLIENT, type CatalogHttpClient } from '../../shared/api';
-import { applyDoctorEvent } from './app/apply-doctor-event';
+import { applyDoctorEvent, parseDoctorEvent } from './app/apply-doctor-event';
 
 /**
  * Потребитель doctor.* и bootstrap копий расписаний (5.1/3.5):
@@ -40,26 +40,25 @@ export class ScheduleCopySync implements OnApplicationBootstrap {
   ) {}
 
   onApplicationBootstrap(): void {
+    // Пайплайн 6.3 (валидация → inbox → ретраи → DLQ) даёт общая обёртка.
     this.rabbit.subscribe({
       queue: 'scheduling.schedule-copy',
       bindings: [RoutingKeys.DoctorCreated, RoutingKeys.DoctorUpdated],
-      handler: (event) => this.handle(event),
+      handler: createConsumerHandler({
+        queue: 'scheduling.schedule-copy',
+        parse: (event) => parseDoctorEvent(event.routingKey, event.body),
+        handler: async (envelope) => {
+          await applyDoctorEvent(this.repository, envelope);
+        },
+        inbox: this.inbox,
+        log: this.log,
+      }),
     });
 
     void this.bootstrap().catch((error: unknown) => {
       // Сбой bootstrap не должен ронять сервис: fallback отработают слоты (3.5)
       this.log.warn({ err: error }, 'bootstrap копий расписаний не выполнен');
     });
-  }
-
-  private async handle(event: ConsumedEvent): Promise<void> {
-    const body = event.body as { eventId?: string };
-    if (!body?.eventId) {
-      throw new Error('у события нет eventId (конверт повреждён) — в DLQ');
-    }
-    await this.inbox.runOnce(body.eventId, event.routingKey, () =>
-      applyDoctorEvent(this.repository, event),
-    );
   }
 
   private async bootstrap(): Promise<void> {

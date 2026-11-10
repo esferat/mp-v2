@@ -27,7 +27,21 @@ export async function cancelAppointment(
 
     await context.outbox.enqueue(
       RoutingKeys.AppointmentCancelled,
-      createEvent({ appointmentId: appointment.id, previousStatus }),
+      createEvent({
+        // Снапшот записи (6.2: письмо «отменена»; 5.4: previousStatus для проекции)
+        appointmentId: appointment.id,
+        patientId: appointment.patientId,
+        patientName: appointment.patientName,
+        doctorId: appointment.doctorId,
+        doctorName: appointment.doctorName,
+        specializationName: appointment.specializationName,
+        slot: {
+          localDate: appointment.localDate,
+          start: appointment.startTime,
+          end: appointment.endTime,
+        },
+        previousStatus,
+      }),
     );
 
     return toApiAppointment(appointment);
