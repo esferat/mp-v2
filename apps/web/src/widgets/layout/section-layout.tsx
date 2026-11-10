@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { createServerApi } from '@/shared/api';
 import { auth } from '@/shared/config/auth';
 import { menuForSection, type MenuRole } from '@/shared/config';
 import { AppShell } from './app-shell';
@@ -25,6 +26,33 @@ const PROFILE_HREFS = {
 } as const;
 
 /**
+ * Фото аватара в шапке (3.4/4.3): пациент — карточка patient-service,
+ * врач — карточка catalog; админ — без аватара (инициалы, решение этапа).
+ * Приоритет ролей — как в homeRedirectFor (ADMIN > DOCTOR > USER).
+ * Ошибка загрузки не должна ломать layout → undefined (инициалы).
+ */
+async function loadAvatarSrc(
+  userId: string,
+  roles: readonly MenuRole[],
+): Promise<string | undefined> {
+  if (roles.includes('ADMIN')) return undefined;
+  try {
+    const api = await createServerApi();
+    if (roles.includes('DOCTOR')) {
+      const doctor = await api.catalog.getMyDoctor();
+      return doctor.photoUrl;
+    }
+    if (roles.includes('USER')) {
+      const patient = await api.patient.getByUser(userId);
+      return patient.photoUrl;
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Каркас раздела (2.1) — MpAppShell по макету visual/layout.html: шапка 64px
  * (логотип, название, меню пользователя, «Выйти») + боковое меню с иконками
  * + контент. Route group ((admin)/(cabinet)/(doctor)) оборачивает страницы
@@ -48,6 +76,7 @@ export async function SectionLayout({
 
   const role = roles[0];
   const email = session?.user.email ?? '';
+  const avatarSrc = session?.user.id ? await loadAvatarSrc(session.user.id, roles) : undefined;
 
   return (
     <AppShell
@@ -60,6 +89,7 @@ export async function SectionLayout({
               name: email,
               ...(role ? { subtitle: role } : {}),
               profileHref: PROFILE_HREFS[section],
+              ...(avatarSrc ? { avatarSrc } : {}),
             }
           : undefined
       }

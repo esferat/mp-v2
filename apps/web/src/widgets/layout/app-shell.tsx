@@ -55,8 +55,8 @@ export interface AppShellProps {
   title?: string;
   /** Подзаголовок в шапке (раздел · роль). */
   subtitle?: string;
-  /** Пользователь для меню профиля в шапке: email, роль, «Профиль». */
-  user?: { name: string; subtitle?: string; profileHref?: string };
+  /** Пользователь для меню профиля в шапке: email, роль, «Профиль», аватар. */
+  user?: { name: string; subtitle?: string; profileHref?: string; avatarSrc?: string };
   children?: ReactNode;
 }
 
@@ -113,6 +113,7 @@ export function AppShell({
             name={user.name}
             {...(user.subtitle ? { subtitle: user.subtitle } : {})}
             {...(user.profileHref ? { profileHref: user.profileHref } : {})}
+            {...(user.avatarSrc ? { avatarSrc: user.avatarSrc } : {})}
           />
         ) : undefined
       }
