@@ -50,6 +50,7 @@ export default async function DoctorProfilePage(): Promise<ReactNode> {
               {...(doctor.photoUrl ? { src: doctor.photoUrl } : {})}
               name={`${doctor.lastName} ${doctor.firstName}`}
               size="xl"
+              sx={{ width: 150, height: 150, fontSize: 60 }}
             />
             <UploadPhoto ownerType="DOCTOR" ownerId={doctor.id} />
             <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
