@@ -61,11 +61,13 @@ export class InMemoryFileRepository implements FileRepository {
   async findByOwner(
     ownerType: FileMeta['ownerType'],
     ownerId: string,
+    page?: { offset: number; limit: number },
   ): Promise<{ items: FileMeta[]; total: number }> {
     const items = [...this.rows.values()]
       .filter((row) => row.ownerType === ownerType && row.ownerId === ownerId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    return { items, total: items.length };
+    const paged = page ? items.slice(page.offset, page.offset + page.limit) : items;
+    return { items: paged, total: items.length };
   }
 }
 

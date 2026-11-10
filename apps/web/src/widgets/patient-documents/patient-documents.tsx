@@ -9,17 +9,24 @@ import {
   MpCard,
   MpCardContent,
   MpSpinner,
+  PaginationBar,
   Stack,
   Typography,
 } from '@/shared/ui';
 import { browserApi } from '@/shared/api/browser';
 import { toApiError } from '@/shared/api/errors';
+import { usePagination } from '@/shared/lib';
 
 /**
  * Документы пациента в профиле (4.5: «Скачать скан документа»):
  * список из реестра file-service + presigned-скачивание (TTL 5 мин),
  * ссылка открывается во вкладке — токен в URL не попадает.
+ *
+ * Пагинация (4.5): максимум 5 документов на страницу, при большем числе
+ * — подвал «Всего: N / Страница X из Y» (offset/limit API файлов).
  */
+const PAGE_SIZE = 5;
+
 const CATEGORY_LABELS: Record<string, string> = {
   ANALYSIS: 'Анализ',
   REFERRAL: 'Направление',
@@ -39,10 +46,18 @@ export function PatientDocuments({ patientId }: { patientId: string }): React.JS
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
 
+  const pagination = usePagination({ limit: PAGE_SIZE, total: data?.total ?? 0 });
+
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     browserApi.files
-      .list({ ownerType: 'PATIENT', ownerId: patientId })
+      .list({
+        ownerType: 'PATIENT',
+        ownerId: patientId,
+        offset: pagination.offset,
+        limit: PAGE_SIZE,
+      })
       .then((response) => {
         if (!cancelled) {
           setData(response);
@@ -58,7 +73,7 @@ export function PatientDocuments({ patientId }: { patientId: string }): React.JS
     return () => {
       cancelled = true;
     };
-  }, [patientId]);
+  }, [patientId, pagination.offset]);
 
   async function download(key: string): Promise<void> {
     if (downloading) return;
@@ -74,7 +89,7 @@ export function PatientDocuments({ patientId }: { patientId: string }): React.JS
     }
   }
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <MpSpinner minHeight={24} />
@@ -134,6 +149,13 @@ export function PatientDocuments({ patientId }: { patientId: string }): React.JS
           </MpCardContent>
         </MpCard>
       ))}
+
+      {data.total > PAGE_SIZE ? (
+        <PaginationBar
+          meta={{ ...pagination, total: data.total }}
+          onPageChange={(page) => pagination.setPage(page)}
+        />
+      ) : null}
     </Box>
   );
 }

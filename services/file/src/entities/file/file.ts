@@ -42,8 +42,12 @@ export interface FileRepository {
   /** Удаление записи; true — строка была (повтор безопасен). */
   deleteByKey(key: string): Promise<boolean>;
 
-  /** Файлы владельца, новые сверху (4.5/9.3: списки документов). */
-  findByOwner(ownerType: OwnerType, ownerId: string): Promise<{ items: FileMeta[]; total: number }>;
+  /** Файлы владельца, новые сверху (4.5/9.3: списки документов), пагинация offset/limit. */
+  findByOwner(
+    ownerType: OwnerType,
+    ownerId: string,
+    page?: { offset: number; limit: number },
+  ): Promise<{ items: FileMeta[]; total: number }>;
 }
 
 /** DI-токен привязки реализации (сборка — в app/app.module.ts). */

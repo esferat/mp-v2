@@ -70,7 +70,7 @@ export const fileMetaSchema = z.object({
 export type FileMeta = z.infer<typeof fileMetaSchema>;
 
 /** GET /api/files?ownerType&ownerId — список файлов владельца (владелец/ADMIN). */
-export const fileListQuerySchema = z.object({
+export const fileListQuerySchema = paginationQuerySchema.extend({
   ownerType: ownerTypeSchema,
   ownerId: z.string().min(1),
 });

@@ -116,6 +116,8 @@ export function createApi(client: ApiClient) {
         const query = new URLSearchParams({
           ownerType: params.ownerType,
           ownerId: params.ownerId,
+          offset: String(params.offset),
+          limit: String(params.limit),
         });
         return client.get<FileListResponse>(`/files?${query.toString()}`);
       },

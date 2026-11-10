@@ -36,6 +36,9 @@ export async function listFiles(
     throw new ForbiddenError(`Нет прав на файлы владельца: ${decision.reason}`);
   }
 
-  const { items, total } = await deps.files.findByOwner(query.ownerType, query.ownerId);
+  const { items, total } = await deps.files.findByOwner(query.ownerType, query.ownerId, {
+    offset: query.offset,
+    limit: query.limit,
+  });
   return { items, total };
 }

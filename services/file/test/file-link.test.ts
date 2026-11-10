@@ -99,7 +99,7 @@ describe('listFiles (4.5/9.3: список владельца)', () => {
 
     const mine = await listFiles(
       { files: context.files, access: context.access },
-      { ownerType: 'PATIENT', ownerId: 'patient-1' },
+      { ownerType: 'PATIENT', ownerId: 'patient-1', offset: 0, limit: 5 },
       OWNER,
     );
     expect(mine.total).toBe(1);
@@ -108,7 +108,7 @@ describe('listFiles (4.5/9.3: список владельца)', () => {
     await expect(
       listFiles(
         { files: context.files, access: context.access },
-        { ownerType: 'PATIENT', ownerId: 'patient-2' },
+        { ownerType: 'PATIENT', ownerId: 'patient-2', offset: 0, limit: 5 },
         OWNER,
       ),
     ).rejects.toMatchObject({ status: 403 });
@@ -120,9 +120,41 @@ describe('listFiles (4.5/9.3: список владельца)', () => {
 
     const result = await listFiles(
       { files: context.files, access: context.access },
-      { ownerType: 'PATIENT', ownerId: 'patient-1' },
+      { ownerType: 'PATIENT', ownerId: 'patient-1', offset: 0, limit: 5 },
       ADMIN,
     );
     expect(result.total).toBe(1);
+  });
+
+  it('пагинация: limit срезает items, total остаётся полным', async () => {
+    const context = makeFileContext();
+    context.access.patients.set('user-1', 'patient-1');
+    for (let i = 0; i < 7; i += 1) {
+      await context.files.create({
+        key: `doc-${i}.pdf`,
+        bucket: 'patient-docs',
+        ownerType: 'PATIENT',
+        ownerId: 'patient-1',
+        mime: 'application/pdf',
+        size: 5,
+        uploadedBy: 'user-1',
+      });
+    }
+
+    const first = await listFiles(
+      { files: context.files, access: context.access },
+      { ownerType: 'PATIENT', ownerId: 'patient-1', offset: 0, limit: 5 },
+      OWNER,
+    );
+    expect(first.items).toHaveLength(5);
+    expect(first.total).toBe(7);
+
+    const second = await listFiles(
+      { files: context.files, access: context.access },
+      { ownerType: 'PATIENT', ownerId: 'patient-1', offset: 5, limit: 5 },
+      OWNER,
+    );
+    expect(second.items).toHaveLength(2);
+    expect(second.total).toBe(7);
   });
 });

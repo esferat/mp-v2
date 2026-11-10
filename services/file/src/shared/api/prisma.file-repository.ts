@@ -72,10 +72,15 @@ export class PrismaFileRepository implements FileRepository {
   async findByOwner(
     ownerType: OwnerType,
     ownerId: string,
+    page?: { offset: number; limit: number },
   ): Promise<{ items: FileMeta[]; total: number }> {
     const where = { ownerType, ownerId };
     const [rows, total] = await Promise.all([
-      this.db.fileObject.findMany({ where, orderBy: { createdAt: 'desc' } }),
+      this.db.fileObject.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...(page ? { skip: page.offset, take: page.limit } : {}),
+      }),
       this.db.fileObject.count({ where }),
     ]);
     return { items: rows.map(toDomain), total };

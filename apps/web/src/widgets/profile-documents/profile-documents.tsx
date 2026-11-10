@@ -6,8 +6,9 @@ import { PatientDocuments } from '@/widgets/patient-documents';
 import { UploadPatientDocument } from '@/features/upload-patient-document';
 
 /**
- * Секция «Документы» в профиле пациента (4.4/4.5): список сканов +
- * отдельная загрузка документа (категория → файл, PDF/JPEG/PNG ≤ 5 МБ).
+ * Секция «Документы» в профиле пациента (4.4/4.5): сверху — компактная
+ * кнопка отдельной загрузки документа (категория → файл, PDF/JPEG/PNG
+ * ≤ 5 МБ), ниже — список сканов с пагинацией (максимум 5 на страницу).
  *
  * Загрузка документов тут — отдельная от аватара функция: фото профиля
  * меняется кнопкой «Загрузить фото» в колонке аватара, документы —
@@ -23,8 +24,8 @@ export function ProfileDocuments({ patientId }: { patientId: string }): React.JS
 
   return (
     <Stack spacing={2}>
+      <UploadPatientDocument patientId={patientId} onUploaded={handleUploaded} size="small" />
       <PatientDocuments key={refreshKey} patientId={patientId} />
-      <UploadPatientDocument patientId={patientId} onUploaded={handleUploaded} />
     </Stack>
   );
 }

@@ -40,10 +40,13 @@ const CATEGORY_OPTIONS: ReadonlyArray<{ value: DocumentCategory; label: string }
 export function UploadPatientDocument({
   patientId,
   onUploaded,
+  size = 'medium',
 }: {
   patientId: string;
   /** Вызывается после успешной загрузки (обновление списка). */
   onUploaded: () => void;
+  /** Размер кнопки: small — компактная в профиле (4.5). */
+  size?: 'small' | 'medium';
 }): React.JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -111,7 +114,7 @@ export function UploadPatientDocument({
 
   return (
     <>
-      <MpButton variant="contained" onClick={() => setOpen(true)}>
+      <MpButton variant="contained" size={size} onClick={() => setOpen(true)}>
         Загрузить документ
       </MpButton>
 
