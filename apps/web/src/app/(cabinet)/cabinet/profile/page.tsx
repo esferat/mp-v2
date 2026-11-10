@@ -1,22 +1,32 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Alert, Box, MpAvatar, MpPageHeader, Stack, Typography } from '@/shared/ui';
+import {
+  Alert,
+  Box,
+  MpAvatar,
+  MpCard,
+  MpCardContent,
+  MpPageHeader,
+  Stack,
+  Typography,
+} from '@/shared/ui';
 import { ApiError, createServerApi } from '@/shared/api';
 import { auth } from '@/shared/config/auth';
 import { PatientForm } from '@/widgets/patient-form';
-import { PatientDocuments } from '@/widgets/patient-documents';
+import { ProfileDocuments } from '@/widgets/profile-documents';
 import { UploadPhoto } from '@/features/upload-photo';
 
 export const metadata: Metadata = { title: 'Профиль — Кабинет' };
 
 /**
  * Профиль пациента (4.2/4.3/4.5): карточка по sub из токена (SSR),
- * форма редактирования (4.2), аватар с кропом (4.3), документы и
- * presigned-скачивание (4.5).
+ * форма редактирования (4.2) в белой карточке, аватар с кропом (4.3),
+ * документы и presigned-скачивание (4.5).
  *
  * Разделение функций: аватар — своя колонка слева (обновляет только
- * владелец), документы — отдельная секция справа (просмотр/скачивание;
- * загрузка сканов — у врача в карточке пациента, 9.3).
+ * владелец), документы — отдельная секция справа со своей загрузкой
+ * (список + кнопка «Загрузить документ»); загрузка сканов врачом —
+ * в карточке пациента (9.3).
  */
 export default async function ProfilePage(): Promise<ReactNode> {
   try {
@@ -61,12 +71,17 @@ export default async function ProfilePage(): Promise<ReactNode> {
           </Stack>
 
           <Stack spacing={3} sx={{ flex: 1, minWidth: 0 }}>
-            <PatientForm patient={patient} />
+            {/* Белая карточка за полями ввода (как в профилях врача/админа) */}
+            <MpCard>
+              <MpCardContent padding="lg">
+                <PatientForm patient={patient} />
+              </MpCardContent>
+            </MpCard>
             <Box>
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Документы
               </Typography>
-              <PatientDocuments patientId={patient.id} />
+              <ProfileDocuments patientId={patient.id} />
             </Box>
           </Stack>
         </Stack>
