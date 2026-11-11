@@ -123,6 +123,9 @@ export function createApi(client: ApiClient) {
       },
       /** Presigned-ссылка на скачивание (4.5). */
       getLink: (key: string) => client.get<FileDownload>(`/files/${encodeURIComponent(key)}`),
+      /** Удаление своего документа (4.4: владелец или связанный врач). */
+      remove: (key: string) =>
+        client.del<{ ok: true }>(`/files/${encodeURIComponent(key)}`, { noRetry: true }),
     },
 
     scheduling: {

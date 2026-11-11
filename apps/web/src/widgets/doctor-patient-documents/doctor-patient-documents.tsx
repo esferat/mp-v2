@@ -16,7 +16,7 @@ export function DoctorPatientDocuments({ patientId }: { patientId: string }): Re
 
   return (
     <>
-      <PatientDocuments key={refreshKey} patientId={patientId} />
+      <PatientDocuments key={refreshKey} patientId={patientId} onChanged={handleUploaded} />
       <UploadPatientDocument patientId={patientId} onUploaded={handleUploaded} />
     </>
   );

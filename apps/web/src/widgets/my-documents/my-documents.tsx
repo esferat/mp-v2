@@ -25,17 +25,18 @@ export function MyDocuments({
 }): React.JSX.Element {
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleUploaded = useCallback(() => setRefreshKey((value) => value + 1), []);
+  /** Список перечитывается после загрузки ИЛИ удаления документа. */
+  const handleChanged = useCallback(() => setRefreshKey((value) => value + 1), []);
 
   return (
     <Box>
       <MpPageHeader
         title="Мои документы"
         subtitle={`${patientName} · анализы, направления и выписки`}
-        actions={<UploadPatientDocument patientId={patientId} onUploaded={handleUploaded} />}
+        actions={<UploadPatientDocument patientId={patientId} onUploaded={handleChanged} />}
       />
       <Stack spacing={2}>
-        <PatientDocuments key={refreshKey} patientId={patientId} />
+        <PatientDocuments key={refreshKey} patientId={patientId} onChanged={handleChanged} />
         <Typography variant="caption" color="text.secondary">
           Форматы: PDF, JPEG или PNG, до 5 МБ. Файл проверяется по содержимому (магические байты).
         </Typography>

@@ -1,29 +1,37 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { FileListResponse } from '@mp/contracts';
+import type { FileListResponse, FileMeta } from '@mp/contracts';
 import {
   Box,
   MpAlert,
   MpButton,
   MpCard,
   MpCardContent,
+  MpDialog,
+  MpDialogActions,
+  MpDialogContent,
   MpSpinner,
   PaginationBar,
   Stack,
   Typography,
+  useToast,
 } from '@/shared/ui';
 import { browserApi } from '@/shared/api/browser';
 import { toApiError } from '@/shared/api/errors';
 import { usePagination } from '@/shared/lib';
 
 /**
- * Документы пациента в профиле (4.5: «Скачать скан документа»):
- * список из реестра file-service + presigned-скачивание (TTL 5 мин),
- * ссылка открывается во вкладке — токен в URL не попадает.
+ * Документы владельца (4.5: «Скачать скан документа»): список из реестра
+ * file-service + presigned-скачивание (TTL 5 мин) и удаление своего
+ * документа (4.4) с подтверждением — доступ проверяет file-service
+ * (владелец PATIENT-файла или связанный врач).
  *
- * Пагинация (4.5): максимум 5 документов на страницу, при большем числе
- * — подвал «Всего: N / Страница X из Y» (offset/limit API файлов).
+ * Пагинация (4.5): максимум 5 документов на страницу, при большем числе —
+ * подвал «Всего: N / Страница X из Y» (offset/limit API файлов).
+ *
+ * @param onChanged — вызывается после удаления (внешний контейнер
+ * обновляет список, см. widgets/my-documents).
  */
 const PAGE_SIZE = 5;
 
@@ -40,12 +48,26 @@ function formatSize(size: number): string {
   return `${(size / (1024 * 1024)).toFixed(1)} МБ`;
 }
 
-export function PatientDocuments({ patientId }: { patientId: string }): React.JSX.Element {
+function fileTitle(file: FileMeta): string {
+  return `${file.category ? (CATEGORY_LABELS[file.category] ?? file.category) : 'Документ'} · ${file.mime}`;
+}
+
+export function PatientDocuments({
+  patientId,
+  onChanged,
+}: {
+  patientId: string;
+  /** Успешное удаление — внешний контейнер перезагружает список. */
+  onChanged?: () => void;
+}): React.JSX.Element {
   const [data, setData] = useState<FileListResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [deleteFor, setDeleteFor] = useState<FileMeta | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
+  const toast = useToast();
   const pagination = usePagination({ limit: PAGE_SIZE, total: data?.total ?? 0 });
 
   useEffect(() => {
@@ -86,6 +108,23 @@ export function PatientDocuments({ patientId }: { patientId: string }): React.JS
       setError(apiError.message);
     } finally {
       setDownloading(null);
+    }
+  }
+
+  async function confirmDelete(): Promise<void> {
+    if (!deleteFor || deleting) return;
+    setDeleting(true);
+    try {
+      await browserApi.files.remove(deleteFor.key);
+      setDeleteFor(null);
+      toast.success('Документ удалён');
+      onChanged?.();
+    } catch (caught) {
+      const apiError = toApiError(caught);
+      setDeleteFor(null);
+      toast.error(apiError.message, apiError.requestId);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -130,22 +169,30 @@ export function PatientDocuments({ patientId }: { patientId: string }): React.JS
             }}
           >
             <Box>
-              <Typography variant="subtitle2">
-                {file.category ? (CATEGORY_LABELS[file.category] ?? file.category) : 'Документ'} ·{' '}
-                {file.mime}
-              </Typography>
+              <Typography variant="subtitle2">{fileTitle(file)}</Typography>
               <Typography variant="caption" color="text.secondary">
                 {new Date(file.createdAt).toLocaleDateString('ru-RU')} · {formatSize(file.size)}
               </Typography>
             </Box>
-            <MpButton
-              size="small"
-              variant="outlined"
-              loading={downloading === file.key}
-              onClick={() => void download(file.key)}
-            >
-              Скачать
-            </MpButton>
+            <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+              <MpButton
+                size="small"
+                variant="outlined"
+                loading={downloading === file.key}
+                onClick={() => void download(file.key)}
+              >
+                Скачать
+              </MpButton>
+              <MpButton
+                size="small"
+                variant="text"
+                color="error"
+                disabled={deleting}
+                onClick={() => setDeleteFor(file)}
+              >
+                Удалить
+              </MpButton>
+            </Stack>
           </MpCardContent>
         </MpCard>
       ))}
@@ -156,6 +203,37 @@ export function PatientDocuments({ patientId }: { patientId: string }): React.JS
           onPageChange={(page) => pagination.setPage(page)}
         />
       ) : null}
+
+      {/* Подтверждение удаления (4.4 AC: не удаляется случайно) */}
+      <MpDialog
+        open={deleteFor !== null}
+        title="Удалить документ?"
+        onClose={() => {
+          if (!deleting) setDeleteFor(null);
+        }}
+      >
+        <MpDialogContent>
+          <Typography>
+            {deleteFor
+              ? `«${fileTitle(deleteFor)}» от ${new Date(deleteFor.createdAt).toLocaleDateString('ru-RU')}`
+              : ''}
+            {' — действие необратимо.'}
+          </Typography>
+        </MpDialogContent>
+        <MpDialogActions>
+          <MpButton color="inherit" disabled={deleting} onClick={() => setDeleteFor(null)}>
+            Отмена
+          </MpButton>
+          <MpButton
+            variant="contained"
+            color="error"
+            loading={deleting}
+            onClick={() => void confirmDelete()}
+          >
+            Удалить
+          </MpButton>
+        </MpDialogActions>
+      </MpDialog>
     </Box>
   );
 }
