@@ -5,6 +5,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Zoom from '@mui/material/Zoom';
 import { forwardRef, type ReactNode } from 'react';
 
 /** Брейкпоинт темы (по макетам: `md` = 960, `lg` = 1280). */
@@ -25,7 +26,9 @@ export interface MpDialogProps extends Omit<DialogProps, 'title'> {
 }
 
 /**
- * Модальное окно mp-ui-kit.
+ * Модальное окно mp-ui-kit. Появление — Zoom (scale 0.75 → 1 + fade)
+ * длительностью из темы (стандарт 0.5 с); свой слот `slots.transition`
+ * в props переопределяет дефолт.
  *
  * @example
  * <MpDialog title="Новый врач" open={open} onClose={close}>
@@ -61,6 +64,8 @@ export const MpDialog = forwardRef<HTMLDivElement, MpDialogProps>(function MpDia
       fullWidth={fullWidth}
       fullScreen={fullScreen ?? belowViewport}
       {...props}
+      slots={{ ...props.slots, transition: props.slots?.transition ?? Zoom }}
+      transitionDuration={props.transitionDuration ?? theme.transitions.duration.standard}
     >
       {title ? (
         <DialogTitle
