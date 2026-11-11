@@ -46,6 +46,12 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
     roles: ['ADMIN', 'USER', 'DOCTOR'],
     comment: '10.1: профиль и правка СВОИХ данных (sub из токена)',
   },
+  {
+    methods: ['GET', 'PATCH'],
+    path: '/api/identity/users',
+    roles: ['ADMIN'],
+    comment: '3.2: профиль/правка пользователя для карточки врача — только админ',
+  },
 
   // Каталог: админский CRUD; чтение справочника — для записи (эпики 3, 5)
   { methods: ['POST', 'PUT', 'PATCH', 'DELETE'], path: '/api/catalog/doctors', roles: ['ADMIN'] },

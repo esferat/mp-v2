@@ -115,6 +115,22 @@ describe('findPolicy', () => {
     // GET списка записей политикой переноса не задет
     expect(findPolicy('GET', '/api/scheduling/appointments')?.roles).toEqual(['ADMIN']);
   });
+
+  // 3.2: профиль пользователя (email врача) — только админ; /me не задет
+  it('профиль пользователя по id — только ADMIN; соседний /me открыт своим ролям', () => {
+    const get = findPolicy('GET', '/api/identity/users/u-1');
+    expect(get?.path).toBe('/api/identity/users');
+    expect(get?.roles).toEqual(['ADMIN']);
+    expect(allowsRoles(get, ['USER'])).toBe(false);
+    expect(allowsRoles(get, ['DOCTOR'])).toBe(false);
+    expect(allowsRoles(get, ['ADMIN'])).toBe(true);
+
+    expect(findPolicy('PATCH', '/api/identity/users/u-1')?.roles).toEqual(['ADMIN']);
+
+    // /me не задет ужесточением (профиль и правка своих данных)
+    expect(findPolicy('GET', '/api/identity/me')?.roles).toEqual(['ADMIN', 'USER', 'DOCTOR']);
+    expect(findPolicy('PATCH', '/api/identity/me')?.roles).toEqual(['ADMIN', 'USER', 'DOCTOR']);
+  });
 });
 
 describe('allowsRoles', () => {

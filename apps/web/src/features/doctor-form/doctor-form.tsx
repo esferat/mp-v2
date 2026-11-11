@@ -44,14 +44,25 @@ interface DoctorFormBase {
 }
 
 export type DoctorFormProps = DoctorFormBase &
-  ({ mode: 'create'; initial?: undefined } | { mode: 'edit'; initial: DoctorListItem });
+  (
+    | { mode: 'create'; initial?: undefined; accountEmail?: never }
+    | {
+        mode: 'edit';
+        initial: DoctorListItem;
+        /**
+         * Email учётной записи (Keycloak): null — у врача нет привязки
+         * userId, поля email в форме нет (3.2: видит/правит админ и врач).
+         */
+        accountEmail: string | null;
+      }
+  );
 
 const STATUS_OPTIONS = [
   { value: 'ACTIVE', label: 'Активен' },
   { value: 'INACTIVE', label: 'Архив' },
 ];
 
-function toValues(doctor?: DoctorListItem): DoctorFormValues {
+function toValues(doctor?: DoctorListItem, accountEmail?: string | null): DoctorFormValues {
   return {
     firstName: doctor?.firstName ?? '',
     lastName: doctor?.lastName ?? '',
@@ -62,7 +73,7 @@ function toValues(doctor?: DoctorListItem): DoctorFormValues {
     durationMinutes: doctor?.schedule.durationMinutes ?? 30,
     workDays: doctor ? [...doctor.schedule.workDays] : [1, 2, 3, 4, 5],
     createAccount: false,
-    email: '',
+    email: accountEmail ?? '',
     password: '',
   };
 }
@@ -71,11 +82,16 @@ function sameValues(a: DoctorFormValues, b: DoctorFormValues): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-export function DoctorForm({ mode, initial, specializations }: DoctorFormProps): React.JSX.Element {
+export function DoctorForm({
+  mode,
+  initial,
+  accountEmail,
+  specializations,
+}: DoctorFormProps): React.JSX.Element {
   const router = useRouter();
   const toast = useToast();
 
-  const [values, setValues] = useState<DoctorFormValues>(() => toValues(initial));
+  const [values, setValues] = useState<DoctorFormValues>(() => toValues(initial, accountEmail));
   const [status, setStatus] = useState(initial?.status ?? 'ACTIVE');
   const [errors, setErrors] = useState<DoctorFormErrors>({});
   const [serverError, setServerError] = useState<{ message: string; requestId?: string } | null>(
@@ -87,11 +103,11 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
   const submittingRef = useRef(false);
 
   const dirty = useMemo(() => {
-    const base = toValues(initial);
+    const base = toValues(initial, accountEmail);
     return (
       !sameValues(values, base) || (mode === 'edit' && status !== (initial?.status ?? 'ACTIVE'))
     );
-  }, [values, status, initial, mode]);
+  }, [values, status, initial, mode, accountEmail]);
 
   useEffect(() => {
     if (!dirty) return;
@@ -122,7 +138,10 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
   async function save(nextStatus?: 'ACTIVE' | 'INACTIVE'): Promise<void> {
     if (submittingRef.current) return;
 
-    const clientErrors = validateDoctorForm(values);
+    const clientErrors = validateDoctorForm(values, {
+      // 3.2: у врача с учётной записью email всегда виден и обязателен
+      emailRequired: mode === 'edit' && accountEmail !== null,
+    });
     setErrors(clientErrors);
     setServerError(null);
     if (Object.keys(clientErrors).length > 0) return;
@@ -155,6 +174,13 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
           await browserApi.catalog.createDoctor(payload);
         }
       } else {
+        // Email живёт в Keycloak (10.1, источник истины): правим ДО карточки —
+        // занятый адрес (409) падает раньше частичных сохранений; повтор при
+        // неудачном catalog идемпотентен (адрес уже совпадает с Keycloak)
+        const nextEmail = values.email.trim();
+        if (initial.userId && accountEmail !== null && nextEmail !== accountEmail) {
+          await browserApi.identity.updateUserProfile(initial.userId, { email: nextEmail });
+        }
         await browserApi.catalog.updateDoctor(initial.id, {
           id: initial.id,
           ...payload,
@@ -264,6 +290,30 @@ export function DoctorForm({ mode, initial, specializations }: DoctorFormProps):
           />
         ) : null}
       </Stack>
+
+      {/* 3.2: email учётной записи — видит/правит админ; врач правит тот же
+          адрес в своём профиле (10.1). Без привязки userId — учётки нет. */}
+      {mode === 'edit' ? (
+        accountEmail !== null ? (
+          <MpTextField
+            label="Email"
+            size="small"
+            required
+            type="email"
+            sx={{ maxWidth: 420 }}
+            value={values.email}
+            error={Boolean(errors.email)}
+            {...(errors.email
+              ? { helperText: errors.email }
+              : { helperText: 'Логин и адрес для писем — меняется у врача и администратора' })}
+            onChange={(event) => patch('email', event.target.value, 'email')}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            Учётной записи нет — email не задан
+          </Typography>
+        )
+      ) : null}
 
       <Typography variant="h6">Расписание</Typography>
 

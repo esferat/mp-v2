@@ -1,4 +1,5 @@
 import type {
+  AdminUserProfile,
   Appointment,
   AppointmentListQuery,
   AppointmentListResponse,
@@ -27,6 +28,7 @@ import type {
   SetAppointmentStatusRequest,
   SlotList,
   Specialization,
+  UpdateAdminUserProfileRequest,
   UpdateDoctorRequest,
   UpdateDoctorScheduleRequest,
   UpdateMeRequest,
@@ -89,6 +91,14 @@ export function createApi(client: ApiClient) {
       /** Правка СВОИХ данных (10.1: занятый email → 409 с полем email). */
       updateMe: (body: UpdateMeRequest) =>
         client.patch<MeProfile>('/identity/me', body, { noRetry: true }),
+      /** Профиль пользователя по id (3.2: email врача в карточке, только ADMIN). */
+      getUserProfile: (userId: string) =>
+        client.get<AdminUserProfile>(`/identity/users/${encodeURIComponent(userId)}`),
+      /** Правка профиля пользователя админом (email; занятый → 409 с полем email). */
+      updateUserProfile: (userId: string, body: UpdateAdminUserProfileRequest) =>
+        client.patch<AdminUserProfile>(`/identity/users/${encodeURIComponent(userId)}`, body, {
+          noRetry: true,
+        }),
     },
 
     patient: {

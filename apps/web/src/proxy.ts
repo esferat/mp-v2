@@ -12,6 +12,21 @@ import { decideAccess } from '@/shared/lib';
  */
 export default auth((request) => {
   const pathname = request.nextUrl.pathname;
+
+  // Мёртвая сессия: страница пришла с ?expired=1 (refresh не прошёл).
+  // Сбрасываем куки и пускаем на вход как гостя — иначе гард видит
+  // «живую» JWT-куку, ведёт на главную → раздел → 401 → вход, и редиректы
+  // зацикливаются (ERR_TOO_MANY_REDIRECTS). Ключи Auth.js — чанки с префиксом.
+  if (pathname === '/auth/login' && request.nextUrl.searchParams.has('expired')) {
+    const response = NextResponse.next();
+    for (const cookie of request.cookies.getAll()) {
+      if (cookie.name.includes('authjs.session-token')) {
+        response.cookies.delete(cookie.name);
+      }
+    }
+    return response;
+  }
+
   const roles = request.auth?.user.roles ?? null;
   const decision = decideAccess(pathname, roles);
 

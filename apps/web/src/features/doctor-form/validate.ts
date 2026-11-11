@@ -67,8 +67,20 @@ export function isFormField(key: string): key is DoctorFormField {
   );
 }
 
+export interface ValidateDoctorFormOptions {
+  /**
+   * Проверять email и в edit-режиме (3.2): у врача с учётной записью поле
+   * всегда отображается и обязательно. В create-режиме email обязателен
+   * только при включённом `createAccount`.
+   */
+  emailRequired?: boolean;
+}
+
 /** Клиентская валидация: пустые значения + правила расписания (зеркало сервера). */
-export function validateDoctorForm(values: DoctorFormValues): DoctorFormErrors {
+export function validateDoctorForm(
+  values: DoctorFormValues,
+  options: ValidateDoctorFormOptions = {},
+): DoctorFormErrors {
   const errors: DoctorFormErrors = {};
 
   if (!values.firstName.trim()) {
@@ -87,14 +99,15 @@ export function validateDoctorForm(values: DoctorFormValues): DoctorFormErrors {
     errors.specializationId = 'Выберите специализацию';
   }
 
-  // 9.1: поля учётной записи обязательны только при включённом чекбоксе
-  if (values.createAccount) {
+  // 9.1: поля учётной записи обязательны при чекбоксе (create);
+  // 3.2: в edit-режиме с учётной записью — всегда (emailRequired)
+  if (values.createAccount || options.emailRequired) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
       errors.email = 'Некорректный email';
     }
-    if (values.password.length < 8) {
-      errors.password = 'Пароль: минимум 8 символов';
-    }
+  }
+  if (values.createAccount && values.password.length < 8) {
+    errors.password = 'Пароль: минимум 8 символов';
   }
 
   // Правила расписания — общий слайс (shared/lib/schedule)

@@ -34,12 +34,15 @@ async function loadDoctor(id: string): Promise<LoadResult<DoctorListItem>> {
 
 function ErrorAlert({
   result,
+  subject = 'врача',
 }: {
   result: { error: string; requestId?: string };
+  /** Что не загрузилось: «врача» (по умолчанию) или «email врача». */
+  subject?: string;
 }): React.JSX.Element {
   return (
     <Alert severity="error" role="alert">
-      Не удалось загрузить врача: {result.error}
+      Не удалось загрузить {subject}: {result.error}
       {result.requestId ? (
         <Typography variant="caption" sx={{ display: 'block' }}>
           requestId: {result.requestId}
@@ -47,6 +50,26 @@ function ErrorAlert({
       ) : null}
     </Alert>
   );
+}
+
+/**
+ * Email учётной записи врача из Keycloak (3.2: видит/правит админ и сам врач).
+ * Без привязки userId — врача без учётной записи возвращаем null.
+ */
+async function loadAccountEmail(userId: string): Promise<LoadResult<string>> {
+  try {
+    const api = await createServerApi();
+    const profile = await api.identity.getUserProfile(userId);
+    return { value: profile.email };
+  } catch (error) {
+    // Не-API ошибки (в т.ч. NEXT_REDIRECT «на вход» после неудачного
+    // refresh токена) — наружу: catch не должен поглощать редирект
+    if (!(error instanceof ApiError)) throw error;
+    return {
+      error: error.message,
+      ...(error.requestId ? { requestId: error.requestId } : {}),
+    };
+  }
 }
 
 /**
@@ -69,6 +92,15 @@ export default async function DoctorPage({
   if ('error' in doctorResult) return <ErrorAlert result={doctorResult} />;
   if ('error' in specializationsResult) return <ErrorAlert result={specializationsResult} />;
 
+  // Email учётной записи (Keycloak, 3.2): у врача может не быть привязки
+  // userId — тогда поля email в форме нет
+  const userId = doctorResult.value.userId;
+  const emailResult = userId ? await loadAccountEmail(userId) : null;
+  if (emailResult && 'error' in emailResult) {
+    return <ErrorAlert result={emailResult} subject="email врача" />;
+  }
+  const accountEmail = emailResult && 'value' in emailResult ? emailResult.value : null;
+
   return (
     <Box>
       <MpPageHeader
@@ -85,6 +117,7 @@ export default async function DoctorPage({
         <DoctorForm
           mode="edit"
           initial={doctorResult.value}
+          accountEmail={accountEmail}
           specializations={specializationsResult.items}
         />
       </Box>

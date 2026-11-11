@@ -20,6 +20,11 @@ export interface ApiClientOptions {
    * пользователь уходит на авторизацию.
    */
   onUnauthorized?: () => Promise<string | null>;
+  /**
+   * Браузер: 401 остался ПОСЛЕ обновления куки (сессия мертва) — уводим
+   * на вход. По умолчанию реальная навигация; в тестах подменяется.
+   */
+  navigate?: (url: string) => void;
 }
 
 export interface RequestOptions extends Omit<RequestInit, 'headers'> {
@@ -60,6 +65,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     fetchImpl = fetch,
     headers: extraHeaders,
     onUnauthorized,
+    navigate,
   } = options;
 
   /**
@@ -83,7 +89,9 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
 
     while (attempt < attempts) {
       try {
-        return await requestOnce<T>(path, init, method);
+        const result = await requestOnce<T>(path, init, method);
+        clearReloginFlag(baseUrl);
+        return result;
       } catch (error) {
         const apiError = toApiErrorInternal(error);
         lastError = apiError;
@@ -113,7 +121,14 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
           }
         }
         const retryable = apiError.isNetworkError || apiError.isServerError;
-        if (!retryable || attempt === attempts - 1) throw apiError;
+        if (!retryable || attempt === attempts - 1) {
+          // Браузер: и повтор после обновления куки — снова 401 → сессия
+          // мертва, обновить нечем — уводим на вход (с флагом против петли)
+          if (apiError.status === 401 && retriedAfterRefresh) {
+            leaveToLogin(baseUrl, navigate);
+          }
+          throw apiError;
+        }
         // Экспоненциальная пауза: 200мс, 400мс…
         await sleep(200 * 2 ** attempt);
         attempt += 1;
@@ -243,5 +258,44 @@ async function refreshSessionCookie(): Promise<void> {
     await fetch('/api/auth/session', { cache: 'no-store', credentials: 'include' });
   } catch {
     // сбой обновления не должен маскировать исходную ошибку 401
+  }
+}
+
+/**
+ * Флажок «ушли на вход» в sessionStorage вкладки: пока ни один запрос не
+ * прошёл, повторный 01 не уводит на вход снова — иначе битый gateway
+ * (отвергает и свежие токены) закручивал бы петлю вход → страница → вход.
+ */
+const RELOGIN_FLAG = 'mp.web.relogin-at';
+
+/** Браузерный путь (BFF '/api/...'): навигация доступна только здесь. */
+function isBrowserPath(baseUrl: string): boolean {
+  return baseUrl.startsWith('/') && typeof window !== 'undefined';
+}
+
+function clearReloginFlag(baseUrl: string): void {
+  if (!isBrowserPath(baseUrl)) return;
+  try {
+    window.sessionStorage.removeItem(RELOGIN_FLAG);
+  } catch {
+    // sessionStorage недоступен — не мешаем успешному запросу
+  }
+}
+
+/**
+ * Мёртвая сессия в браузере (401 после обновления куки): уход на вход с
+ * ?expired=1 — гард в proxy сбросит куки, иначе «залогинен → главная →
+ * раздел → 401 → вход» зациклится. Флаг не даёт зациклить саму навигацию.
+ */
+function leaveToLogin(baseUrl: string, navigate?: (url: string) => void): void {
+  if (!isBrowserPath(baseUrl)) return;
+  try {
+    if (window.sessionStorage.getItem(RELOGIN_FLAG)) return;
+    window.sessionStorage.setItem(RELOGIN_FLAG, String(Date.now()));
+    const callback = `${window.location.pathname}${window.location.search}`;
+    const go = navigate ?? ((url: string) => window.location.assign(url));
+    go(`/auth/login?expired=1&callbackUrl=${encodeURIComponent(callback)}`);
+  } catch {
+    // sessionStorage/навигация недоступны — остаёмся с исходной ошибкой 401
   }
 }

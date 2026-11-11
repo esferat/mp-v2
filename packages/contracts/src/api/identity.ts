@@ -76,3 +76,26 @@ export const updateMeSchema = z
     message: 'Укажите хотя бы одно поле для изменения',
   });
 export type UpdateMeRequest = z.infer<typeof updateMeSchema>;
+
+/**
+ * GET /api/identity/users/:userId (только ADMIN): профиль пользователя для
+ * админки — email врача в его карточке (3.2). Источник истины Keycloak,
+ * как и у /me; роли в ответе не нужны (читает админ, не владелец).
+ */
+export const adminUserProfileSchema = z.object({
+  userId: z.string().min(1),
+  email: z.email(),
+  firstName: z.string(),
+  lastName: z.string(),
+});
+export type AdminUserProfile = z.infer<typeof adminUserProfileSchema>;
+
+/**
+ * PATCH /api/identity/users/:userId (только ADMIN): правка профиля пользователя
+ * админом. Здесь — только email (ФИО врача правится в карточке каталога 3.2,
+ * чтобы не плодить два источника). Занятый email → 409 с полем `email`.
+ */
+export const updateAdminUserProfileSchema = z.object({
+  email: z.email(),
+});
+export type UpdateAdminUserProfileRequest = z.infer<typeof updateAdminUserProfileSchema>;

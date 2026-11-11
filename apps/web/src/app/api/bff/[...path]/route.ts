@@ -22,7 +22,9 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
   const body = !isBodyMethod ? undefined : isMultipart ? request.body : await request.text();
 
   try {
-    const client = await createServerClient();
+    // Прокси — тонкая обёртка без логики сессии: 401 отдаём браузеру как
+    // есть (обновляет кукю и повторяет сам, 2.3) — redirect для XHR бессмыслен
+    const client = await createServerClient({ refreshOnUnauthorized: false });
     const result = await client.request<unknown>(path, {
       method: request.method,
       ...(body ? { body } : {}),

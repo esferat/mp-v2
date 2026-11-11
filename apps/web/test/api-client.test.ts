@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createApiClient, type FetchLike } from '../src/shared/api/client';
 import { ApiError, toApiError } from '../src/shared/api/errors';
 import { browserApi, browserApiClient } from '../src/shared/api/browser';
@@ -277,5 +277,76 @@ describe('401 → тихое обновление токена (серверны
     });
 
     await expect(client.get('/patient/me')).rejects.toBe(redirectError);
+  });
+});
+
+describe('браузер: мёртвая сессия → уход на вход (против петли редиректов)', () => {
+  const expired = () => serverError({ code: 'TOKEN_EXPIRED', message: 'Токен просрочен' }, 401);
+
+  it('401 и после обновления куки → navigate на /auth/login?expired=1', async () => {
+    sessionStorage.clear();
+    const { impl, calls } = makeFetch([expired(), expired()]);
+    const navigate = vi.fn();
+    const client = createApiClient({ baseUrl: '/api/bff', fetchImpl: impl, navigate });
+
+    await expect(client.get('/patient/me')).rejects.toMatchObject({ status: 401 });
+
+    // исходный запрос + повтор после refreshSessionCookie
+    expect(calls).toHaveLength(2);
+    expect(navigate).toHaveBeenCalledTimes(1);
+    const url = navigate.mock.calls[0]?.[0] as string;
+    // ?expired=1 — сигнал гарду сбросить куки мёртвой сессии (иначе петля
+    // «вход → главная → раздел → 401 → вход»)
+    expect(url.startsWith('/auth/login?expired=1')).toBe(true);
+    expect(decodeURIComponent(url)).toContain('callbackUrl=/');
+    sessionStorage.clear();
+  });
+
+  it('пока флаг не снят (ни один запрос не прошёл) — повторный уход блокируется', async () => {
+    sessionStorage.clear();
+    const navigate = vi.fn();
+
+    const first = makeFetch([expired(), expired()]);
+    const clientA = createApiClient({ baseUrl: '/api/bff', fetchImpl: first.impl, navigate });
+    await expect(clientA.get('/a')).rejects.toMatchObject({ status: 401 });
+    expect(navigate).toHaveBeenCalledTimes(1);
+
+    // тот же «мёртвый» поток: флаг ещё установлен — навигация не повторяется
+    const second = makeFetch([expired(), expired()]);
+    const clientB = createApiClient({ baseUrl: '/api/bff', fetchImpl: second.impl, navigate });
+    await expect(clientB.get('/b')).rejects.toMatchObject({ status: 401 });
+    expect(navigate).toHaveBeenCalledTimes(1);
+    sessionStorage.clear();
+  });
+
+  it('успешный запрос снимает флаг — следующая смерть снова уводит на вход', async () => {
+    sessionStorage.clear();
+    const navigate = vi.fn();
+
+    const dead = makeFetch([expired(), expired()]);
+    const clientA = createApiClient({ baseUrl: '/api/bff', fetchImpl: dead.impl, navigate });
+    await expect(clientA.get('/dead')).rejects.toMatchObject({ status: 401 });
+    expect(navigate).toHaveBeenCalledTimes(1);
+
+    // «оживление»: запрос проходит — флаг снят
+    const alive = makeFetch([ok({ fine: true })]);
+    const clientB = createApiClient({ baseUrl: '/api/bff', fetchImpl: alive.impl, navigate });
+    await expect(clientB.get('/ok')).resolves.toEqual({ fine: true });
+
+    const deadAgain = makeFetch([expired(), expired()]);
+    const clientC = createApiClient({ baseUrl: '/api/bff', fetchImpl: deadAgain.impl, navigate });
+    await expect(clientC.get('/dead-again')).rejects.toMatchObject({ status: 401 });
+    expect(navigate).toHaveBeenCalledTimes(2);
+    sessionStorage.clear();
+  });
+
+  it('серверный путь (baseUrl не начинается с /) — навигации нет', async () => {
+    sessionStorage.clear();
+    const { impl } = makeFetch([expired(), expired()]);
+    const navigate = vi.fn();
+    const client = createApiClient({ baseUrl: 'http://gateway/api', fetchImpl: impl, navigate });
+
+    await expect(client.get('/x')).rejects.toMatchObject({ status: 401 });
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type { DoctorListItem } from '@mp/contracts';
 import { DoctorForm } from '../src/features/doctor-form';
 import { ToastProvider } from '../src/shared/ui';
 import { ApiError } from '../src/shared/api/errors';
@@ -15,6 +16,7 @@ vi.mock('next/navigation', () => ({
 
 const createDoctor = vi.fn();
 const updateDoctor = vi.fn();
+const updateUserProfile = vi.fn();
 
 // Клиентский API подменяется: форма ходит только через shared/api (2.3)
 vi.mock('../src/shared/api/browser', () => ({
@@ -24,6 +26,9 @@ vi.mock('../src/shared/api/browser', () => ({
       createDoctor: (body: unknown) => createDoctor(body),
       updateDoctor: (id: string, body: unknown) => updateDoctor(id, body),
     },
+    identity: {
+      updateUserProfile: (id: string, body: unknown) => updateUserProfile(id, body),
+    },
   },
 }));
 
@@ -31,6 +36,7 @@ afterEach(() => {
   cleanup();
   createDoctor.mockReset();
   updateDoctor.mockReset();
+  updateUserProfile.mockReset();
   push.mockReset();
   refresh.mockReset();
 });
@@ -166,5 +172,112 @@ describe('DoctorForm (3.2: форма врача)', () => {
     // выбор опции обновляет значение
     fireEvent.click(options[2]); // 15 мин
     expect(combobox.textContent).toContain('15');
+  });
+});
+
+// --- Edit-режим: email учётной записи (3.2) --------------------------------
+
+const doctor: DoctorListItem = {
+  id: 'd-1',
+  userId: 'kc-1',
+  firstName: 'Иван',
+  lastName: 'Иванов',
+  specializationId: 'sp-1',
+  specializationName: 'Хирург',
+  status: 'ACTIVE',
+  schedule: {
+    startTime: '09:00',
+    endTime: '18:00',
+    durationMinutes: 30,
+    workDays: [1, 2, 3, 4, 5],
+  },
+};
+
+function renderEdit(accountEmail: string | null): void {
+  render(
+    <ToastProvider>
+      <DoctorForm
+        mode="edit"
+        initial={doctor}
+        accountEmail={accountEmail}
+        specializations={specializations}
+      />
+    </ToastProvider>,
+  );
+}
+
+describe('DoctorForm edit: email учётной записи (3.2)', () => {
+  it('текущий email показан в поле; смена идёт в identity ДО карточки', async () => {
+    updateUserProfile.mockResolvedValue({
+      userId: 'kc-1',
+      email: 'new@test.mp',
+      firstName: 'Иван',
+      lastName: 'Иванов',
+    });
+    updateDoctor.mockResolvedValue({ id: 'd-1' });
+    renderEdit('old@test.mp');
+
+    expect((screen.getByLabelText(/^Email/) as HTMLInputElement).value).toBe('old@test.mp');
+
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'new@test.mp' } });
+    fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
+
+    await waitFor(() =>
+      expect(updateUserProfile).toHaveBeenCalledWith('kc-1', { email: 'new@test.mp' }),
+    );
+    await waitFor(() => expect(updateDoctor).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/admin/doctors'));
+  });
+
+  it('email не тронут → identity не вызывается, карточка сохраняется', async () => {
+    updateDoctor.mockResolvedValue({ id: 'd-1' });
+    renderEdit('old@test.mp');
+
+    fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
+
+    await waitFor(() => expect(updateDoctor).toHaveBeenCalledTimes(1));
+    expect(updateUserProfile).not.toHaveBeenCalled();
+  });
+
+  it('некорректный email → ошибка на поле, запросов нет', async () => {
+    renderEdit('old@test.mp');
+
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'не-почта' } });
+    fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
+
+    expect(await screen.findByText('Некорректный email')).toBeTruthy();
+    expect(updateUserProfile).not.toHaveBeenCalled();
+    expect(updateDoctor).not.toHaveBeenCalled();
+  });
+
+  it('занятый email (409 с полем) — под полем, карточка НЕ сохранена', async () => {
+    updateUserProfile.mockRejectedValue(
+      new ApiError('Email уже зарегистрирован', {
+        code: 'CONFLICT',
+        status: 409,
+        field: 'email',
+      }),
+    );
+    renderEdit('old@test.mp');
+
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'taken@test.mp' } });
+    fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
+
+    expect(await screen.findByText('Email уже зарегистрирован')).toBeTruthy();
+    expect(updateDoctor).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('врач без учётной записи: поля email нет, подсказка вместо него', async () => {
+    updateDoctor.mockResolvedValue({ id: 'd-1' });
+    renderEdit(null);
+
+    expect(screen.queryByLabelText(/^Email/)).toBeNull();
+    expect(screen.getByText('Учётной записи нет — email не задан')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
+
+    await waitFor(() => expect(updateDoctor).toHaveBeenCalledTimes(1));
+    expect(updateUserProfile).not.toHaveBeenCalled();
   });
 });
