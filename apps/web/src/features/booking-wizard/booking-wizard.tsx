@@ -417,7 +417,15 @@ export function BookingWizard({
                             Нет приёма
                           </Typography>
                         ) : (
-                          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                          /* Сетка колонок (а не строки с переносом): ровные
+                             колонки времени, как в расписании (booking.md) */
+                          <Box
+                            sx={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
+                              gap: 1,
+                            }}
+                          >
                             {daySlots.map((slot) => {
                               const unavailable = slotUnavailable(slot);
                               const isSelected =
@@ -428,11 +436,11 @@ export function BookingWizard({
                                   key={`${slot.localDate}-${slot.start}`}
                                   label={slot.start}
                                   size="small"
-                                  color={
-                                    isSelected ? 'primary' : unavailable ? 'neutral' : 'success'
-                                  }
+                                  color={unavailable ? 'neutral' : 'success'}
+                                  selected={isSelected}
                                   variant="outlined"
                                   disabled={unavailable}
+                                  sx={{ width: '100%', justifyContent: 'center' }}
                                   {...(!unavailable
                                     ? {
                                         onClick: () =>
@@ -448,7 +456,7 @@ export function BookingWizard({
                                 />
                               );
                             })}
-                          </Stack>
+                          </Box>
                         )}
                       </MpCardContent>
                     </MpCard>
