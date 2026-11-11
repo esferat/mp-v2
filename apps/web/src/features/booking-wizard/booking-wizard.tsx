@@ -13,6 +13,7 @@ import {
   MpCardContent,
   MpChip,
   MpSelect,
+  MpSpinner,
   MpStepper,
   Stack,
   Typography,
@@ -124,6 +125,8 @@ export function BookingWizard({
   const [todayIso] = useState(() => toIso(new Date()));
   /** Начало 7-дневного окна ленты дат (шаг 3). */
   const [windowStart, setWindowStart] = useState(() => toIso(new Date()));
+  /** Направление последнего перелистывания — для анимации сдвига ленты. */
+  const [windowDir, setWindowDir] = useState<1 | -1>(1);
   const [booking, setBooking] = useState(false);
 
   // Максимум перелистывания — 2 месяца от сегодня (конец второго месяца)
@@ -182,6 +185,7 @@ export function BookingWizard({
     const next = addDays(windowStart, direction * WINDOW_DAYS);
     const bounded = next < todayIso ? todayIso : next > maxDateIso ? maxDateIso : next;
     if (bounded === windowStart) return;
+    setWindowDir(direction);
     setWindowStart(bounded);
     void loadWindow(bounded);
   }
@@ -395,18 +399,30 @@ export function BookingWizard({
             </Stack>
 
             {loadingSlots ? (
-              <Typography color="text.secondary">Загружаем расписание…</Typography>
+              <MpSpinner label="Загружаем расписание…" minHeight={220} />
             ) : (
               /* День = колонка: горизонтальный ряд до 7 дней (на узком
                  экране — горизонтальный скролл); слоты внутри дня —
-                 вертикальный столбик в одну колонку */
+                 вертикальный столбик в одну колонку. key=windowStart
+                 перемонтирует ряд при перелистывании — проигрывается
+                 анимация сдвига в направлении ‹/› */
               <Box
+                key={windowStart}
                 sx={{
                   display: 'flex',
                   gap: 1.5,
                   alignItems: 'flex-start',
                   overflowX: 'auto',
                   pb: 1,
+                  animation: windowDir === 1 ? 'mpWeekNext 0.25s ease' : 'mpWeekPrev 0.25s ease',
+                  '@keyframes mpWeekNext': {
+                    from: { opacity: 0, transform: 'translateX(24px)' },
+                    to: { opacity: 1, transform: 'none' },
+                  },
+                  '@keyframes mpWeekPrev': {
+                    from: { opacity: 0, transform: 'translateX(-24px)' },
+                    to: { opacity: 1, transform: 'none' },
+                  },
                 }}
               >
                 {days.map((dayIso) => {
