@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Медицинский портал mp-v2 — презентация проекта</title>
+<style>
+  :root {
+    --accent: #00796b;
+    --accent-dark: #00564e;
+    --ink: #1f2a37;
+    --muted: #5b6b7c;
+    --bg: #eef1f5;
+    --card: #ffffff;
+    --line: #d9e0e8;
+    --chip: #e7f3f1;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow: hidden;
+  }
+  #deck { height: 100vh; }
+  .slide {
+    display: none;
+    height: 100vh;
+    padding: 40px 64px 72px;
+    flex-direction: column;
+    background: var(--card);
+    animation: fadeIn 0.35s ease;
+  }
+  .slide.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  h1 { font-size: 44px; margin: 0 0 12px; color: var(--accent-dark); }
+  h2 { font-size: 32px; margin: 0 0 6px; color: var(--accent-dark); }
+  .subtitle { font-size: 19px; color: var(--muted); margin: 0 0 22px; }
+  .kicker {
+    display: inline-block; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); background: var(--chip); border-radius: 999px; padding: 4px 14px; margin-bottom: 14px;
+  }
+  .cols { display: flex; gap: 28px; flex: 1; min-height: 0; }
+  .col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .panel {
+    background: #f7f9fb; border: 1px solid var(--line); border-radius: 14px; padding: 18px 22px;
+  }
+  .panel h3 { margin: 0 0 8px; font-size: 18px; color: var(--accent-dark); }
+  ul { margin: 6px 0 0; padding-left: 20px; }
+  li { margin: 6px 0; font-size: 16px; line-height: 1.45; }
+  .shot {
+    flex: 1; min-height: 0; border: 1px solid var(--line); border-radius: 14px;
+    background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .shot img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .shot.tall img { object-position: top; object-fit: cover; object-fit: contain; }
+  .caption { font-size: 14px; color: var(--muted); margin-top: 8px; text-align: center; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; flex: 1; min-height: 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; flex: 1; min-height: 0; }
+  .shot-cell { display: flex; flex-direction: column; min-height: 0; }
+  .shot-cell .shot { flex: 1; }
+  .steps { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .step {
+    font-size: 14px; padding: 6px 14px; border-radius: 999px;
+    background: var(--chip); color: var(--accent-dark); border: 1px solid #cde5e1;
+  }
+  .step b { color: var(--accent); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex: 1; align-content: center; }
+  .stat {
+    background: #f7f9fb; border: 1px solid var(--line); border-radius: 14px; padding: 20px; text-align: center;
+  }
+  .stat .num { font-size: 34px; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 14px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .badge {
+    font-size: 13px; padding: 4px 12px; border-radius: 999px;
+    background: var(--chip); color: var(--accent-dark);
+  }
+  table.roadmap { border-collapse: collapse; width: 100%; font-size: 16px; }
+  table.roadmap th, table.roadmap td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; }
+  table.roadmap th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  .ok { color: #1b7f3b; font-weight: 600; }
+  .plan { color: #9a6b00; font-weight: 600; }
+  /* навигация */
+  #hud {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: rgba(255,255,255,0.92); border-top: 1px solid var(--line);
+    backdrop-filter: blur(6px); z-index: 10;
+  }
+  #hud .nav { display: flex; gap: 10px; align-items: center; }
+  #hud button {
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    border-radius: 8px; padding: 6px 16px; font-size: 15px; cursor: pointer;
+  }
+  #hud button:hover { border-color: var(--accent); color: var(--accent); }
+  #counter { font-size: 14px; color: var(--muted); }
+  #title-hud { font-size: 14px; color: var(--muted); max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); z-index: 11; transition: width 0.3s ease; }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="deck">
+
+  <!-- 1 -->
+  <section class="slide active" data-title="Титул">
+    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; max-width:1100px;">
+      <span class="kicker">Презентация проекта</span>
+      <h1 style="font-size:56px;">Медицинский портал <span style="color:var(--accent);">mp-v2</span></h1>
+      <p class="subtitle" style="font-size:22px; max-width:900px;">
+        Запись к врачу, документы и история приёмов. Микросервисная платформа
+        с ролевым доступом, событийной архитектурой и полным циклом наблюдаемости.
+      </p>
+      <div class="badge-row" style="font-size:15px;">
+        <span class="badge">Next.js + TypeScript</span>
+        <span class="badge">NestJS-сервисы</span>
+        <span class="badge">Keycloak (OIDC)</span>
+        <span class="badge">PostgreSQL</span>
+        <span class="badge">RabbitMQ</span>
+        <span class="badge">Docker Compose</span>
+      </div>
+      <div class="panel" style="margin-top:34px; max-width:900px;">
+        <h3>Три роли — три кабинета</h3>
+        <ul>
+          <li><b>Пациент (USER)</b> — запись на приём за 4 шага, история, документы, профиль</li>
+          <li><b>Врач (DOCTOR)</b> — приёмы, расписание, пациенты и их документы, результаты приёмов</li>
+          <li><b>Администратор (ADMIN)</b> — врачи, специализации, управление и перенос записей</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" data-title="Архитектура и стек">
+    <span class="kicker">Как устроено</span>
+    <h2>Архитектура и стек</h2>
+    <p class="subtitle">Монорепо pnpm: web-фронтенд, gateway, сервисы домена, инфраструктура в Docker.</p>
+    <div class="cols">
+      <div class="col">
+        <div class="panel">
+          <h3>Клиент и периметр</h3>
+          <ul>
+            <li><b>apps/web</b> — Next.js (App Router), SSR-страницы, BFF-прокси <code>/api/bff</code></li>
+            <li>Токены только в <b>HttpOnly-куках</b> — не в localStorage и не в DOM</li>
+            <li><b>gateway:4000</b> — единая точка: CORS, JWT (JWKS), роли, rate limit, маршрутизация</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Сервисы</h3>
+          <ul>
+            <li><b>identity</b> — профиль, регистрация, аватар</li>
+            <li><b>catalog</b> — врачи, специализации, расписания, слоты</li>
+            <li><b>appointment</b> — записи, перенос, история, события</li>
+            <li><b>document</b> — загрузка/выдача документов (проверка по магическим байтам)</li>
+            <li><b>notification</b> — письма, outbox → RabbitMQ → DLQ</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <h3>Данные и асинхронность</h3>
+          <ul>
+            <li><b>PostgreSQL</b> — схема на сервис, транзакции и конкуренция за слот</li>
+            <li><b>RabbitMQ</b> — события домена, consumer-группы, dead-letter</li>
+            <li><b>Outbox</b> — гарантированная доставка событий из транзакции</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Наблюдаемость и качество</h3>
+          <ul>
+            <li>Структурные логи + <b>requestId</b> на сквозной трассировке</li>
+            <li><b>Prometheus</b>: метрики сервисов и алерты outbox/consumers</li>
+            <li><b>Mailpit</b> — приём почты на стенде</li>
+            <li>Vitest: unit + integration, e2e-сценарии этапов</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Ключевые решения</h3>
+          <ul>
+            <li>SSR-запросы идут на gateway напрямую с токеном сессии</li>
+            <li>401 «Токен просрочен» → тихий refresh; невозможно → редирект на вход</li>
+            <li>Контракты типизированы (<code>@mp/contracts</code>) — web и сервисы из одного источника</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" data-title="Статус этапов">
+    <span class="kicker">Готовность</span>
+    <h2>Статус этапов</h2>
+    <p class="subtitle">Каждое требование — отдельный коммит; quality gate (format, lint, typecheck, test) зелёный.</p>
+    <div class="panel" style="flex:1; overflow:auto;">
+      <table class="roadmap">
+        <thead><tr><th>Этап</th><th>Содержание</th><th>Статус</th></tr></thead>
+        <tbody>
+          <tr><td>1. Каркас</td><td>Монорепо, docker-стенд, gateway, auth (Keycloak), роли</td><td class="ok">Готово</td></tr>
+          <tr><td>2. Каталог</td><td>Врачи, специализации, расписания, слоты, публичный API</td><td class="ok">Готово</td></tr>
+          <tr><td>3. Запись</td><td>Мастер записи, подтверждение, история, перенос, события</td><td class="ok">Готово</td></tr>
+          <tr><td>4. Документы</td><td>Загрузка/выдача, «Мои документы», пагинация, удаление</td><td class="ok">Готово</td></tr>
+          <tr><td>5. Уведомления</td><td>Письма, outbox, DLQ, алерты, метрики</td><td class="ok">Готово</td></tr>
+          <tr><td>6. Полировка UI/UX</td><td>Кабинеты ролей, плитки врачей, слоты-колонки, модалки, анимации</td><td class="ok">Готово</td></tr>
+          <tr><td>7. Надёжность сессии</td><td>Тихое обновление токена, редирект на вход при невозможности</td><td class="ok">Готово</td></tr>
+          <tr><td>Backlog</td><td>verifyEmail (подтверждение почты), расширенная аналитика</td><td class="plan">Запланировано</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide" data-title="Лендинг и вход">
+    <span class="kicker">Первый экран</span>
+    <h2>Лендинг и авторизация</h2>
+    <p class="subtitle">Публичная страница и вход через Keycloak; после входа — редирект в кабинет своей роли.</p>
+    <div class="cols">
+      <div class="col">
+        <div class="shot"><img src="__IMG_01_landing__" alt="Лендинг" /></div>
+        <div class="caption">Лендинг: публичная страница с описанием и входом</div>
+        <div class="shot"><img src="__IMG_02_profile__" alt="Профиль пациента" /></div>
+        <div class="caption">Профиль пациента после входа: аватар 150×150 и данные</div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <h3>Что важно</h3>
+          <ul>
+            <li>Разделы портала открываются <b>после входа</b> и зависят от роли</li>
+            <li>Вход/выход — OIDC-флоу Keycloak, сессия в HttpOnly-куке Auth.js</li>
+            <li>После логина — <b>редирект в кабинет</b> (пациент → профиль, врач → приёмы, админ → врачи)</li>
+            <li>Админ <b>без аватара</b> — инициалы (решение по продукту)</li>
+            <li>Недоступные роли скрыты в меню, прямые URL отдают 403-состояние</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Надёжность входа</h3>
+          <ul>
+            <li>После простоя access-токен истекает → <b>тихий refresh</b> без ошибок</li>
+            <li>Обновить невозможно → <b>редирект на страницу авторизации</b> с callbackUrl</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" data-title="Запись: шаг 1–2">
+    <span class="kicker">Кабинет пациента</span>
+    <h2>Запись на приём: направление и врач</h2>
+    <div class="steps">
+      <span class="step"><b>1</b> · Направление</span>
+      <span class="step"><b>2</b> · Врач</span>
+      <span class="step">3 · Время</span>
+      <span class="step">4 · Подтверждение</span>
+    </div>
+    <div class="grid2">
+      <div class="shot-cell">
+        <div class="shot"><img src="__IMG_03_step1__" alt="Шаг 1" /></div>
+        <div class="caption">Шаг 1 — выбор направления (специализации)</div>
+      </div>
+      <div class="shot-cell">
+        <div class="shot"><img src="__IMG_04_step2__" alt="Шаг 2" /></div>
+        <div class="caption">Шаг 2 — врачи плитками: 4 в строке, фото, специализация, «Свободно»</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" data-title="Запись: карточка врача">
+    <span class="kicker">Кабинет пациента</span>
+    <h2>Подробнее о враче</h2>
+    <p class="subtitle">Модальное окно (Zoom-анимация): график приёма, длительность, слоты на неделю, приёмы пациента.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.4;">
+        <div class="shot"><img src="__IMG_05_modal__" alt="Карточка врача" /></div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Карточка врача</h3>
+          <ul>
+            <li>Фото <b>56×56</b>, ФИО, специализация, статус</li>
+            <li>Дни и часы приёма, длительность приёма</li>
+            <li><b>Свободно в ближайшие 7 дней</b> — из живого расписания</li>
+            <li>Кнопка «Выбрать врача» продолжает мастер</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Проверки</h3>
+          <ul>
+            <li>Загрузка данных — лоадер <b>поверх контента</b>, без скачков макета</li>
+            <li>Данные берутся из <code>GET /api/catalog/doctors/:id</code> — доступно всем ролям</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" data-title="Запись: шаг 3–4">
+    <span class="kicker">Кабинет пациента</span>
+    <h2>Выбор времени и подтверждение</h2>
+    <div class="steps">
+      <span class="step">1 · Направление</span>
+      <span class="step">2 · Врач</span>
+      <span class="step"><b>3</b> · Время</span>
+      <span class="step"><b>4</b> · Подтверждение</span>
+    </div>
+    <div class="grid2">
+      <div class="shot-cell">
+        <div class="shot"><img src="__IMG_06_step3__" alt="Шаг 3" /></div>
+        <div class="caption">Шаг 3 — слоты: день = колонка, слоты столбиком; зелёные свободные, серые занятые</div>
+      </div>
+      <div class="shot-cell">
+        <div class="shot"><img src="__IMG_07_step4__" alt="Шаг 4" /></div>
+        <div class="caption">Шаг 4 — подтверждение: врач, дата-время, направление, итог</div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:14px;">
+      <ul style="display:flex; gap:26px; flex-wrap:wrap; list-style:none; padding:0; margin:0;">
+        <li>✓ Лента слотов: окно 7 дней, навигация ±7 дней с единой анимацией листания</li>
+        <li>✓ Лоадер поверх сетки — список не «залипает»</li>
+        <li>✓ Окно записи ограничено 2 месяцами вперёд</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" data-title="Документы пациента">
+    <span class="kicker">Кабинет пациента</span>
+    <h2>Мои документы</h2>
+    <p class="subtitle">Отдельный раздел меню: анализы, направления и выписки с пагинацией и удалением.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.5;">
+        <div class="shot"><img src="__IMG_08_documents__" alt="Мои документы" /></div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Возможности</h3>
+          <ul>
+            <li><b>Загрузка</b>: PDF, JPEG, PNG до 5 МБ — проверка по магическим байтам</li>
+            <li><b>Скачивание</b> и <b>удаление своих</b> документов</li>
+            <li>Пагинация: <b>5 на страницу</b>, счётчик «Всего»</li>
+            <li>Аватар профиля отделён от документов (150×150)</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Контроль доступа</h3>
+          <ul>
+            <li>Пациент видит и удаляет только <b>свои</b> документы</li>
+            <li>Врач видит документы <b>своих пациентов</b> в карточке пациента</li>
+            <li>Админ — контент-управление без персональных файлов</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide" data-title="История приёмов">
+    <span class="kicker">Кабинет пациента</span>
+    <h2>История приёмов</h2>
+    <p class="subtitle">Все записи пациента с фильтрами по статусу и специализации.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.5;">
+        <div class="shot"><img src="__IMG_09_history__" alt="История приёмов" /></div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Что в разделе</h3>
+          <ul>
+            <li>Дата и время, врач, специализация</li>
+            <li>Статус: <b>В ожидании</b> / <b>Принята</b> / <b>Отклонена</b> (цветовые метки)</li>
+            <li>Причина отказа и результат приёма — когда внесены</li>
+            <li>Фильтры: статус, специализация, «Сбросить»</li>
+            <li>Пагинация и «На странице: 10»</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Связано</h3>
+          <ul>
+            <li>Отсюда пациент попадает в перенос/отмену по правилам статуса</li>
+            <li>События записи уходят в notification → письмо о статусе</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" data-title="Кабинет врача">
+    <span class="kicker">Кабинет врача</span>
+    <h2>Приёмы и пациенты врача</h2>
+    <div class="grid2">
+      <div class="shot-cell">
+        <div class="shot"><img src="__IMG_10_doctor__" alt="Мои приёмы" /></div>
+        <div class="caption">«Мои приёмы»: фильтры периода/статуса, внесение результата приёма</div>
+      </div>
+      <div class="shot-cell">
+        <div class="shot"><img src="__IMG_11_patients__" alt="Пациенты врача" /></div>
+        <div class="caption">«Пациенты врача»: поиск по ФИО, последний приём</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" data-title="Карточка пациента врача">
+    <span class="kicker">Кабинет врача</span>
+    <h2>Карточка пациента</h2>
+    <p class="subtitle">Приёмы с этим пациентом и его документы — в одном месте.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.5;">
+        <div class="shot"><img src="__IMG_12_card__" alt="Карточка пациента" /></div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Содержимое</h3>
+          <ul>
+            <li>ФИО, последний приём</li>
+            <li><b>Приёмы с этим пациентом</b>: дата, статус, результат</li>
+            <li><b>Документы пациента</b>: скачивание, пагинация</li>
+            <li>Загрузка документа врачом — для выписок и направлений</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Правила</h3>
+          <ul>
+            <li>Врач работает только со <b>своими пациентами</b></li>
+            <li>Доступ к карточке — по роли DOCTOR через gateway</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" data-title="Админ: врачи">
+    <span class="kicker">Администрирование</span>
+    <h2>Справочник врачей</h2>
+    <p class="subtitle">CRUD врачей, привязка к специализациям, статусы.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.5;">
+        <div class="shot"><img src="__IMG_13_admin_doctors__" alt="Врачи" /></div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Возможности</h3>
+          <ul>
+            <li><b>Создание врача</b>, редактирование, статус «Активен»</li>
+            <li>Фильтры: специализация, статус, поиск по ФИО</li>
+            <li><b>5–7 специализаций</b> и распределение врачей по ним</li>
+            <li>Пагинация, счётчик «Всего»</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Также в админке</h3>
+          <ul>
+            <li>Специализации (справочник направлений)</li>
+            <li>Пациенты: поиск и просмотр записей</li>
+            <li>Меню админа: Управление записями, Отчёты</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide" data-title="Админ: управление записями">
+    <span class="kicker">Администрирование</span>
+    <h2>Управление записями</h2>
+    <p class="subtitle">Все записи клиники: принять, отклонить, перенести, отменить.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.5;">
+        <div class="shot"><img src="__IMG_14_schedule__" alt="Управление записями" /></div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Операции над записью</h3>
+          <ul>
+            <li><b>Принять</b> / <b>Отклонить</b> — для ожидающих</li>
+            <li><b>Перенести</b> — диалог с выбором врача и слота</li>
+            <li><b>Отменить</b> — для принятых</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Фильтры</h3>
+          <ul>
+            <li>Период «С — По», статус, специализация, врач</li>
+            <li>Пагинация, «На странице: 10»</li>
+            <li>Каждая операция — событие с письмом пациенту</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide" data-title="Перенос записи">
+    <span class="kicker">Администрирование</span>
+    <h2>Диалог переноса записи</h2>
+    <p class="subtitle">Недельная лента слотов выбранного врача: день = колонка, свободные — зелёные.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.6;">
+        <div class="shot"><img src="__IMG_15_reschedule__" alt="Перенос записи" /></div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Как работает</h3>
+          <ul>
+            <li>Врач выбирается из <b>той же специализации</b> — чужие не подставляются</li>
+            <li>Навигация по неделям (‹ Неделя / Неделя ›), текущая неделя закрыта назад</li>
+            <li>«Превью: слот не выбран» → выбор слота показывает итог</li>
+            <li>Причина переноса (от 3 символов) — <b>попадает в журнал</b></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Проверки</h3>
+          <ul>
+            <li>Занятые/прошедшие слоты недоступны</li>
+            <li>Повторный перенос в чужой слот отклоняется сервером</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide" data-title="События и письма">
+    <span class="kicker">Событийная доставка</span>
+    <h2>События, письма и надёжность</h2>
+    <p class="subtitle">Outbox → RabbitMQ → notification → письмо. Отказы не теряются: DLQ и алерты.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.5;">
+        <div class="shot"><img src="__IMG_16_mailpit__" alt="Mailpit" /></div>
+        <div class="caption">Mailpit на стенде: письма «Запись отправлена/подтверждена»</div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Цепочка</h3>
+          <ul>
+            <li>Запись создаёт <b>событие в outbox</b> в одной транзакции</li>
+            <li>Relay публикует в <b>RabbitMQ</b></li>
+            <li>notification шлёт письмо (Mailpit на стенде)</li>
+            <li>Ошибки → повторы → <b>dead-letter</b></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Письма в системе</h3>
+          <ul>
+            <li>Запись отправлена на подтверждение</li>
+            <li>Запись подтверждена / отклонена / перенесена</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide" data-title="Наблюдаемость">
+    <span class="kicker">Эксплуатация</span>
+    <h2>Метрики и алерты</h2>
+    <p class="subtitle">Prometheus: алерты на рост очередей, ошибки consumer-ов и lag outbox.</p>
+    <div class="cols">
+      <div class="col" style="flex:1.5;">
+        <div class="shot"><img src="__IMG_17_prometheus__" alt="Prometheus alerts" /></div>
+        <div class="caption">/alerts: DlqGrowing, ConsumerErrors, QueueBacklog, OutboxLagHigh, OutboxPublishFailures</div>
+      </div>
+      <div class="col" style="flex:1;">
+        <div class="panel">
+          <h3>Мониторинг</h3>
+          <ul>
+            <li>Метрики всех сервисов + gateway</li>
+            <li>Правила алертов по <b>outbox</b> и <b>consumers</b></li>
+            <li>Сейчас: все правила <b>inactive</b> — система здорова</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Диагностика</h3>
+          <ul>
+            <li>Сквозной <b>requestId</b> в логах и ошибках API</li>
+            <li>Структурные логи, единый формат ошибок <code>ApiError</code></li>
+            <li>RabbitMQ management: очереди, DLQ, консьюмеры</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide" data-title="Надёжность в цифрах">
+    <span class="kicker">Проверено на стенде</span>
+    <h2>Надёжность в цифрах</h2>
+    <p class="subtitle">Сценарии гоняются на живом docker-стенде, а не только в unit-тестах.</p>
+    <div class="stats">
+      <div class="stat"><div class="num">4</div><div class="label">шага записи: направление → врач → время → подтверждение</div></div>
+      <div class="stat"><div class="num">3</div><div class="label">роли с раздельными кабинетами и правами доступа</div></div>
+      <div class="stat"><div class="num">7</div><div class="label">дней в ленте слотов, окно записи — 2 месяца</div></div>
+      <div class="stat"><div class="num">5</div><div class="label">документов на странице при пагинации</div></div>
+      <div class="stat"><div class="num">5</div><div class="label">правил алертов Prometheus (outbox + consumers)</div></div>
+      <div class="stat"><div class="num">1</div><div class="label">refresh на клиента: параллельные 401 делят его между собой</div></div>
+      <div class="stat"><div class="num">0</div><div class="label">«Токен просрочен» на страницах: тихий refresh или редирект</div></div>
+      <div class="stat"><div class="num">100%</div><div class="label">quality gate: format, lint, typecheck, test зелёные</div></div>
+    </div>
+    <div class="panel">
+      <ul style="display:flex; gap:26px; flex-wrap:wrap; list-style:none; padding:0; margin:0;">
+        <li>✓ Простой &gt; 5 мин → страница рендерится без ошибок</li>
+        <li>✓ Мёртвый refresh → уход на /auth/login вместо ошибки</li>
+        <li>✓ Отказ SMTP → повторы и DLQ без потери событий</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide" data-title="Дальнейшие шаги">
+    <span class="kicker">Итоги</span>
+    <h2>Итоги и дальнейшие шаги</h2>
+    <div class="cols">
+      <div class="col">
+        <div class="panel">
+          <h3>Готово</h3>
+          <ul>
+            <li>Полный флоу записи пациент → врач → админ</li>
+            <li>Документы, история, перенос, уведомления</li>
+            <li>Событийная доставка с outbox и DLQ</li>
+            <li>Наблюдаемость: логи, requestId, метрики, алерты</li>
+            <li>Надёжная сессия: тихий refresh, редирект на вход</li>
+            <li>Единый UI-язык: MUI, анимации, лоадеры, адаптив</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <h3>Дальше</h3>
+          <ul>
+            <li><b>verifyEmail</b> — подтверждение почты при регистрации (backlog)</li>
+            <li>Расширенная аналитика и отчёты для админа</li>
+            <li>Нагрузочное тестирование слотов (конкурентная запись)</li>
+            <li>CI: прогон quality gate и e2e на каждый коммит</li>
+            <li>Деплой на тестовый контур</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Как смотреть стенд</h3>
+          <ul>
+            <li><code>docker compose -f infra/docker-compose.yml up -d</code></li>
+            <li>web :3000 · gateway :4000 · mailpit :8025 · prometheus :9090</li>
+            <li>Логины <code>*@test.mp</code> / <code>Password123!</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="hud">
+  <div id="title-hud"></div>
+  <div class="nav">
+    <button id="prev" title="←">← Назад</button>
+    <span id="counter"></span>
+    <button id="next" title="→">Вперёд →</button>
+  </div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let index = 0;
+
+  function render() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === index));
+    document.getElementById('counter').textContent = (index + 1) + ' / ' + slides.length;
+    document.getElementById('title-hud').textContent = slides[index].dataset.title || '';
+    document.getElementById('progress').style.width = ((index + 1) / slides.length * 100) + '%';
+    location.hash = String(index + 1);
+  }
+
+  function go(delta) {
+    index = Math.min(slides.length - 1, Math.max(0, index + delta));
+    render();
+  }
+
+  document.getElementById('prev').addEventListener('click', () => go(-1));
+  document.getElementById('next').addEventListener('click', () => go(1));
+  window.addEventListener('hashchange', () => {
+    const n = parseInt(location.hash.slice(1), 10);
+    if (n >= 1 && n <= slides.length && n - 1 !== index) { index = n - 1; render(); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); go(1); }
+    if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); go(-1); }
+    if (e.key === 'Home') { index = 0; render(); }
+    if (e.key === 'End') { index = slides.length - 1; render(); }
+  });
+
+  const fromHash = parseInt(location.hash.slice(1), 10);
+  if (fromHash >= 1 && fromHash <= slides.length) index = fromHash - 1;
+  render();
+</script>
+</body>
+</html>
