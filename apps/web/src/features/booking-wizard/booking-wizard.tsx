@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { SlotList, Specialization } from '@mp/contracts';
+import type { DoctorListItem, SlotList, Specialization } from '@mp/contracts';
 import {
   Box,
   DatePickersProvider,
@@ -12,6 +12,9 @@ import {
   MpCard,
   MpCardContent,
   MpChip,
+  MpDialog,
+  MpDialogActions,
+  MpDialogContent,
   MpSelect,
   MpSpinner,
   MpStepper,
@@ -83,6 +86,24 @@ function dayLabel(iso: string): string {
   return `${dayMonth}, ${weekday}`;
 }
 
+/** ФИО врача из карточки catalog. */
+function doctorFullName(
+  doctor: Pick<DoctorListItem, 'lastName' | 'firstName' | 'middleName'>,
+): string {
+  return [doctor.lastName, doctor.firstName, doctor.middleName ?? '']
+    .filter((part) => part.length > 0)
+    .join(' ');
+}
+
+const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
+
+/** Рабочие дни (1 = пн … 7 = вс) → «пн, вт, ср, чт, пт». */
+function formatWorkDays(workDays: readonly number[]): string {
+  const days = [...workDays].sort((a, b) => a - b).map((day) => WEEKDAYS[day - 1] ?? '');
+  const unique = [...new Set(days)].filter(Boolean);
+  return unique.length > 0 ? unique.join(', ') : '—';
+}
+
 /** Врачи в порядке появления в ответе слотов, со счётчиками. */
 function groupByDoctor(slots: SlotList): {
   doctor: SelectedDoctor;
@@ -129,6 +150,12 @@ export function BookingWizard({
   const [windowDir, setWindowDir] = useState<1 | -1>(1);
   const [booking, setBooking] = useState(false);
 
+  /** Модальная карточка врача («Подробнее» в плитке шага 2). */
+  const [infoFor, setInfoFor] = useState<SelectedDoctor | null>(null);
+  const [info, setInfo] = useState<DoctorListItem | null>(null);
+  const [loadingInfo, setLoadingInfo] = useState(false);
+  const [infoError, setInfoError] = useState<string | null>(null);
+
   // Максимум перелистывания — 2 месяца от сегодня (конец второго месяца)
   const maxDateIso = (() => {
     const today = isoToDate(todayIso);
@@ -154,6 +181,21 @@ export function BookingWizard({
       setSlots([]);
     } finally {
       setLoadingSlots(false);
+    }
+  }
+
+  /** «Подробнее» в плитке врача: карточка из catalog (ФИО, расписание, статус). */
+  async function openDoctorInfo(target: SelectedDoctor): Promise<void> {
+    setInfoFor(target);
+    setInfo(null);
+    setInfoError(null);
+    setLoadingInfo(true);
+    try {
+      setInfo(await browserApi.catalog.getDoctor(target.doctorId));
+    } catch (caught) {
+      setInfoError(toApiError(caught).message);
+    } finally {
+      setLoadingInfo(false);
     }
   }
 
@@ -333,7 +375,10 @@ export function BookingWizard({
                         }}
                       >
                         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-                          <MpAvatar name={group.doctor.doctorName} />
+                          <MpAvatar
+                            name={group.doctor.doctorName}
+                            sx={{ width: 56, height: 56, fontSize: 22 }}
+                          />
                           <Box sx={{ minWidth: 0 }}>
                             <Typography variant="subtitle2" noWrap>
                               {group.doctor.doctorName}
@@ -352,6 +397,18 @@ export function BookingWizard({
                             ? `Свободно: ${group.available} из ${group.total}`
                             : `Свободных нет (занято: ${group.total})`}
                         </Typography>
+                        <MpButton
+                          size="small"
+                          variant="outlined"
+                          fullWidth
+                          onClick={(event) => {
+                            // не выбираем врача — открываем карточку
+                            event.stopPropagation();
+                            void openDoctorInfo(group.doctor);
+                          }}
+                        >
+                          Подробнее
+                        </MpButton>
                       </MpCardContent>
                     </MpCard>
                   );
@@ -564,6 +621,78 @@ export function BookingWizard({
             </MpCardContent>
           </MpCard>
         ) : null}
+        {/* Карточка врача: «Подробнее» в плитке шага 2 (без выбора) */}
+        <MpDialog
+          open={infoFor !== null}
+          title="Информация о враче"
+          onClose={() => {
+            if (!loadingInfo) setInfoFor(null);
+          }}
+        >
+          <MpDialogContent>
+            {loadingInfo ? (
+              <MpSpinner label="Загружаем данные врача…" minHeight={140} />
+            ) : infoError ? (
+              <MpAlert severity="error" role="alert">
+                {infoError}
+              </MpAlert>
+            ) : info ? (
+              <Stack spacing={2}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+                  <MpAvatar
+                    name={doctorFullName(info)}
+                    {...(info.photoUrl ? { src: info.photoUrl } : {})}
+                    sx={{ width: 56, height: 56, fontSize: 22 }}
+                  />
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="h6" noWrap>
+                      {doctorFullName(info)}
+                    </Typography>
+                    <Typography color="text.secondary">{info.specializationName}</Typography>
+                  </Box>
+                </Stack>
+                <Stack spacing={0.5}>
+                  <Typography>
+                    Статус: {info.status === 'ACTIVE' ? 'Активен' : 'Неактивен'}
+                  </Typography>
+                  <Typography>
+                    Приём: {formatWorkDays(info.schedule.workDays)}, {info.schedule.startTime}–
+                    {info.schedule.endTime}
+                  </Typography>
+                  <Typography>Длительность приёма: {info.schedule.durationMinutes} мин</Typography>
+                  {(() => {
+                    const group = doctorGroups.find(
+                      (item) => item.doctor.doctorId === infoFor?.doctorId,
+                    );
+                    return group ? (
+                      <Typography color={group.available > 0 ? 'success.dark' : 'text.secondary'}>
+                        {group.available > 0
+                          ? `Свободно в ближайшие 7 дней: ${group.available} из ${group.total}`
+                          : `Свободных окон нет (занято: ${group.total})`}
+                      </Typography>
+                    ) : null;
+                  })()}
+                </Stack>
+              </Stack>
+            ) : null}
+          </MpDialogContent>
+          <MpDialogActions>
+            <MpButton color="inherit" onClick={() => setInfoFor(null)}>
+              Закрыть
+            </MpButton>
+            <MpButton
+              variant="contained"
+              disabled={!info}
+              onClick={() => {
+                if (!info) return;
+                setDoctor({ doctorId: info.id, doctorName: doctorFullName(info) });
+                setInfoFor(null);
+              }}
+            >
+              Выбрать врача
+            </MpButton>
+          </MpDialogActions>
+        </MpDialog>
       </Stack>
     </DatePickersProvider>
   );

@@ -65,7 +65,15 @@ export const ROUTE_POLICIES: RoutePolicy[] = [
     methods: ['GET'],
     path: '/api/catalog/doctors',
     roles: ['ADMIN'],
-    comment: '3.1 AC: USER → 403',
+    comment: '3.1 AC: список врачей — админский (USER → 403)',
+  },
+  {
+    methods: ['GET'],
+    path: '/api/catalog/doctors/:id',
+    roles: ['ADMIN', 'USER', 'DOCTOR'],
+    comment:
+      'карточка врача для записи (5.2/шаг «Подробнее»): ФИО, специализация, ' +
+      'расписание, фото — префикс длиннее списка, выигрывает по длине',
   },
   {
     methods: ['POST', 'PUT', 'PATCH', 'DELETE'],

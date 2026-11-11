@@ -28,6 +28,17 @@ describe('findPolicy', () => {
     ]);
   });
 
+  it('карточка врача (:id) читается всеми ролями, список — только ADMIN (5.2)', () => {
+    const card = findPolicy('GET', '/api/catalog/doctors/cmw123abc');
+    expect(card?.path).toBe('/api/catalog/doctors/:id');
+    expect(allowsRoles(card, ['USER'])).toBe(true);
+
+    const list = findPolicy('GET', '/api/catalog/doctors');
+    expect(list?.path).toBe('/api/catalog/doctors');
+    expect(allowsRoles(list, ['USER'])).toBe(false);
+    expect(allowsRoles(list, ['ADMIN'])).toBe(true);
+  });
+
   it('неизвестный маршрут → undefined (любой авторизованный)', () => {
     expect(findPolicy('GET', '/api/anything/else')).toBeUndefined();
   });
