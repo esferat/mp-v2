@@ -18,6 +18,7 @@ import {
   MpSelect,
   MpSpinner,
   MpStepper,
+  slotWindowAnimation,
   Stack,
   Typography,
   useToast,
@@ -487,14 +488,14 @@ export function BookingWizard({
               </Typography>
             </Stack>
 
-            {loadingSlots ? (
-              <MpSpinner label="Загружаем расписание…" minHeight={220} />
-            ) : (
-              /* День = колонка: горизонтальный ряд до 7 дней (на узком
-                 экране — горизонтальный скролл); слоты внутри дня —
-                 вертикальный столбик в одну колонку. key=windowStart
-                 перемонтирует ряд при перелистывании — проигрывается
-                 анимация сдвига в направлении ‹/› */
+            {/* Лента слотов: при загрузке — лоадер ПОВЕРХ текущей сетки
+                (ovelay), а не вместо неё */}
+            <Box sx={{ position: 'relative' }}>
+              {/* День = колонка: горизонтальный ряд до 7 дней (на узком
+                  экране — горизонтальный скролл); слоты внутри дня —
+                  вертикальный столбик в одну колонку. key=windowStart
+                  перемонтирует ряд при перелистывании — проигрывается
+                  анимация сдвига в направлении ‹/› */}
               <Box
                 key={windowStart}
                 sx={{
@@ -503,15 +504,7 @@ export function BookingWizard({
                   alignItems: 'flex-start',
                   overflowX: 'auto',
                   pb: 1,
-                  animation: windowDir === 1 ? 'mpWeekNext 0.25s ease' : 'mpWeekPrev 0.25s ease',
-                  '@keyframes mpWeekNext': {
-                    from: { opacity: 0, transform: 'translateX(24px)' },
-                    to: { opacity: 1, transform: 'none' },
-                  },
-                  '@keyframes mpWeekPrev': {
-                    from: { opacity: 0, transform: 'translateX(-24px)' },
-                    to: { opacity: 1, transform: 'none' },
-                  },
+                  ...slotWindowAnimation(windowDir),
                 }}
               >
                 {days.map((dayIso) => {
@@ -580,7 +573,23 @@ export function BookingWizard({
                   );
                 })}
               </Box>
-            )}
+              {loadingSlots ? (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(255, 255, 255, 0.75)',
+                    borderRadius: 1,
+                  }}
+                >
+                  <MpSpinner label="Загружаем расписание…" minHeight={80} />
+                </Box>
+              ) : null}
+            </Box>
 
             <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: 'space-between' }}>
               <MpButton variant="outlined" color="inherit" onClick={() => setStep(2)}>

@@ -31,5 +31,6 @@ export { DateField, DateRangeField } from './date-pickers';
 export { ImageCropper } from './image-cropper';
 export type { CropArea } from './image-cropper';
 export { ErrorState } from './error-state';
+export { slotWindowAnimation } from './slot-window-animation';
 export { PaginationBar } from './pagination-bar';
 export { LinkButton } from './link-button';

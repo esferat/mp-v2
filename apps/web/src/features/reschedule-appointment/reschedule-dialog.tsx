@@ -14,6 +14,7 @@ import {
   MpDialogActions,
   MpDialogContent,
   MpSpinner,
+  slotWindowAnimation,
   Stack,
   Typography,
   useToast,
@@ -98,6 +99,8 @@ export function RescheduleDialog({
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [freeKeys, setFreeKeys] = useState<Set<string>>(new Set());
   const [slotsLoading, setSlotsLoading] = useState(false);
+  /** Направление последнего листания — анимация как в записи (5.2). */
+  const [weekDir, setWeekDir] = useState<1 | -1>(1);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [reason, setReason] = useState('');
@@ -255,7 +258,10 @@ export function RescheduleDialog({
               variant="outlined"
               color="neutral"
               disabled={prevWeekDisabled}
-              onClick={() => setWeekStart(addDays(weekStart, -7))}
+              onClick={() => {
+                setWeekDir(-1);
+                setWeekStart(addDays(weekStart, -7));
+              }}
             >
               ‹ Неделя
             </MpButton>
@@ -267,7 +273,10 @@ export function RescheduleDialog({
               variant="outlined"
               color="neutral"
               disabled={nextWeekDisabled}
-              onClick={() => setWeekStart(addDays(weekStart, 7))}
+              onClick={() => {
+                setWeekDir(1);
+                setWeekStart(addDays(weekStart, 7));
+              }}
             >
               Неделя ›
             </MpButton>
@@ -289,16 +298,19 @@ export function RescheduleDialog({
               ряду, слоты дня — вертикальный столбик; зелёные доступные,
               серые занятые/прошедшие/нерабочие */}
           {schedule ? (
-            slotsLoading ? (
-              <MpSpinner label="Загружаем слоты…" minHeight={180} />
-            ) : (
+            /* Лоадер слотов — поверх сетки, а не вместо неё; key=weekStartIso
+               перемонтирует ленту при листании — проигрывается анимация
+               (одинаковая с записью на приём, 5.2) */
+            <Box sx={{ position: 'relative' }}>
               <Box
+                key={weekStartIso}
                 sx={{
                   display: 'flex',
                   gap: 1.5,
                   alignItems: 'flex-start',
                   overflowX: 'auto',
                   pb: 1,
+                  ...slotWindowAnimation(weekDir),
                 }}
               >
                 {days.map((day) => {
@@ -380,7 +392,23 @@ export function RescheduleDialog({
                   );
                 })}
               </Box>
-            )
+              {slotsLoading ? (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(255, 255, 255, 0.75)',
+                    borderRadius: 1,
+                  }}
+                >
+                  <MpSpinner label="Загружаем слоты…" minHeight={80} />
+                </Box>
+              ) : null}
+            </Box>
           ) : (
             <Typography variant="body2" color="text.secondary">
               {scheduleLoading
