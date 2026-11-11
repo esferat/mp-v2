@@ -54,7 +54,7 @@
 
 - Лендинг роли после входа (страница-обзор: карточки доступного функционала, собраны из реестра
   меню + профиль): ADMIN → `/admin`, USER → `/patient`, DOCTOR → `/doctor`; корни разделов
-  защищены тем же гардом роли.
+  защищены тем же гардом роли. Клик по логотипу «МП» в шапке раздела ведёт на этот лендинг.
 - ADMIN: `/admin/doctors`, `/admin/patients`*, `/admin/schedule`, `/admin/reports`*, `/admin/specializations`* (*
   пациенты, специализации и отчёты — этапы 2, 1 и 4; в Этапе 1 пункты без макета или заглушка).
 - USER: `/patient/record`, `/patient/history`, `/patient/documents`; профиль (`/patient/profile`) — без пункта

@@ -83,6 +83,8 @@ export async function SectionLayout({
       items={items}
       groupTitle={GROUP_TITLES[section]}
       subtitle={[SECTION_SUBTITLES[section], role].filter(Boolean).join(' · ') || description}
+      // Логотип шапки ведёт на лендинг роли — корень секции
+      logoHref={section}
       user={
         email
           ? {

@@ -2,6 +2,7 @@
 
 import { type ReactNode, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import NextLink from 'next/link';
 import { MpAppShell, type MpNavEntry } from 'mp-ui-kit';
 import { Box, useMediaQuery } from '@/shared/ui';
 import type { MenuItem } from '@/shared/config';
@@ -22,27 +23,40 @@ const MENU_ICONS: Record<string, string> = {
   '/doctor/patients': '📁',
 };
 
-/** Логотип «МП» — бирюзовый квадрат с инициалами (visual/_shared.css `.logo`). */
-function Logo(): React.JSX.Element {
+/**
+ * Логотип «МП» — бирюзовый квадрат с инициалами (visual/_shared.css `.logo`).
+ * Клик ведёт на лендинг роли (корень секции, `href`): из любого раздела
+ * кабинета логотип возвращает «домой» — на страницу-обзор функционала.
+ */
+function Logo({ href, onNavigate }: { href: string; onNavigate?: () => void }): React.JSX.Element {
   return (
-    <Box
-      aria-hidden
-      sx={{
-        width: 32,
-        height: 32,
-        borderRadius: 2,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'primary.main',
-        color: 'primary.contrastText',
-        fontSize: 13,
-        fontWeight: 700,
-        flexShrink: 0,
-      }}
+    <NextLink
+      href={href}
+      aria-label="Главная страница раздела"
+      onClick={onNavigate}
+      style={{ display: 'flex', borderRadius: 8, textDecoration: 'none' }}
     >
-      МП
-    </Box>
+      <Box
+        aria-hidden
+        sx={{
+          width: 32,
+          height: 32,
+          borderRadius: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'primary.main',
+          color: 'primary.contrastText',
+          fontSize: 13,
+          fontWeight: 700,
+          flexShrink: 0,
+          transition: 'opacity 0.15s ease',
+          '&:hover': { opacity: 0.85 },
+        }}
+      >
+        МП
+      </Box>
+    </NextLink>
   );
 }
 
@@ -55,6 +69,8 @@ export interface AppShellProps {
   title?: string;
   /** Подзаголовок в шапке (раздел · роль). */
   subtitle?: string;
+  /** Логотип в шапке ведёт на лендинг роли (корень секции: /admin|/patient|/doctor). */
+  logoHref: string;
   /** Пользователь для меню профиля в шапке: email, роль, «Профиль», аватар. */
   user?: { name: string; subtitle?: string; profileHref?: string; avatarSrc?: string };
   children?: ReactNode;
@@ -71,6 +87,7 @@ export function AppShell({
   groupTitle,
   title = 'Медицинский портал',
   subtitle,
+  logoHref,
   user,
   children,
 }: AppShellProps): React.JSX.Element {
@@ -104,7 +121,14 @@ export function AppShell({
         setMobileOpen(false);
         router.push(href);
       }}
-      logo={<Logo />}
+      logo={
+        <Logo
+          href={logoHref}
+          // Мобильная панель закрывается при переходе (temporary-режим) —
+          // как и для пунктов меню в onSelect
+          onNavigate={() => setMobileOpen(false)}
+        />
+      }
       title={title}
       {...(subtitle ? { subtitle } : {})}
       headerActions={
