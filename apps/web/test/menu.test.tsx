@@ -22,6 +22,16 @@ describe('menuForRoles (2.1: пункт недоступной роли не р�
     expect(items.map((i) => i.href)).not.toContain('/admin/doctors');
   });
 
+  it('у пациента в боковом меню нет «Профиль» — он только в меню шапки (10.1)', () => {
+    const items = menuForRoles(['USER']);
+    expect(items.map((i) => i.href)).toEqual([
+      '/cabinet/record',
+      '/cabinet/history',
+      '/cabinet/documents',
+    ]);
+    expect(items.map((i) => i.label)).not.toContain('Профиль');
+  });
+
   it('DOCTOR видит только кабинет врача', () => {
     const items = menuForRoles(['DOCTOR']);
     expect(items.every((item) => item.href.startsWith('/doctor/'))).toBe(true);

@@ -22,11 +22,11 @@ export const MENU_ITEMS: readonly MenuItem[] = [
   { href: '/admin/schedule', label: 'Управление записями', roles: ['ADMIN'] },
   { href: '/admin/reports', label: 'Отчёты', roles: ['ADMIN'] },
 
-  // Личный кабинет пациента (USER)
+  // Личный кабинет пациента (USER). Профиль (/cabinet/profile) в боковое
+  // меню не входит — он доступен из меню пользователя в шапке (10.1).
   { href: '/cabinet/record', label: 'Запись на приём', roles: ['USER'] },
   { href: '/cabinet/history', label: 'История приёмов', roles: ['USER'] },
   { href: '/cabinet/documents', label: 'Мои документы', roles: ['USER'] },
-  { href: '/cabinet/profile', label: 'Профиль', roles: ['USER'] },
 
   // Кабинет врача (DOCTOR)
   { href: '/doctor/schedule', label: 'Мои приёмы', roles: ['DOCTOR'] },

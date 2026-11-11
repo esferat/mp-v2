@@ -17,7 +17,6 @@ const MENU_ICONS: Record<string, string> = {
   '/cabinet/record': '🗓️',
   '/cabinet/history': '📜',
   '/cabinet/documents': '📄',
-  '/cabinet/profile': '👤',
   '/doctor/schedule': '🩻',
   '/doctor/my-schedule': '📅',
   '/doctor/patients': '📁',

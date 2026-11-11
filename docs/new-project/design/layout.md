@@ -54,7 +54,8 @@
 
 - ADMIN: `/admin/doctors`, `/admin/patients`*, `/admin/schedule`, `/admin/reports`*, `/admin/specializations`* (*
   пациенты, специализации и отчёты — этапы 2, 1 и 4; в Этапе 1 пункты без макета или заглушка).
-- USER: `/cabinet/profile`*, `/cabinet/record`, `/cabinet/history`.
+- USER: `/cabinet/record`, `/cabinet/history`, `/cabinet/documents`; профиль (`/cabinet/profile`) — без пункта
+  в боковом меню, только из меню пользователя в шапке.
 - DOCTOR (Этап 2, [9.1](../functional-spec.md#91-роль-doctor-и-учётная-запись-врача--m)): `/doctor/schedule`,
   `/doctor/patients` — секция добавляется в меню вместе с ролью.
 - Защита: серверный гард ([1.3](../functional-spec.md#13-серверные-гарды-маршрутов-web--m)); скрытие пункта ≠ защита.
