@@ -7,10 +7,13 @@ import {
   MpAlert,
   MpAutocomplete,
   MpButton,
+  MpCard,
+  MpCardContent,
+  MpChip,
   MpDialog,
   MpDialogActions,
   MpDialogContent,
-  mpTokens,
+  MpSpinner,
   Stack,
   Typography,
   useToast,
@@ -259,87 +262,114 @@ export function RescheduleDialog({
             </MpButton>
           </Stack>
 
-          {/* Недельный вид: [дата] → [время доступно/недоступно] */}
-          {schedule ? (
-            <Stack spacing={1.5}>
-              {days.map((day) => {
-                const iso = toIso(day);
-                const working = schedule.workDays.includes(isoDayOfWeek(day));
-                const dayName = DAY_NAMES[isoDayOfWeek(day) - 1];
-                const startMin = toMinutes(schedule.startTime);
-                const endMin = toMinutes(schedule.endTime);
-                const times: string[] = [];
-                if (startMin !== null && endMin !== null) {
-                  for (
-                    let minute = startMin;
-                    minute + schedule.durationMinutes <= endMin;
-                    minute += schedule.durationMinutes
-                  ) {
-                    times.push(formatMinutes(minute));
-                  }
-                }
+          {/* Легенда — как в мастере записи (5.2/шаг 3) */}
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <MpChip size="small" color="success" label="10:00" disabled />
+            <Typography variant="caption" color="text.secondary">
+              доступно
+            </Typography>
+            <MpChip size="small" color="neutral" label="10:30" disabled />
+            <Typography variant="caption" color="text.secondary">
+              занято / недоступно
+            </Typography>
+          </Stack>
 
-                return (
-                  <Box key={iso}>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                        {fmtDay(day)} {dayName}
-                      </Typography>
-                      {iso === todayIso ? (
-                        <Typography variant="caption" color="primary" sx={{ fontWeight: 600 }}>
-                          сегодня
+          {/* Компоновка как в мастере записи: день — колонка в горизонтальном
+              ряду, слоты дня — вертикальный столбик; зелёные доступные,
+              серые занятые/прошедшие/нерабочие */}
+          {schedule ? (
+            slotsLoading ? (
+              <MpSpinner label="Загружаем слоты…" minHeight={180} />
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1.5,
+                  alignItems: 'flex-start',
+                  overflowX: 'auto',
+                  pb: 1,
+                }}
+              >
+                {days.map((day) => {
+                  const iso = toIso(day);
+                  const working = schedule.workDays.includes(isoDayOfWeek(day));
+                  const dayName = DAY_NAMES[isoDayOfWeek(day) - 1];
+                  const startMin = toMinutes(schedule.startTime);
+                  const endMin = toMinutes(schedule.endTime);
+                  const times: string[] = [];
+                  if (startMin !== null && endMin !== null) {
+                    for (
+                      let minute = startMin;
+                      minute + schedule.durationMinutes <= endMin;
+                      minute += schedule.durationMinutes
+                    ) {
+                      times.push(formatMinutes(minute));
+                    }
+                  }
+                  const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+
+                  return (
+                    <MpCard
+                      key={iso}
+                      variant="flat"
+                      sx={{ flex: '1 1 0', minWidth: 104, maxWidth: 160 }}
+                    >
+                      <MpCardContent sx={{ py: 1.5, px: 1.5 }}>
+                        <Typography
+                          variant="subtitle2"
+                          color={working ? 'text.primary' : 'text.secondary'}
+                          sx={{ mb: 1, whiteSpace: 'nowrap' }}
+                        >
+                          {iso === todayIso ? (
+                            <>
+                              Сегодня
+                              <br />
+                            </>
+                          ) : null}
+                          {fmtDay(day)} {dayName}
                         </Typography>
-                      ) : null}
-                      {!working ? (
-                        <Typography variant="caption" color="text.secondary">
-                          нерабочий день
-                        </Typography>
-                      ) : null}
-                    </Stack>
-                    <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
-                      {times.map((time) => {
-                        const key = `${iso}|${time}`;
-                        const available = working && freeKeys.has(key);
-                        const isSelected = selected?.localDate === iso && selected?.start === time;
-                        return (
-                          <Box
-                            key={key}
-                            component="button"
-                            type="button"
-                            disabled={!available}
-                            onClick={() => setSelected({ localDate: iso, start: time })}
-                            sx={{
-                              height: 28,
-                              minWidth: 64,
-                              px: 1,
-                              border: '1px solid',
-                              borderColor: isSelected ? 'primary.main' : 'transparent',
-                              borderRadius: '8px',
-                              fontFamily: 'inherit',
-                              fontSize: 12,
-                              fontWeight: 600,
-                              cursor: available ? 'pointer' : 'not-allowed',
-                              backgroundColor: isSelected
-                                ? 'primary.main'
-                                : available
-                                  ? 'success.light'
-                                  : mpTokens.neutral[100],
-                              color: isSelected
-                                ? 'primary.contrastText'
-                                : available
-                                  ? 'success.dark'
-                                  : mpTokens.neutral[400],
-                            }}
-                          >
-                            {time}
-                          </Box>
-                        );
-                      })}
-                    </Stack>
-                  </Box>
-                );
-              })}
-            </Stack>
+                        {!working ? (
+                          <Typography variant="caption" color="text.secondary">
+                            Нет приёма
+                          </Typography>
+                        ) : (
+                          <Stack spacing={0.5}>
+                            {times.map((time) => {
+                              const key = `${iso}|${time}`;
+                              // Прошедшие сегодня — недоступны (как в мастере)
+                              const [hours, minutes] = time.split(':').map(Number);
+                              const passed =
+                                iso === todayIso &&
+                                (hours ?? 0) * 60 + (minutes ?? 0) <= nowMinutes;
+                              const available = freeKeys.has(key) && !passed;
+                              const isSelected =
+                                selected?.localDate === iso && selected?.start === time;
+                              return (
+                                <MpChip
+                                  key={key}
+                                  label={time}
+                                  size="small"
+                                  color={available ? 'success' : 'neutral'}
+                                  selected={isSelected}
+                                  variant="outlined"
+                                  disabled={!available}
+                                  sx={{ width: '100%', justifyContent: 'center' }}
+                                  {...(available
+                                    ? {
+                                        onClick: () => setSelected({ localDate: iso, start: time }),
+                                      }
+                                    : {})}
+                                />
+                              );
+                            })}
+                          </Stack>
+                        )}
+                      </MpCardContent>
+                    </MpCard>
+                  );
+                })}
+              </Box>
+            )
           ) : (
             <Typography variant="body2" color="text.secondary">
               {scheduleLoading
@@ -348,16 +378,9 @@ export function RescheduleDialog({
             </Typography>
           )}
 
-          {slotsLoading ? (
-            <Typography variant="caption" color="text.secondary">
-              Загрузка слотов…
-            </Typography>
-          ) : null}
-
           <MpAlert severity="info">
             <b>Превью:</b>{' '}
-            {selected ? `${formatSlot(selected.localDate, selected.start)}` : 'слот не выбран'} —
-            зелёные слоты доступны для записи, серые заняты или недоступны (нерабочий день/прошлое).
+            {selected ? formatSlot(selected.localDate, selected.start) : 'слот не выбран'}
           </MpAlert>
 
           <Box>
