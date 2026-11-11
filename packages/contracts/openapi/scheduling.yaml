@@ -48,6 +48,14 @@ paths:
             $schema: https://json-schema.org/draft/2020-12/schema
             type: string
             pattern: ^\d{2}:\d{2}$
+        - name: includeBusy
+          in: query
+          required: false
+          schema:
+            $schema: https://json-schema.org/draft/2020-12/schema
+            type: string
+            enum:
+              - "1"
       responses:
         "200":
           description: "Успех:"
@@ -884,12 +892,15 @@ components:
           doctorName:
             type: string
             minLength: 1
+          available:
+            type: boolean
         required:
           - localDate
           - start
           - end
           - doctorId
           - doctorName
+          - available
     SlotsQuery:
       $schema: https://json-schema.org/draft/2020-12/schema
       type: object
@@ -911,6 +922,10 @@ components:
         endTime:
           type: string
           pattern: ^\d{2}:\d{2}$
+        includeBusy:
+          type: string
+          enum:
+            - "1"
       required:
         - specId
         - from

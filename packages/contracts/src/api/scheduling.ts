@@ -15,6 +15,12 @@ export const slotsQuerySchema = z.object({
     .string()
     .regex(/^\d{2}:\d{2}$/)
     .optional(),
+  /**
+   * `1` — вернуть и занятые слоты (`available: false`, сетка записи:
+   * зелёные доступные / серые занятые). Без параметра — только свободные
+   * (обратная совместимость: перенос записи, e2e).
+   */
+  includeBusy: z.enum(['1']).optional(),
 });
 export type SlotsQuery = z.infer<typeof slotsQuerySchema>;
 
@@ -26,6 +32,8 @@ export const slotListSchema = z.array(
   slotSchema.extend({
     doctorId: z.string().min(1),
     doctorName: z.string().min(1),
+    /** false — слот занят (сетка записи: зелёные доступные / серые занятые). */
+    available: z.boolean(),
   }),
 );
 export type SlotList = z.infer<typeof slotListSchema>;

@@ -63,12 +63,21 @@ export async function getSpecSlots(deps: GetSpecSlotsDeps, query: SlotsQuery): P
   );
   const busy = new Set(busyRows.map((row) => busyKey(row.doctorId, row.localDate, row.startTime)));
 
-  return computeSlots({
+  const base = {
     windows,
     from: query.from,
     to: query.to,
-    busy,
     ...(query.startTime ? { startTime: query.startTime } : {}),
     ...(query.endTime ? { endTime: query.endTime } : {}),
-  });
+  };
+
+  // Без includeBusy — только свободные (перенос записи, e2e). С параметром —
+  // все слоты окон с пометкой available: сетка записи «зелёные/серые» (6/шаг 3).
+  if (!query.includeBusy) {
+    return computeSlots({ ...base, busy }).map((slot) => ({ ...slot, available: true }));
+  }
+  return computeSlots({ ...base, busy: new Set() }).map((slot) => ({
+    ...slot,
+    available: !busy.has(busyKey(slot.doctorId, slot.localDate, slot.start)),
+  }));
 }

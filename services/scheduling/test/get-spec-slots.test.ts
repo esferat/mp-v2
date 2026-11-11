@@ -106,4 +106,55 @@ describe('getSpecSlots (5.2)', () => {
       ),
     ).rejects.toMatchObject({ status: 400, field: 'to' });
   });
+
+  it('includeBusy=1: занятые слоты возвращаются с available=false (сетка «зелёные/серые»)', async () => {
+    const context = makeSchedulingContext();
+    await seedCopy(context);
+    await context.appointments.create({
+      doctorId: 'doc-1',
+      doctorName: 'Петров Иван',
+      specializationId: 'sp-1',
+      specializationName: 'Хирург',
+      patientId: 'pt-1',
+      patientName: 'Пациент Один',
+      startTime: '10:00',
+      endTime: '10:30',
+      localDate: '2026-11-03',
+    });
+
+    const all = await getSpecSlots(
+      { copies: context.copies, appointments: context.appointments },
+      { ...query, includeBusy: '1' },
+    );
+
+    expect(all).toHaveLength(6); // все окна дня, включая занятое
+    expect(all.every((slot) => slot.available)).toBe(false);
+    const busySlot = all.find((slot) => slot.start === '10:00');
+    expect(busySlot?.available).toBe(false);
+    expect(all.filter((slot) => slot.available)).toHaveLength(5);
+  });
+
+  it('без includeBusy — только свободные, все с available=true (обратная совместимость)', async () => {
+    const context = makeSchedulingContext();
+    await seedCopy(context);
+    await context.appointments.create({
+      doctorId: 'doc-1',
+      doctorName: 'Петров Иван',
+      specializationId: 'sp-1',
+      specializationName: 'Хирург',
+      patientId: 'pt-1',
+      patientName: 'Пациент Один',
+      startTime: '10:00',
+      endTime: '10:30',
+      localDate: '2026-11-03',
+    });
+
+    const free = await getSpecSlots(
+      { copies: context.copies, appointments: context.appointments },
+      query,
+    );
+
+    expect(free).toHaveLength(5);
+    expect(free.every((slot) => slot.available)).toBe(true);
+  });
 });

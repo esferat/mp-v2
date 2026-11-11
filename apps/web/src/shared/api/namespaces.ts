@@ -130,12 +130,13 @@ export function createApi(client: ApiClient) {
 
     scheduling: {
       /** Свободные слоты по специализации (5.2). */
-      getSlots: (params: { specId: string; from: string; to: string }) => {
+      getSlots: (params: { specId: string; from: string; to: string; includeBusy?: boolean }) => {
         const query = new URLSearchParams({
           specId: params.specId,
           from: params.from,
           to: params.to,
         });
+        if (params.includeBusy) query.set('includeBusy', '1');
         return client.get<SlotList>(`/scheduling/slots?${query.toString()}`);
       },
       /** Расписание врача из копии (10.3 UI: недельный вид слотов переноса). */
