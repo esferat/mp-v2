@@ -332,7 +332,7 @@ routing key.
 
 Роли — realm roles Keycloak: `ADMIN`, `USER`, `DOCTOR`. Границы:
 
-- `web`: серверные гарды маршрутов (`/admin/**` → `ADMIN`, `/cabinet/**` → `USER`, `/doctor/**` → `DOCTOR`);
+- `web`: серверные гарды маршрутов (`/admin/**` → `ADMIN`, `/patient/**` → `USER`, `/doctor/**` → `DOCTOR`);
 - `gateway`: отклоняет до доменных сервисов;
 - сервис: собственный guard как последний рубеж (не доверять gateway вслепую).
 

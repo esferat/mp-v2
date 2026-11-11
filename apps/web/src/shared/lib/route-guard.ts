@@ -21,7 +21,7 @@ export type RouteDecision =
 /** Защищённые сегменты (functional-spec 1.3). */
 const SEGMENT_ROLES: ReadonlyArray<[prefix: string, role: RequiredRole]> = [
   ['/admin/', 'ADMIN'],
-  ['/cabinet/', 'USER'],
+  ['/patient/', 'USER'],
   ['/doctor/', 'DOCTOR'],
 ];
 
@@ -38,18 +38,18 @@ export function isGuestOnlyPath(pathname: string): boolean {
 }
 
 /**
- * Домашняя страница после входа (1.4 AC: «редирект после входа по роли»):
- * ADMIN → администрирование, DOCTOR → кабинет врача, USER → личный кабинет
- * (профиль; спека: «в Этапе 1, пока профиль не готов — /cabinet/record»,
- * профиль готов). Гость остаётся на агрегированной главной (null).
+ * Домашняя страница после входа (1.4 AC «редирект после входа по роли» +
+ * лендинги ролей): ADMIN → /admin, DOCTOR → /doctor, USER → /patient —
+ * страница-обзор с описанием доступного функционала. Гость остаётся на
+ * агрегированной главной (null).
  *
  * Приоритет ролей: ADMIN > DOCTOR > USER — у админа-врача (и админа-пациента)
  * выигрывает более привилегированный раздел.
  */
 export function homeRedirectFor(roles: readonly string[]): string | null {
-  if (roles.includes('ADMIN')) return '/admin/doctors';
-  if (roles.includes('DOCTOR')) return '/doctor/schedule';
-  if (roles.includes('USER')) return '/cabinet/profile';
+  if (roles.includes('ADMIN')) return '/admin';
+  if (roles.includes('DOCTOR')) return '/doctor';
+  if (roles.includes('USER')) return '/patient';
   return null;
 }
 

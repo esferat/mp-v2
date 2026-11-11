@@ -257,7 +257,7 @@ export function BookingWizard({
         slot: { localDate: selected.localDate, start: selected.start },
       });
       toast.success('Запись оформлена');
-      router.push('/cabinet/history');
+      router.push('/patient/history');
       router.refresh();
     } catch (caught) {
       const apiError = toApiError(caught);

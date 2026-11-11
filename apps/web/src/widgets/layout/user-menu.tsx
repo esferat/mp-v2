@@ -20,7 +20,7 @@ export function UserMenu({
   name: string;
   /** Роль/подпись в меню («Пациент (USER)»). */
   subtitle?: string;
-  /** Переход «Профиль» (роль-specific: /cabinet|/admin|/doctor/profile). */
+  /** Переход «Профиль» (роль-specific: /patient|/admin|/doctor/profile). */
   profileHref?: string;
   /** Фото аватара (presigned из профиля; нет — инициалы из name). */
   avatarSrc?: string;

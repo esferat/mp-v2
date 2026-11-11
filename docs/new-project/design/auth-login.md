@@ -54,7 +54,7 @@
 | loading          | Кнопка disabled + индикатор; поля заблокированы                                                                                                                                                                           |
 | error            | `Alert` с причиной; пароль не очищается; не раскрываем, какой из полей неверен                                                                                                                                            |
 | rate-limit (429) | `Alert` warning с таймером повтора                                                                                                                                                                                        |
-| успех            | Редирект по роли ([1.1](../functional-spec.md#11-вход-в-web-через-keycloak-authjs--l)): ADMIN → `/admin/doctors`, USER → `/cabinet/profile` (в Этапе 1 — `/cabinet/record`), DOCTOR → `/doctor/schedule`; с `callbackUrl` |
+| успех            | Редирект по роли ([1.1](../functional-spec.md#11-вход-в-web-через-keycloak-authjs--l)) — на лендинг роли с описанием функционала: ADMIN → `/admin`, USER → `/patient`, DOCTOR → `/doctor`; с `callbackUrl` |
 
 ## Валидация
 

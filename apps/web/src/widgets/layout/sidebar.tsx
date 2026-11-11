@@ -11,7 +11,7 @@ export async function Sidebar({
   section,
   title,
 }: {
-  section: '/admin' | '/cabinet' | '/doctor';
+  section: '/admin' | '/patient' | '/doctor';
   title: string;
 }): Promise<React.JSX.Element> {
   const session = await auth();

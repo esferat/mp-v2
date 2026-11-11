@@ -52,9 +52,12 @@
 
 ## Навигация
 
+- Лендинг роли после входа (страница-обзор: карточки доступного функционала, собраны из реестра
+  меню + профиль): ADMIN → `/admin`, USER → `/patient`, DOCTOR → `/doctor`; корни разделов
+  защищены тем же гардом роли.
 - ADMIN: `/admin/doctors`, `/admin/patients`*, `/admin/schedule`, `/admin/reports`*, `/admin/specializations`* (*
   пациенты, специализации и отчёты — этапы 2, 1 и 4; в Этапе 1 пункты без макета или заглушка).
-- USER: `/cabinet/record`, `/cabinet/history`, `/cabinet/documents`; профиль (`/cabinet/profile`) — без пункта
+- USER: `/patient/record`, `/patient/history`, `/patient/documents`; профиль (`/patient/profile`) — без пункта
   в боковом меню, только из меню пользователя в шапке.
 - DOCTOR (Этап 2, [9.1](../functional-spec.md#91-роль-doctor-и-учётная-запись-врача--m)): `/doctor/schedule`,
   `/doctor/patients` — секция добавляется в меню вместе с ролью.

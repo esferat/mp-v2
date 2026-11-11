@@ -51,5 +51,5 @@ export default auth((request) => {
 
 export const config = {
   // Только защищаемые сегменты: статика и API не проходят через гард
-  matcher: ['/admin/:path*', '/cabinet/:path*', '/doctor/:path*', '/auth/:path*'],
+  matcher: ['/admin/:path*', '/patient/:path*', '/doctor/:path*', '/auth/:path*'],
 };

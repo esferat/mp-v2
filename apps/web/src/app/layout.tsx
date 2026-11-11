@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 /**
  * Корневой layout (fsd.md §3): только композиция провайдеров.
- * Оболочка разделов — SectionLayout (MpAppShell) в (admin)/(cabinet)/(doctor);
+ * Оболочка разделов — SectionLayout (MpAppShell) в (admin)/(patient)/(doctor);
  * публичные страницы (лендинг, 403) подключают Header сами.
  * Серверные проверки ролей — middleware/гарды (задача 1.3), не здесь.
  */

@@ -16,7 +16,7 @@ vi.mock('../src/shared/api/browser', () => ({
 // Хук пагинации использует next/navigation — изолируем
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => '/cabinet/history',
+  usePathname: () => '/patient/history',
   useSearchParams: () => new URLSearchParams(),
 }));
 

@@ -1,6 +1,6 @@
 # Страница: Личный профиль (все роли)
 
-**Маршруты:** `/cabinet/profile` (USER) · `/admin/profile` (ADMIN) · `/doctor/profile` (DOCTOR) · **Роль:** любая ·
+**Маршруты:** `/patient/profile` (USER) · `/admin/profile` (ADMIN) · `/doctor/profile` (DOCTOR) · **Роль:** любая ·
 **Задачи:** **10.1** (данные пациента — 4.2)
 
 Единая страница: общий слайс `features/edit-profile` + виджет `widgets/profile-form`, три маршрута — три тонкие обёртки
@@ -32,7 +32,7 @@
 
 | Роль / маршрут               | Источник данных                                            | Поля формы                                      | Только чтение                                                             |
 |------------------------------|------------------------------------------------------------|-------------------------------------------------|---------------------------------------------------------------------------|
-| `USER` → `/cabinet/profile`  | `patient-service` (`GET/PUT /api/patient/:id`, задача 4.2) | ФИО, дата рождения, email, фото, скан документа | дата регистрации                                                          |
+| `USER` → `/patient/profile`  | `patient-service` (`GET/PUT /api/patient/:id`, задача 4.2) | ФИО, дата рождения, email, фото, скан документа | дата регистрации                                                          |
 | `ADMIN` → `/admin/profile`   | `identity` (`GET/PATCH /api/identity/me`)                  | ФИО, email                                      | роль (её меняет только админ, 1.6)                                        |
 | `DOCTOR` → `/doctor/profile` | `identity` (email) + `catalog` (ФИО)                       | email                                           | ФИО, специализация, статус — правит админ в [doctor-form](doctor-form.md) |
 

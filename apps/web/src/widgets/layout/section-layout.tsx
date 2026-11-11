@@ -7,21 +7,21 @@ import { AppShell } from './app-shell';
 /** Группа меню по разделу (visual/layout.html: «Управление» / кабинеты). */
 const GROUP_TITLES = {
   '/admin': 'Управление',
-  '/cabinet': 'Личный кабинет',
+  '/patient': 'Личный кабинет',
   '/doctor': 'Кабинет врача',
 } as const;
 
 /** Подзаголовок шапки по разделу (visual/layout.html: «MP Admin-Panel · ADMIN»). */
 const SECTION_SUBTITLES = {
   '/admin': 'MP Admin-Panel',
-  '/cabinet': 'Личный кабинет пациента',
+  '/patient': 'Личный кабинет пациента',
   '/doctor': 'Кабинет врача',
 } as const;
 
 /** «Профиль» в меню пользователя — роль-specific маршрут (profile.md: 10.1). */
 const PROFILE_HREFS = {
   '/admin': '/admin/profile',
-  '/cabinet': '/cabinet/profile',
+  '/patient': '/patient/profile',
   '/doctor': '/doctor/profile',
 } as const;
 
@@ -55,7 +55,7 @@ async function loadAvatarSrc(
 /**
  * Каркас раздела (2.1) — MpAppShell по макету visual/layout.html: шапка 64px
  * (логотип, название, меню пользователя, «Выйти») + боковое меню с иконками
- * + контент. Route group ((admin)/(cabinet)/(doctor)) оборачивает страницы
+ * + контент. Route group ((admin)/(patient)/(doctor)) оборачивает страницы
  * этим layout'ом. Пункты меню фильтруются по ролям сессии на сервере
  * (пункт чужой роли не попадает в HTML — 2.1). Профиль — только в меню
  * пользователя (шапка), в боковом меню его нет.
@@ -65,7 +65,7 @@ export async function SectionLayout({
   description,
   children,
 }: {
-  section: '/admin' | '/cabinet' | '/doctor';
+  section: '/admin' | '/patient' | '/doctor';
   title?: string;
   description?: string;
   children: ReactNode;

@@ -13,9 +13,12 @@ import {
 describe('requiredRoleFor', () => {
   it('карта сегментов соответствует functional-spec 1.3', () => {
     expect(requiredRoleFor('/admin/doctors')).toBe('ADMIN');
-    expect(requiredRoleFor('/cabinet/record')).toBe('USER');
+    expect(requiredRoleFor('/patient/record')).toBe('USER');
     expect(requiredRoleFor('/doctor/schedule')).toBe('DOCTOR');
     expect(requiredRoleFor('/admin')).toBe('ADMIN'); // без слэша
+    // лендинги ролей — корни разделов, тоже под гардом
+    expect(requiredRoleFor('/patient')).toBe('USER');
+    expect(requiredRoleFor('/doctor')).toBe('DOCTOR');
     expect(requiredRoleFor('/')).toBeNull();
     expect(requiredRoleFor('/auth/login')).toBeNull();
     expect(requiredRoleFor('/adminx')).toBeNull(); // не префикс
@@ -28,9 +31,9 @@ describe('decideAccess: гость (нет сессии)', () => {
       type: 'login',
       callbackUrl: '/admin/doctors',
     });
-    expect(decideAccess('/cabinet/record', null)).toEqual({
+    expect(decideAccess('/patient/record', null)).toEqual({
       type: 'login',
-      callbackUrl: '/cabinet/record',
+      callbackUrl: '/patient/record',
     });
     expect(decideAccess('/doctor/schedule', null)).toEqual({
       type: 'login',
@@ -52,16 +55,16 @@ describe('decideAccess: гость (нет сессии)', () => {
 describe('decideAccess: своя роль', () => {
   it('ADMIN проходит в /admin, но не в чужие зоны (роль не «пропуск»)', () => {
     expect(decideAccess('/admin/doctors', ['ADMIN'])).toEqual({ type: 'allow' });
-    // /cabinet под ADMIN требует роли USER — АДМИН получит 403 этой зоны,
+    // /patient под ADMIN требует роли USER — АДМИН получит 403 этой зоны,
     // управление пациентами идёт через /admin/**
-    expect(decideAccess('/cabinet/record', ['ADMIN'])).toEqual({
+    expect(decideAccess('/patient/record', ['ADMIN'])).toEqual({
       type: 'forbidden',
       required: 'USER',
     });
   });
 
-  it('USER проходит в /cabinet', () => {
-    expect(decideAccess('/cabinet/profile', ['USER'])).toEqual({ type: 'allow' });
+  it('USER проходит в /patient', () => {
+    expect(decideAccess('/patient/profile', ['USER'])).toEqual({ type: 'allow' });
   });
 
   it('DOCTOR проходит в /doctor', () => {
@@ -93,7 +96,7 @@ describe('decideAccess: чужая роль → 403 (AC 1.3)', () => {
 
   it('пользователь без ролей → 403 во всех защищённых зонах', () => {
     expect(decideAccess('/admin/doctors', [])).toMatchObject({ type: 'forbidden' });
-    expect(decideAccess('/cabinet/record', [])).toMatchObject({ type: 'forbidden' });
+    expect(decideAccess('/patient/record', [])).toMatchObject({ type: 'forbidden' });
     expect(decideAccess('/doctor/schedule', [])).toMatchObject({ type: 'forbidden' });
   });
 });
@@ -110,23 +113,23 @@ describe('isGuestOnlyPath', () => {
     expect(isGuestOnlyPath('/auth')).toBe(true);
     expect(isGuestOnlyPath('/auth/login')).toBe(true);
     expect(isGuestOnlyPath('/authx')).toBe(false);
-    expect(isGuestOnlyPath('/cabinet')).toBe(false);
+    expect(isGuestOnlyPath('/patient')).toBe(false);
   });
 });
 
-describe('homeRedirectFor (1.4: домашняя страница после входа)', () => {
-  it('админ попадает в администрирование', () => {
-    expect(homeRedirectFor(['ADMIN'])).toBe('/admin/doctors');
-    expect(homeRedirectFor(['ADMIN', 'DOCTOR'])).toBe('/admin/doctors');
+describe('homeRedirectFor (лендинги ролей после входа)', () => {
+  it('админ попадает на лендинг администрирования', () => {
+    expect(homeRedirectFor(['ADMIN'])).toBe('/admin');
+    expect(homeRedirectFor(['ADMIN', 'DOCTOR'])).toBe('/admin');
   });
 
-  it('врач (без админки) попадает в кабинет врача', () => {
-    expect(homeRedirectFor(['DOCTOR'])).toBe('/doctor/schedule');
-    expect(homeRedirectFor(['USER', 'DOCTOR'])).toBe('/doctor/schedule');
+  it('врач (без админки) попадает на лендинг кабинета врача', () => {
+    expect(homeRedirectFor(['DOCTOR'])).toBe('/doctor');
+    expect(homeRedirectFor(['USER', 'DOCTOR'])).toBe('/doctor');
   });
 
-  it('пациент попадает в личный кабинет (с боковым меню и профилем)', () => {
-    expect(homeRedirectFor(['USER'])).toBe('/cabinet/profile');
+  it('пациент попадает на лендинг кабинета пациента', () => {
+    expect(homeRedirectFor(['USER'])).toBe('/patient');
   });
 
   it('гость остаётся на агрегированной главной', () => {

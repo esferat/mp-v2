@@ -23,7 +23,7 @@ export const metadata: Metadata = { title: 'Профиль — Кабинет' }
  *
  * Разделение функций: аватар — своя колонка слева (обновляет только
  * владелец), документы — отдельный раздел меню «Мои документы»
- * (/cabinet/documents, 4.4/4.5) со своей загрузкой.
+ * (/patient/documents, 4.4/4.5) со своей загрузкой.
  */
 export default async function ProfilePage(): Promise<ReactNode> {
   try {

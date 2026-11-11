@@ -5,7 +5,7 @@ import { MenuList } from '../src/widgets/layout/menu-list';
 
 // MenuList читает pathname через next/navigation — подменяем для изоляции
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/cabinet/record',
+  usePathname: () => '/patient/record',
 }));
 
 describe('menuForRoles (2.1: пункт недоступной роли не рендерится)', () => {
@@ -13,21 +13,21 @@ describe('menuForRoles (2.1: пункт недоступной роли не р�
     const items = menuForRoles(['ADMIN']);
     expect(items.length).toBeGreaterThan(0);
     expect(items.every((item) => item.href.startsWith('/admin/'))).toBe(true);
-    expect(items.map((i) => i.href)).not.toContain('/cabinet/record');
+    expect(items.map((i) => i.href)).not.toContain('/patient/record');
   });
 
   it('USER видит только личный кабинет', () => {
     const items = menuForRoles(['USER']);
-    expect(items.every((item) => item.href.startsWith('/cabinet/'))).toBe(true);
+    expect(items.every((item) => item.href.startsWith('/patient/'))).toBe(true);
     expect(items.map((i) => i.href)).not.toContain('/admin/doctors');
   });
 
   it('у пациента в боковом меню нет «Профиль» — он только в меню шапки (10.1)', () => {
     const items = menuForRoles(['USER']);
     expect(items.map((i) => i.href)).toEqual([
-      '/cabinet/record',
-      '/cabinet/history',
-      '/cabinet/documents',
+      '/patient/record',
+      '/patient/history',
+      '/patient/documents',
     ]);
     expect(items.map((i) => i.label)).not.toContain('Профиль');
   });

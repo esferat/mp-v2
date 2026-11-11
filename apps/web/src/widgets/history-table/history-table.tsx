@@ -174,7 +174,7 @@ export function HistoryTable({
         emptyTitle="Записей пока нет"
         emptyDescription="Запишитесь к врачу, история появится здесь"
         emptyActionLabel="Записаться к врачу"
-        emptyActionHref="/cabinet/record"
+        emptyActionHref="/patient/record"
         footer={
           data.total > 0 ? (
             <PaginationBar

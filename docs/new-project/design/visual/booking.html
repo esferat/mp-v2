@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1" name="viewport">
-  <title>Макет · Мастер записи /cabinet/record</title>
+  <title>Макет · Мастер записи /patient/record</title>
   <link href="_shared.css" rel="stylesheet">
   <style>
     .slot {
@@ -63,12 +63,12 @@
 <body>
 
 <div class="titlebar">
-  <span class="page-name">Запись к врачу (мастер) · /cabinet/record</span>
+  <span class="page-name">Запись к врачу (мастер) · /patient/record</span>
   <span class="meta">Задачи 5.2 (слоты, 5.3 бронирование) · роль USER · процесс processes/booking-wizard · макет booking.md</span>
 </div>
 <div class="legend">
   <span>Бейджи <span class="comp">Mp*</span> — компоненты mp-ui-kit</span>
-  <span>Вёрстка: <b>app/(cabinet)/cabinet/record/page.tsx</b> → processes/booking-wizard → features/select-spec / book-appointment</span>
+  <span>Вёрстка: <b>app/(patient)/patient/record/page.tsx</b> → processes/booking-wizard → features/select-spec / book-appointment</span>
 </div>
 
 <div class="frame">
@@ -227,7 +227,7 @@
             <tr>
               <td>Успех</td>
               <td><span class="comp">MpDialog</span> / <span class="comp">MpButton</span></td>
-              <td>201 → id, status SUBMITTED; кнопки «Мои записи» → /cabinet/history, «Записаться ещё»</td>
+              <td>201 → id, status SUBMITTED; кнопки «Мои записи» → /patient/history, «Записаться ещё»</td>
             </tr>
             <tr>
               <td>409 SLOT_TAKEN</td>
