@@ -397,35 +397,47 @@ export function BookingWizard({
             {loadingSlots ? (
               <Typography color="text.secondary">Загружаем расписание…</Typography>
             ) : (
-              <Stack spacing={1.5}>
+              /* День = колонка: горизонтальный ряд до 7 дней (на узком
+                 экране — горизонтальный скролл); слоты внутри дня —
+                 вертикальный столбик в одну колонку */
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1.5,
+                  alignItems: 'flex-start',
+                  overflowX: 'auto',
+                  pb: 1,
+                }}
+              >
                 {days.map((dayIso) => {
                   const daySlots = doctorSlots.filter((slot) => slot.localDate === dayIso);
                   const isToday = dayIso === todayIso;
                   return (
-                    <MpCard key={dayIso} variant="flat">
-                      <MpCardContent sx={{ py: 1.5 }}>
+                    <MpCard
+                      key={dayIso}
+                      variant="flat"
+                      sx={{ flex: '1 1 0', minWidth: 104, maxWidth: 160 }}
+                    >
+                      <MpCardContent sx={{ py: 1.5, px: 1.5 }}>
                         <Typography
                           variant="subtitle2"
                           color={daySlots.length > 0 ? 'text.primary' : 'text.secondary'}
-                          sx={{ mb: 1 }}
+                          sx={{ mb: 1, whiteSpace: 'nowrap' }}
                         >
-                          {isToday ? 'Сегодня, ' : ''}
+                          {isToday ? (
+                            <>
+                              Сегодня
+                              <br />
+                            </>
+                          ) : null}
                           {dayLabel(dayIso)}
                         </Typography>
                         {daySlots.length === 0 ? (
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="caption" color="text.secondary">
                             Нет приёма
                           </Typography>
                         ) : (
-                          /* Сетка колонок (а не строки с переносом): ровные
-                             колонки времени, как в расписании (booking.md) */
-                          <Box
-                            sx={{
-                              display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
-                              gap: 1,
-                            }}
-                          >
+                          <Stack spacing={0.5}>
                             {daySlots.map((slot) => {
                               const unavailable = slotUnavailable(slot);
                               const isSelected =
@@ -456,13 +468,13 @@ export function BookingWizard({
                                 />
                               );
                             })}
-                          </Box>
+                          </Stack>
                         )}
                       </MpCardContent>
                     </MpCard>
                   );
                 })}
-              </Stack>
+              </Box>
             )}
 
             <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: 'space-between' }}>
