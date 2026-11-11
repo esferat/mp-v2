@@ -25,6 +25,7 @@ export const MENU_ITEMS: readonly MenuItem[] = [
   // Личный кабинет пациента (USER)
   { href: '/cabinet/record', label: 'Запись на приём', roles: ['USER'] },
   { href: '/cabinet/history', label: 'История приёмов', roles: ['USER'] },
+  { href: '/cabinet/documents', label: 'Мои документы', roles: ['USER'] },
   { href: '/cabinet/profile', label: 'Профиль', roles: ['USER'] },
 
   // Кабинет врача (DOCTOR)

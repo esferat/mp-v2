@@ -13,20 +13,17 @@ import {
 import { ApiError, createServerApi } from '@/shared/api';
 import { auth } from '@/shared/config/auth';
 import { PatientForm } from '@/widgets/patient-form';
-import { ProfileDocuments } from '@/widgets/profile-documents';
 import { UploadPhoto } from '@/features/upload-photo';
 
 export const metadata: Metadata = { title: 'Профиль — Кабинет' };
 
 /**
- * Профиль пациента (4.2/4.3/4.5): карточка по sub из токена (SSR),
- * форма редактирования (4.2) в белой карточке, аватар с кропом (4.3),
- * документы и presigned-скачивание (4.5).
+ * Профиль пациента (4.2/4.3): карточка по sub из токена (SSR),
+ * форма редактирования (4.2) в белой карточке, аватар с кропом (4.3).
  *
  * Разделение функций: аватар — своя колонка слева (обновляет только
- * владелец), документы — отдельная секция справа со своей загрузкой
- * (список + кнопка «Загрузить документ»); загрузка сканов врачом —
- * в карточке пациента (9.3).
+ * владелец), документы — отдельный раздел меню «Мои документы»
+ * (/cabinet/documents, 4.4/4.5) со своей загрузкой.
  */
 export default async function ProfilePage(): Promise<ReactNode> {
   try {
@@ -77,12 +74,6 @@ export default async function ProfilePage(): Promise<ReactNode> {
                 <PatientForm patient={patient} />
               </MpCardContent>
             </MpCard>
-            <Box>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                Документы
-              </Typography>
-              <ProfileDocuments patientId={patient.id} />
-            </Box>
           </Stack>
         </Stack>
       </Box>
