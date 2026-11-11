@@ -297,7 +297,15 @@ export function BookingWizard({
                 На ближайшие 7 дней приёма нет — вернитесь назад и выберите другое направление
               </MpAlert>
             ) : (
-              <Stack spacing={1.5}>
+              /* Врачи плитками: по 4 в строке (десктоп), 2 — на планшете,
+                 1 — на телефоне (макет: карточка = плитка) */
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+                  gap: 1.5,
+                }}
+              >
                 {doctorGroups.map((group) => {
                   const isPicked = doctor?.doctorId === group.doctor.doctorId;
                   return (
@@ -309,20 +317,32 @@ export function BookingWizard({
                         borderColor: isPicked ? 'primary.main' : undefined,
                         borderWidth: isPicked ? 2 : undefined,
                         borderStyle: isPicked ? 'solid' : undefined,
+                        height: '100%',
                       }}
                       onClick={() => {
                         setDoctor(group.doctor);
                         setStepError(null);
                       }}
                     >
-                      <MpCardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <MpAvatar name={group.doctor.doctorName} />
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography variant="subtitle2">{group.doctor.doctorName}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {specName}
-                          </Typography>
-                        </Box>
+                      <MpCardContent
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          gap: 1.5,
+                        }}
+                      >
+                        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                          <MpAvatar name={group.doctor.doctorName} />
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography variant="subtitle2" noWrap>
+                              {group.doctor.doctorName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" noWrap>
+                              {specName}
+                            </Typography>
+                          </Box>
+                        </Stack>
                         <Typography
                           variant="caption"
                           color={group.available > 0 ? 'success.dark' : 'text.secondary'}
@@ -336,7 +356,7 @@ export function BookingWizard({
                     </MpCard>
                   );
                 })}
-              </Stack>
+              </Box>
             )}
 
             <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: 'space-between' }}>
