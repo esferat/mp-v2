@@ -3,7 +3,7 @@ info:
   title: mp-v2 catalog
   version: 0.1.0
   description: "Сгенерировано из Zod-схем packages/contracts. Перегенерация: pnpm
-    gen. Сервис: catalog, операций: 10."
+    gen. Сервис: catalog, операций: 11."
 paths:
   /api/catalog/doctors:
     get:
@@ -234,6 +234,55 @@ paths:
                 $ref: "#/components/schemas/ApiError"
         "403":
           description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/catalog/doctors/:id/user:
+    put:
+      tags:
+        - catalog
+      summary: Привязать учётную запись к существующему врачу (правило «всегда»,
+        только ADMIN)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LinkDoctorUserRequest"
+      responses:
+        "200":
+          description: "Успех:"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoctorListItem"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Нет/просрочен токен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Конфликт (запись занята, дубликат, уже обработано и т.п.)
           content:
             application/json:
               schema:
@@ -752,6 +801,15 @@ components:
         - lastName
         - specializationId
         - schedule
+    LinkDoctorUserRequest:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+      properties:
+        userId:
+          type: string
+          minLength: 1
+      required:
+        - userId
     UpdateDoctorScheduleRequest:
       $schema: https://json-schema.org/draft/2020-12/schema
       type: object

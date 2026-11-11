@@ -15,7 +15,6 @@ const base: DoctorFormValues = {
   endTime: '18:00',
   durationMinutes: 30,
   workDays: [1, 2, 3, 4, 5],
-  createAccount: false,
   email: '',
   password: '',
 };

@@ -131,6 +131,20 @@ describe('findPolicy', () => {
     expect(findPolicy('GET', '/api/identity/me')?.roles).toEqual(['ADMIN', 'USER', 'DOCTOR']);
     expect(findPolicy('PATCH', '/api/identity/me')?.roles).toEqual(['ADMIN', 'USER', 'DOCTOR']);
   });
+
+  // Правило «учётную запись врача создаёт админ всегда» (3.2/9.1): и сага
+  // привязки в identity, и привязка в catalog — только админ
+  it('привязка учётной записи врача — только ADMIN (identity + catalog)', () => {
+    const account = findPolicy('POST', '/api/identity/doctors/d-1/account');
+    const link = findPolicy('PUT', '/api/catalog/doctors/d-1/user');
+
+    expect(account?.roles).toEqual(['ADMIN']);
+    expect(link?.roles).toEqual(['ADMIN']);
+    expect(allowsRoles(account, ['DOCTOR'])).toBe(false);
+    expect(allowsRoles(link, ['USER'])).toBe(false);
+    expect(allowsRoles(account, ['ADMIN'])).toBe(true);
+    expect(allowsRoles(link, ['ADMIN'])).toBe(true);
+  });
 });
 
 describe('allowsRoles', () => {

@@ -17,6 +17,7 @@ import { RegisterModule } from '../features/register';
 import { RegisterDoctorModule } from '../features/register-doctor';
 import { MeModule } from '../features/me';
 import { UsersModule } from '../features/users';
+import { CreateDoctorAccountModule } from '../features/create-doctor-account';
 
 /**
  * Composition root (fsd.md §4.1): только регистрация слайсов и глобальных
@@ -58,6 +59,7 @@ const env = getIdentityEnv();
     RegisterDoctorModule,
     MeModule,
     UsersModule,
+    CreateDoctorAccountModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

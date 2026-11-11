@@ -5,6 +5,8 @@ import type {
   AppointmentListResponse,
   BookAppointmentRequest,
   CancelAppointmentRequest,
+  CreateDoctorAccountRequest,
+  CreateDoctorAccountResponse,
   CreateDoctorRequest,
   CreateSpecializationRequest,
   DoctorListItem,
@@ -86,6 +88,13 @@ export function createApi(client: ApiClient) {
       /** Сага врача с учётной записью DOCTOR (9.1, только ADMIN). */
       registerDoctor: (body: RegisterDoctorRequest) =>
         client.post<RegisterDoctorResponse>('/identity/doctors', body, { noRetry: true }),
+      /** Учётная запись для существующего врача + привязка (только ADMIN). */
+      createDoctorAccount: (doctorId: string, body: CreateDoctorAccountRequest) =>
+        client.post<CreateDoctorAccountResponse>(
+          `/identity/doctors/${encodeURIComponent(doctorId)}/account`,
+          body,
+          { noRetry: true },
+        ),
       /** Профиль текущего пользователя (10.1: email/ФИО из Keycloak). */
       getMe: () => client.get<MeProfile>('/identity/me'),
       /** Правка СВОИХ данных (10.1: занятый email → 409 с полем email). */

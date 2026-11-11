@@ -107,4 +107,11 @@ export interface CatalogDoctors {
 
   /** Существующий врач по userId (9.1: идемпотентный повтор саги); null — нет. */
   findDoctorByUser(userId: string): Promise<{ id: string } | null>;
+
+  /**
+   * Привязка userId к УЖЕ существующему карточке врача (правило «учётная
+   * запись создаётся администратором всегда»);404 — карточки нет,
+   * 409 — привязка занята.
+   */
+  linkDoctorUser(doctorId: string, userId: string): Promise<void>;
 }

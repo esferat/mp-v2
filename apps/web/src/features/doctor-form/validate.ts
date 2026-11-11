@@ -33,8 +33,11 @@ export interface DoctorFormValues {
   durationMinutes: number;
   /** 1 = Пн … 7 = Вс. */
   workDays: number[];
-  /** 9.1: создать учётную запись врача в Keycloak. */
-  createAccount: boolean;
+  /**
+   * Email и пароль учётной записи (9.1): create — создаётся всегда
+   * (правило «учётную запись создаёт админ всегда»); edit — смена email
+   * существующей учётки или создание новой у врача без неё.
+   */
   email: string;
   password: string;
 }
@@ -69,11 +72,15 @@ export function isFormField(key: string): key is DoctorFormField {
 
 export interface ValidateDoctorFormOptions {
   /**
-   * Проверять email и в edit-режиме (3.2): у врача с учётной записью поле
-   * всегда отображается и обязательно. В create-режиме email обязателен
-   * только при включённом `createAccount`.
+   * Email обязателен и проверяется: create — всегда; edit с учётной
+   * записью — всегда; edit без учётной записи — при заполнении (создание).
    */
   emailRequired?: boolean;
+  /**
+   * Пароль обязателен: create — всегда (правило «всегда»); edit — только
+   * когда создаётся учётная запись существующему врачу.
+   */
+  passwordRequired?: boolean;
 }
 
 /** Клиентская валидация: пустые значения + правила расписания (зеркало сервера). */
@@ -99,15 +106,17 @@ export function validateDoctorForm(
     errors.specializationId = 'Выберите специализацию';
   }
 
-  // 9.1: поля учётной записи обязательны при чекбоксе (create);
-  // 3.2: в edit-режиме с учётной записью — всегда (emailRequired)
-  if (values.createAccount || options.emailRequired) {
+  // Учётная запись: обязательна (create/edit-с-учёткой) или заполнена
+  // добровольно (edit без учётки — создание и привязка)
+  if (options.emailRequired || values.email.trim()) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
       errors.email = 'Некорректный email';
     }
   }
-  if (values.createAccount && values.password.length < 8) {
-    errors.password = 'Пароль: минимум 8 символов';
+  if (options.passwordRequired || values.password) {
+    if (values.password.length < 8) {
+      errors.password = 'Пароль: минимум 8 символов';
+    }
   }
 
   // Правила расписания — общий слайс (shared/lib/schedule)

@@ -99,3 +99,27 @@ export const updateAdminUserProfileSchema = z.object({
   email: z.email(),
 });
 export type UpdateAdminUserProfileRequest = z.infer<typeof updateAdminUserProfileSchema>;
+
+/**
+ * POST /api/identity/doctors/:doctorId/account (только ADMIN): создать
+ * учётную запись для УЖЕ существующего карточки врача и привязать её.
+ * Правило: учётная запись врача создаётся администратором ВСЕГДА —
+ * сага та же, что в 9.1 (идемпотентность по email, компенсация при сбое
+ * catalog), но шаг B — привязка к карточке вместо её создания.
+ * Email занят другим врачом → 409 с полем `email`.
+ */
+export const createDoctorAccountRequestSchema = z.object({
+  email: z.email(),
+  /** минимум 8 символов (functional-spec, 1.4) */
+  password: z.string().min(8).max(72),
+  /** ФИО дублируются в Keycloak — профиль врача читает их оттуда (10.1). */
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  middleName: z.string().min(1).max(100).optional(),
+});
+export type CreateDoctorAccountRequest = z.infer<typeof createDoctorAccountRequestSchema>;
+
+export const createDoctorAccountResponseSchema = z.object({
+  userId: z.string().min(1),
+});
+export type CreateDoctorAccountResponse = z.infer<typeof createDoctorAccountResponseSchema>;

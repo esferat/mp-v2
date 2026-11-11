@@ -14,8 +14,9 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-const createDoctor = vi.fn();
+const createDoctorAccount = vi.fn();
 const updateDoctor = vi.fn();
+const registerDoctor = vi.fn();
 const updateUserProfile = vi.fn();
 
 // Клиентский API подменяется: форма ходит только через shared/api (2.3)
@@ -23,10 +24,11 @@ vi.mock('../src/shared/api/browser', () => ({
   browserApiClient: {},
   browserApi: {
     catalog: {
-      createDoctor: (body: unknown) => createDoctor(body),
       updateDoctor: (id: string, body: unknown) => updateDoctor(id, body),
     },
     identity: {
+      registerDoctor: (body: unknown) => registerDoctor(body),
+      createDoctorAccount: (id: string, body: unknown) => createDoctorAccount(id, body),
       updateUserProfile: (id: string, body: unknown) => updateUserProfile(id, body),
     },
   },
@@ -34,8 +36,9 @@ vi.mock('../src/shared/api/browser', () => ({
 
 afterEach(() => {
   cleanup();
-  createDoctor.mockReset();
+  createDoctorAccount.mockReset();
   updateDoctor.mockReset();
+  registerDoctor.mockReset();
   updateUserProfile.mockReset();
   push.mockReset();
   refresh.mockReset();
@@ -63,10 +66,13 @@ async function selectSpecialization(): Promise<void> {
 function fillValid(): void {
   fireEvent.change(screen.getByLabelText(/^Фамилия/), { target: { value: 'Иванов' } });
   fireEvent.change(screen.getByLabelText(/^Имя/), { target: { value: 'Иван' } });
+  // Правило «учётную запись создаёт админ всегда»: email и пароль — обязательны
+  fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'ivanov@test.mp' } });
+  fireEvent.change(screen.getByLabelText(/^Пароль/), { target: { value: 'Password123!' } });
 }
 
 describe('DoctorForm (3.2: форма врача)', () => {
-  it('пустая форма: ошибки на полях, запрос не уходит', async () => {
+  it('пустая форма: ошибки на полях (в т.ч. email/пароль — правило «всегда»), запрос не уходит', async () => {
     renderForm();
 
     fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
@@ -74,7 +80,9 @@ describe('DoctorForm (3.2: форма врача)', () => {
     expect(await screen.findByText('Укажите фамилию')).toBeTruthy();
     expect(await screen.findByText('Укажите имя')).toBeTruthy();
     expect(await screen.findByText('Выберите специализацию')).toBeTruthy();
-    expect(createDoctor).not.toHaveBeenCalled();
+    expect(await screen.findByText('Некорректный email')).toBeTruthy();
+    expect(await screen.findByText('Пароль: минимум 8 символов')).toBeTruthy();
+    expect(registerDoctor).not.toHaveBeenCalled();
   });
 
   it('невалидное расписание: ошибка на поле и без запроса', async () => {
@@ -87,19 +95,19 @@ describe('DoctorForm (3.2: форма врача)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
 
     expect(await screen.findByText('Начало рабочего дня должно быть раньше конца')).toBeTruthy();
-    expect(createDoctor).not.toHaveBeenCalled();
+    expect(registerDoctor).not.toHaveBeenCalled();
   });
 
-  it('валидная форма: createDoctor с payload и редирект в список', async () => {
-    createDoctor.mockResolvedValue({ id: 'd-1' });
+  it('валидная форма: сага registerDoctor с email/паролем и редирект в список', async () => {
+    registerDoctor.mockResolvedValue({ userId: 'kc-1', doctorId: 'd-1' });
     renderForm();
     fillValid();
     await selectSpecialization();
 
     fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
 
-    await waitFor(() => expect(createDoctor).toHaveBeenCalledTimes(1));
-    expect(createDoctor).toHaveBeenCalledWith({
+    await waitFor(() => expect(registerDoctor).toHaveBeenCalledTimes(1));
+    expect(registerDoctor).toHaveBeenCalledWith({
       firstName: 'Иван',
       lastName: 'Иванов',
       specializationId: 'sp-1',
@@ -109,13 +117,17 @@ describe('DoctorForm (3.2: форма врача)', () => {
         durationMinutes: 30,
         workDays: [1, 2, 3, 4, 5],
       },
+      email: 'ivanov@test.mp',
+      password: 'Password123!',
     });
+    // карточку напрямую НЕ создаём — её создаёт сага вместе с учётной записью
+    expect(updateDoctor).not.toHaveBeenCalled();
     await waitFor(() => expect(push).toHaveBeenCalledWith('/admin/doctors'));
   });
 
   it('двойной клик по кнопке: ровно один запрос (AC 3.2)', async () => {
     let resolveRequest: (value: unknown) => void = () => {};
-    createDoctor.mockImplementation(() => new Promise((resolve) => (resolveRequest = resolve)));
+    registerDoctor.mockImplementation(() => new Promise((resolve) => (resolveRequest = resolve)));
     renderForm();
     fillValid();
     await selectSpecialization();
@@ -124,13 +136,13 @@ describe('DoctorForm (3.2: форма врача)', () => {
     fireEvent.click(submit);
     fireEvent.click(submit);
 
-    expect(createDoctor).toHaveBeenCalledTimes(1);
-    resolveRequest({ id: 'd-1' });
+    expect(registerDoctor).toHaveBeenCalledTimes(1);
+    resolveRequest({ userId: 'kc-1', doctorId: 'd-1' });
     await waitFor(() => expect(push).toHaveBeenCalled());
   });
 
   it('ошибка сервера с полем показывается под этим полем', async () => {
-    createDoctor.mockRejectedValue(
+    registerDoctor.mockRejectedValue(
       new ApiError('Длительность должна делить час без остатка (5, 10, 15, 20 или 30 мин)', {
         code: 'VALIDATION_ERROR',
         status: 400,
@@ -268,16 +280,73 @@ describe('DoctorForm edit: email учётной записи (3.2)', () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it('врач без учётной записи: поля email нет, подсказка вместо него', async () => {
+  it('врач без учётной записи: поля показаны, пустые → сохраняется только карточка', async () => {
     updateDoctor.mockResolvedValue({ id: 'd-1' });
     renderEdit(null);
 
-    expect(screen.queryByLabelText(/^Email/)).toBeNull();
-    expect(screen.getByText('Учётной записи нет — email не задан')).toBeTruthy();
+    // Правило «всегда»: админу предлагается создать учётную запись
+    expect(screen.getByLabelText(/^Email/)).toBeTruthy();
+    expect(screen.getByLabelText(/^Пароль/)).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
 
     await waitFor(() => expect(updateDoctor).toHaveBeenCalledTimes(1));
+    expect(createDoctorAccount).not.toHaveBeenCalled();
     expect(updateUserProfile).not.toHaveBeenCalled();
+  });
+
+  it('врач без учётной записи: заполненные поля → createDoctorAccount ДО сохранения карточки', async () => {
+    createDoctorAccount.mockResolvedValue({ userId: 'kc-9' });
+    updateDoctor.mockResolvedValue({ id: 'd-1' });
+    renderEdit(null);
+
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'new@test.mp' } });
+    fireEvent.change(screen.getByLabelText(/^Пароль/), { target: { value: 'Password123!' } });
+    fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
+
+    await waitFor(() =>
+      expect(createDoctorAccount).toHaveBeenCalledWith('d-1', {
+        email: 'new@test.mp',
+        password: 'Password123!',
+        firstName: 'Иван',
+        lastName: 'Иванов',
+      }),
+    );
+    await waitFor(() => expect(updateDoctor).toHaveBeenCalledTimes(1));
+    // привязка идёт раньше карточки: занятый email (409) падает без частичных сохранений
+    expect(createDoctorAccount.mock.invocationCallOrder[0]).toBeLessThan(
+      updateDoctor.mock.invocationCallOrder[0],
+    );
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/admin/doctors'));
+  });
+
+  it('врач без учётной записи: только email без пароля → ошибка, запросов нет', async () => {
+    renderEdit(null);
+
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'new@test.mp' } });
+    fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
+
+    expect(await screen.findByText('Пароль: минимум 8 символов')).toBeTruthy();
+    expect(createDoctorAccount).not.toHaveBeenCalled();
+    expect(updateDoctor).not.toHaveBeenCalled();
+  });
+
+  it('врач без учётной записи: занятый email при привязке (409) → ошибка под полем', async () => {
+    createDoctorAccount.mockRejectedValue(
+      new ApiError('Email уже привязан к другому врачу', {
+        code: 'CONFLICT',
+        status: 409,
+        field: 'email',
+      }),
+    );
+    renderEdit(null);
+
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'busy@test.mp' } });
+    fireEvent.change(screen.getByLabelText(/^Пароль/), { target: { value: 'Password123!' } });
+    fireEvent.click(screen.getByRole('button', { name: /Сохранить/ }));
+
+    expect(await screen.findByText('Email уже привязан к другому врачу')).toBeTruthy();
+    expect(updateDoctor).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
   });
 });

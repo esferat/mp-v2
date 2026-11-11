@@ -21,6 +21,7 @@ import { CreateDoctorModule } from '../features/create-doctor';
 import { UpdateDoctorModule } from '../features/update-doctor';
 import { UpdateMyScheduleModule } from '../features/update-my-schedule';
 import { GetDoctorModule } from '../features/get-doctor';
+import { LinkDoctorUserModule } from '../features/link-doctor-user';
 import { SetDoctorPhotoModule } from '../features/set-doctor-photo';
 
 /**
@@ -62,6 +63,7 @@ const env = getCatalogEnv();
     UpdateDoctorModule,
     UpdateMyScheduleModule,
     GetDoctorModule,
+    LinkDoctorUserModule,
     SetDoctorPhotoModule,
     GetSpecializationsModule,
     GetDoctorsModule,

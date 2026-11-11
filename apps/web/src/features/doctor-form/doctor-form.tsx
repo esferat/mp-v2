@@ -72,7 +72,6 @@ function toValues(doctor?: DoctorListItem, accountEmail?: string | null): Doctor
     endTime: doctor?.schedule.endTime ?? '18:00',
     durationMinutes: doctor?.schedule.durationMinutes ?? 30,
     workDays: doctor ? [...doctor.schedule.workDays] : [1, 2, 3, 4, 5],
-    createAccount: false,
     email: accountEmail ?? '',
     password: '',
   };
@@ -138,9 +137,16 @@ export function DoctorForm({
   async function save(nextStatus?: 'ACTIVE' | 'INACTIVE'): Promise<void> {
     if (submittingRef.current) return;
 
+    // Правило «учётную запись создаёт админ всегда»: create — поля обязательны;
+    // edit без учётной записи — создаём учётку, только если заполнено хоть одно
+    // поле (иначе правим карточку, не трогая вход)
+    const linkingAccount =
+      mode === 'edit' &&
+      accountEmail === null &&
+      (values.email.trim() !== '' || values.password !== '');
     const clientErrors = validateDoctorForm(values, {
-      // 3.2: у врача с учётной записью email всегда виден и обязателен
-      emailRequired: mode === 'edit' && accountEmail !== null,
+      emailRequired: mode === 'create' || accountEmail !== null || linkingAccount,
+      passwordRequired: mode === 'create' || linkingAccount,
     });
     setErrors(clientErrors);
     setServerError(null);
@@ -163,23 +169,32 @@ export function DoctorForm({
       };
 
       if (mode === 'create') {
-        if (values.createAccount) {
-          // 9.1: сага в identity — пользователь DOCTOR + врач с userId
-          await browserApi.identity.registerDoctor({
-            ...payload,
-            email: values.email.trim(),
-            password: values.password,
-          });
-        } else {
-          await browserApi.catalog.createDoctor(payload);
-        }
+        // Правило «учётную запись создаёт админ всегда» (9.1): сага в identity —
+        // пользователь DOCTOR + врач с userId; необязательного чекбокса нет
+        await browserApi.identity.registerDoctor({
+          ...payload,
+          email: values.email.trim(),
+          password: values.password,
+        });
       } else {
-        // Email живёт в Keycloak (10.1, источник истины): правим ДО карточки —
-        // занятый адрес (409) падает раньше частичных сохранений; повтор при
-        // неудачном catalog идемпотентен (адрес уже совпадает с Keycloak)
         const nextEmail = values.email.trim();
-        if (initial.userId && accountEmail !== null && nextEmail !== accountEmail) {
-          await browserApi.identity.updateUserProfile(initial.userId, { email: nextEmail });
+        if (accountEmail !== null) {
+          // Email живёт в Keycloak (10.1, источник истины): правим ДО карточки —
+          // занятый адрес (409) падает раньше частичных сохранений; повтор при
+          // неудачном catalog идемпотентен (адрес уже совпадает с Keycloak)
+          if (initial.userId && nextEmail !== accountEmail) {
+            await browserApi.identity.updateUserProfile(initial.userId, { email: nextEmail });
+          }
+        } else if (linkingAccount) {
+          // Учётной записи нет: создаём и привязываем ДО сохранения карточки
+          // (занятый email → 409 падает раньше; повтор формы идемпотентен)
+          await browserApi.identity.createDoctorAccount(initial.id, {
+            email: nextEmail,
+            password: values.password,
+            firstName: values.firstName.trim(),
+            lastName: values.lastName.trim(),
+            ...(values.middleName.trim() ? { middleName: values.middleName.trim() } : {}),
+          });
         }
         await browserApi.catalog.updateDoctor(initial.id, {
           id: initial.id,
@@ -291,10 +306,15 @@ export function DoctorForm({
         ) : null}
       </Stack>
 
-      {/* 3.2: email учётной записи — видит/правит админ; врач правит тот же
-          адрес в своём профиле (10.1). Без привязки userId — учётки нет. */}
-      {mode === 'edit' ? (
-        accountEmail !== null ? (
+      {/* Учётная запись — правило «создаёт всегда администратор»: create —
+          email + пароль обязательны (сага 9.1); edit с учёткой — только email
+          (правит врач в своём профиле и админ); edit без учётки — заполните
+          оба поля, чтобы создать и привязать запись при сохранении. */}
+      {mode === 'create' || accountEmail === null ? (
+        <Stack spacing={2}>
+          <Typography variant="h6">
+            {mode === 'create' ? 'Учётная запись врача' : 'Создать учётную запись'}
+          </Typography>
           <MpTextField
             label="Email"
             size="small"
@@ -305,14 +325,44 @@ export function DoctorForm({
             error={Boolean(errors.email)}
             {...(errors.email
               ? { helperText: errors.email }
-              : { helperText: 'Логин и адрес для писем — меняется у врача и администратора' })}
+              : {
+                  helperText:
+                    mode === 'create'
+                      ? 'Врач войдёт в портал с этим адресом'
+                      : 'Заполните оба поля — учётная запись создастся при сохранении',
+                })}
             onChange={(event) => patch('email', event.target.value, 'email')}
           />
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            Учётной записи нет — email не задан
-          </Typography>
-        )
+          <MpTextField
+            label="Пароль"
+            size="small"
+            required
+            type="password"
+            sx={{ maxWidth: 420 }}
+            value={values.password}
+            error={Boolean(errors.password)}
+            {...(errors.password
+              ? { helperText: errors.password }
+              : { helperText: 'Минимум 8 символов' })}
+            onChange={(event) => patch('password', event.target.value, 'password')}
+          />
+        </Stack>
+      ) : null}
+
+      {mode === 'edit' && accountEmail !== null ? (
+        <MpTextField
+          label="Email"
+          size="small"
+          required
+          type="email"
+          sx={{ maxWidth: 420 }}
+          value={values.email}
+          error={Boolean(errors.email)}
+          {...(errors.email
+            ? { helperText: errors.email }
+            : { helperText: 'Логин и адрес для писем — меняется у врача и администратора' })}
+          onChange={(event) => patch('email', event.target.value, 'email')}
+        />
       ) : null}
 
       <Typography variant="h6">Расписание</Typography>
@@ -387,41 +437,6 @@ export function DoctorForm({
         <Typography variant="caption" color="error" role="alert">
           {errors['schedule.workDays']}
         </Typography>
-      ) : null}
-
-      {mode === 'create' ? (
-        <>
-          <Typography variant="h6">Учётная запись врача</Typography>
-          <MpCheckbox
-            label="Создать учётную запись (вход в портал с ролью врача)"
-            checked={values.createAccount}
-            onChange={(event) => patch('createAccount', event.target.checked)}
-          />
-          {values.createAccount ? (
-            <Stack spacing={2}>
-              <MpTextField
-                label="Email"
-                size="small"
-                required
-                type="email"
-                value={values.email}
-                error={Boolean(errors.email)}
-                {...(errors.email ? { helperText: errors.email } : {})}
-                onChange={(event) => patch('email', event.target.value, 'email')}
-              />
-              <MpTextField
-                label="Пароль"
-                size="small"
-                required
-                type="password"
-                value={values.password}
-                error={Boolean(errors.password)}
-                {...(errors.password ? { helperText: errors.password } : {})}
-                onChange={(event) => patch('password', event.target.value, 'password')}
-              />
-            </Stack>
-          ) : null}
-        </>
       ) : null}
 
       {preview ? (

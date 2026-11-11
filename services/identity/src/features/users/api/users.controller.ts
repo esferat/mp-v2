@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  ForbiddenException,
-  Get,
-  Inject,
-  Param,
-  Patch,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Req } from '@nestjs/common';
 import {
   type AdminUserProfile,
   type UpdateAdminUserProfileRequest,
@@ -16,7 +6,7 @@ import {
 } from '@mp/contracts';
 import type { RequestAuth } from '@mp/service-kit';
 import { USER_DIRECTORY, type UserDirectory } from '../../../entities/registration';
-import { ZodPipe } from '../../../shared/lib';
+import { requireAdmin, ZodPipe } from '../../../shared/lib';
 import { getUserProfile, updateUserProfile } from '../app/users';
 
 /** Запрос с claims из JwtAuthGuard (request.auth, 1.2). */
@@ -36,7 +26,7 @@ export class UsersController {
 
   @Get('users/:userId')
   get(@Param('userId') userId: string, @Req() request: AuthedRequest): Promise<AdminUserProfile> {
-    requireAdmin(request);
+    requireAdmin(request.auth);
     return getUserProfile(this.directory, userId);
   }
 
@@ -46,15 +36,7 @@ export class UsersController {
     @Body(new ZodPipe(updateAdminUserProfileSchema)) body: UpdateAdminUserProfileRequest,
     @Req() request: AuthedRequest,
   ): Promise<AdminUserProfile> {
-    requireAdmin(request);
+    requireAdmin(request.auth);
     return updateUserProfile(this.directory, userId, body);
-  }
-}
-
-function requireAdmin(request: AuthedRequest): void {
-  const auth = request.auth;
-  if (!auth) throw new UnauthorizedException('Требуется токен доступа');
-  if (!auth.realmRoles.includes('ADMIN')) {
-    throw new ForbiddenException('Профиль пользователя доступен только администратору');
   }
 }

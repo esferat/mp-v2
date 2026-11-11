@@ -58,6 +58,17 @@ export const updateDoctorSchema = createDoctorSchema.extend({
 export type UpdateDoctorRequest = z.infer<typeof updateDoctorSchema>;
 
 /**
+ * PUT /api/catalog/doctors/:id/user: привязка учётной записи (Keycloak sub)
+ * к существующему карточке врача — правило «учётная запись создаётся
+ * администратором всегда» (сага identity, шаг B). Идемпотентно: повтор с тем
+ * же userId — no-op; чужая/занятая привязка → 409.
+ */
+export const linkDoctorUserSchema = z.object({
+  userId: z.string().min(1),
+});
+export type LinkDoctorUserRequest = z.infer<typeof linkDoctorUserSchema>;
+
+/**
  * Self-service расписание врача (10.4, Этап 2.1): правит только расписание
  * СВОЕЙ карточки — врач резолвится по sub из токена, id в запросе нет.
  */

@@ -159,6 +159,8 @@ export class InMemoryDoctorRepository implements DoctorRepository {
     const spec = await this.specializations.findById(data.specializationId);
     const row: DoctorListItem = {
       ...prev,
+      // userId передаётся при привязке учётной записи (как toRowData в Prisma)
+      ...(data.userId !== undefined ? { userId: data.userId } : {}),
       firstName: data.firstName,
       lastName: data.lastName,
       specializationId: data.specializationId,

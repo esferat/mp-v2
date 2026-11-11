@@ -1,7 +1,7 @@
 import type { DoctorListItem } from '@mp/contracts';
 import { ClientCredentialsTokenCache } from '@mp/service-kit';
 import type { IdentityEnv } from '../config';
-import { UpstreamError } from '../model';
+import { ConflictError, NotFoundError, UpstreamError } from '../model';
 
 /**
  * HTTP-клиент catalog-service (9.1: шаг B саги врача): создание врача
@@ -63,5 +63,42 @@ export class CatalogHttpClient {
     }
     const doctor = (await response.json()) as DoctorListItem;
     return { id: doctor.id };
+  }
+
+  /**
+   * Привязка userId к УЖЕ существующему карточке врача (правило «учётная
+   * запись создаётся администратором всегда»).404 → NotFoundError,
+   * 409 → ConflictError (сообщение каталога — подсказка админу).
+   */
+  async linkDoctorUser(doctorId: string, userId: string): Promise<void> {
+    const url = `${this.env.CATALOG_SERVICE_URL}/api/catalog/doctors/${encodeURIComponent(doctorId)}/user`;
+    const token = await this.tokens.getToken();
+    const response = await this.fetchImpl(url, {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userId }),
+      signal: AbortSignal.timeout(this.env.PATIENT_SERVICE_TIMEOUT_MS),
+    });
+    if (response.ok) return;
+
+    const detail = await response.text().catch(() => '');
+    let message =
+      response.status === 404 ? `Врач ${doctorId} не найден` : 'Привязка учётной записи невозможна';
+    let field: string | undefined;
+    try {
+      const body = JSON.parse(detail) as { message?: string; field?: string };
+      if (body.message) message = body.message;
+      field = body.field;
+    } catch {
+      // не-JSON тело — оставляем сообщение по умолчанию
+    }
+    if (response.status === 404) throw new NotFoundError(message);
+    if (response.status === 409) throw new ConflictError(message, field ? { field } : undefined);
+    throw new UpstreamError(
+      `catalog linkDoctorUser: HTTP ${response.status} ${detail.slice(0, 200)}`,
+    );
   }
 }

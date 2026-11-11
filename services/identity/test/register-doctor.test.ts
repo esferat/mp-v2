@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { registerDoctor } from '../src/processes/register-doctor-saga';
+import { createDoctorAccount, registerDoctor } from '../src/processes/register-doctor-saga';
 import {
   type CatalogDoctors,
   EmailExistsError,
   type UserDirectory,
 } from '../src/entities/registration';
+import { ConflictError } from '../src/shared/model';
 
 /**
  * In-memory адаптеры саги врача (9.1): без Keycloak и catalog (0.7 AC).
@@ -36,11 +37,16 @@ class InMemoryDirectory implements UserDirectory {
 
 class InMemoryCatalog implements CatalogDoctors {
   readonly created: Array<{ userId: string; doctorId: string }> = [];
+  /** Привязки к СУЩЕСТВУЮЩИМ карточкам (createDoctorAccount, шаг B). */
+  readonly linked: Array<{ doctorId: string; userId: string }> = [];
   failNext = false;
+  failLink = false;
 
   async findDoctorByUser(userId: string): Promise<{ id: string } | null> {
-    const found = this.created.find((row) => row.userId === userId);
-    return found ? { id: found.doctorId } : null;
+    const created = this.created.find((row) => row.userId === userId);
+    if (created) return { id: created.doctorId };
+    const linked = this.linked.find((row) => row.userId === userId);
+    return linked ? { id: linked.doctorId } : null;
   }
 
   async createDoctor(data: { userId: string }): Promise<{ id: string }> {
@@ -51,6 +57,11 @@ class InMemoryCatalog implements CatalogDoctors {
     const id = `doc-${this.created.length + 1}`;
     this.created.push({ userId: data.userId, doctorId: id });
     return { id };
+  }
+
+  async linkDoctorUser(doctorId: string, userId: string): Promise<void> {
+    if (this.failLink) throw new Error('catalog недоступен');
+    this.linked.push({ doctorId, userId });
   }
 }
 
@@ -117,6 +128,88 @@ describe('registerDoctor (сага 9.1)', () => {
     ).rejects.toThrow('catalog недоступен');
 
     expect(directory.users.size).toBe(1); // остался прежний пользователь
+    expect(directory.calls.filter((call) => call.startsWith('delete:'))).toHaveLength(0);
+  });
+});
+
+/** Учётная запись для СУЩЕСТВУЮЩЕГО врача (правило «всегда», только ADMIN). */
+describe('createDoctorAccount: привязка к существующей карточке', () => {
+  const account = {
+    email: 'doctor@test.mp',
+    password: 'Password123!',
+    firstName: 'Иван',
+    lastName: 'Врачёв',
+  };
+
+  it('создаёт пользователя DOCTOR и привязывает к карточке (карточку НЕ создаёт)', async () => {
+    const directory = new InMemoryDirectory();
+    const catalog = new InMemoryCatalog();
+
+    const result = await createDoctorAccount(
+      { directory, catalog },
+      { doctorId: 'doc-9', ...account },
+    );
+
+    expect(result.userId).toBe('kc-1');
+    expect(catalog.linked).toEqual([{ doctorId: 'doc-9', userId: 'kc-1' }]);
+    expect(catalog.created).toHaveLength(0); // шаг B — привязка, а не создание
+    expect(directory.calls[0]).toContain('create:DOCTOR');
+  });
+
+  it('повтор (тот же email и карточка) — идемпотентен: одна учётка, одна привязка', async () => {
+    const directory = new InMemoryDirectory();
+    const catalog = new InMemoryCatalog();
+    const command = { doctorId: 'doc-9', ...account };
+
+    const first = await createDoctorAccount({ directory, catalog }, command);
+    const second = await createDoctorAccount({ directory, catalog }, command);
+
+    expect(second).toEqual(first);
+    expect(catalog.linked).toHaveLength(1);
+    expect(directory.calls.filter((call) => call.startsWith('create:'))).toHaveLength(1);
+  });
+
+  it('email уже привязан к другому врачу → ConflictError с полем email', async () => {
+    const directory = new InMemoryDirectory();
+    const catalog = new InMemoryCatalog();
+    const userId = await directory.createUser({ email: account.email, realmRole: 'DOCTOR' });
+    catalog.linked.push({ doctorId: 'doc-other', userId });
+
+    const error = await createDoctorAccount(
+      { directory, catalog },
+      { doctorId: 'doc-9', ...account },
+    ).catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ConflictError);
+    expect((error as ConflictError).details?.field).toBe('email');
+    // чужого пользователя не удаляем (компенсация только для созданного здесь)
+    expect(directory.calls.filter((call) => call.startsWith('delete:'))).toHaveLength(0);
+  });
+
+  it('сбой catalog при СОЗДАННОМ пользователе → компенсация (учётка удалена)', async () => {
+    const directory = new InMemoryDirectory();
+    const catalog = new InMemoryCatalog();
+    catalog.failLink = true;
+
+    await expect(
+      createDoctorAccount({ directory, catalog }, { doctorId: 'doc-9', ...account }),
+    ).rejects.toThrow('catalog недоступен');
+
+    expect(directory.users.size).toBe(0); // «висячей» учётки не осталось
+    expect(directory.calls.some((call) => call.startsWith('delete:'))).toBe(true);
+  });
+
+  it('сбой catalog при СУЩЕСТВУЮЩЕМ пользователе → чужой не удаляется', async () => {
+    const directory = new InMemoryDirectory();
+    const catalog = new InMemoryCatalog();
+    await directory.createUser({ email: account.email, realmRole: 'DOCTOR' }); // уже есть
+    catalog.failLink = true;
+
+    await expect(
+      createDoctorAccount({ directory, catalog }, { doctorId: 'doc-9', ...account }),
+    ).rejects.toThrow('catalog недоступен');
+
+    expect(directory.users.size).toBe(1);
     expect(directory.calls.filter((call) => call.startsWith('delete:'))).toHaveLength(0);
   });
 });
