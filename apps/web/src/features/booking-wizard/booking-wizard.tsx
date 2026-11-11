@@ -214,7 +214,12 @@ export function BookingWizard({
     setStepError(null);
     setStep(2);
     setDoctor(null);
-    if (slots.length === 0 && !loadingSlots) void loadWindow(windowStart);
+    // Специализация могла смениться (возврат назад + новый выбор): старые
+    // слоты сбрасываем сразу, затем всегда перезагружаем — иначе на шаге 2
+    // «залипает» список врачей предыдущего направления
+    setSlots([]);
+    setSelected(null);
+    void loadWindow(windowStart);
   }
 
   /** Шаг 2 → 3: врач выбран (слоты окна уже загружены). */
