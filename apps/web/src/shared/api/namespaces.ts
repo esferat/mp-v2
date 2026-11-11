@@ -204,6 +204,8 @@ export function createApi(client: ApiClient) {
         if (params.status) query.set('status', params.status);
         if (params.from) query.set('from', params.from);
         if (params.to) query.set('to', params.to);
+        // Приёмы конкретного пациента в карточке врача (9.3)
+        if (params.patientId) query.set('patientId', params.patientId);
         return client.get<AppointmentListResponse>(
           `/scheduling/appointments/doctor?${query.toString()}`,
         );

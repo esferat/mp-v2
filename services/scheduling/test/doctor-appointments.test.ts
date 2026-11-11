@@ -129,6 +129,29 @@ describe('getDoctorAppointments (9.2: свои записи)', () => {
     expect(paged.items).toHaveLength(1);
   });
 
+  it('patientId: приёмы конкретного пациента в пределах своих записей (9.3)', async () => {
+    const context = await seed();
+
+    const onlyA = await getDoctorAppointments(
+      { appointments: context.appointments, copies: context.copies },
+      { ...pageQuery, patientId: 'pt-A' },
+      DOCTOR,
+    );
+    // у doc-1 две записи pt-A (10.11 и 17.11), pt-B и чужой doc-2 — не попадают
+    expect(onlyA.total).toBe(2);
+    expect(onlyA.items.every((item) => item.patientId === 'pt-A')).toBe(true);
+    expect(onlyA.items.every((item) => item.doctorId === 'doc-1')).toBe(true);
+
+    // несуществующий пациент → пусто, а не все записи
+    const empty = await getDoctorAppointments(
+      { appointments: context.appointments, copies: context.copies },
+      { ...pageQuery, patientId: 'no-such' },
+      DOCTOR,
+    );
+    expect(empty.total).toBe(0);
+    expect(empty.items).toHaveLength(0);
+  });
+
   it('другой врач видит только свои; пациент -> 403 (нет привязки)', async () => {
     const context = await seed();
 

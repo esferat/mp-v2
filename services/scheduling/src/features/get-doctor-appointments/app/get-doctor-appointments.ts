@@ -18,7 +18,8 @@ export interface GetDoctorAppointmentsDeps {
  * Приёмы врача (9.2): doctorId ОПРЕДЕЛЯЕТСЯ по привязке sub → копия
  * расписания (9.1 userId) и подменяет любые параметры запроса — врач видит
  * только СВОИ записи (AC 9.2). Фильтры: период/статус/пагинация из query;
- * specId/patientId игнорируются (все записи врача и так его специализации).
+ * patientId — «приёмы своего пациента» в карточке пациента врача (9.3),
+ * всегда в связке с врачом — чужие записи недоступны.
  */
 export async function getDoctorAppointments(
   deps: GetDoctorAppointmentsDeps,
@@ -37,6 +38,7 @@ export async function getDoctorAppointments(
     ...(query.status ? { status: query.status } : {}),
     ...(query.from ? { from: query.from } : {}),
     ...(query.to ? { to: query.to } : {}),
+    ...(query.patientId ? { patientId: query.patientId } : {}),
   });
 
   return { items: items.map(toApiAppointment), total };
