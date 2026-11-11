@@ -157,4 +157,53 @@ describe('getSpecSlots (5.2)', () => {
     expect(free).toHaveLength(5);
     expect(free.every((slot) => slot.available)).toBe(true);
   });
+
+  it('doctorPhotoUrl подтягивается из catalog для плиток wizard (5.2)', async () => {
+    const context = makeSchedulingContext();
+    await seedCopy(context);
+    const catalog = {
+      listDoctors: async () => [
+        {
+          id: 'doc-1',
+          firstName: 'Иван',
+          lastName: 'Петров',
+          specializationId: 'sp-1',
+          specializationName: 'Хирург',
+          status: 'ACTIVE' as const,
+          schedule: { startTime: '09:00', endTime: '12:00', durationMinutes: 30, workDays: [2] },
+          photoUrl: 'http://cdn.test/doctor-photos/doc-1.jpg?sig=1',
+        },
+      ],
+    };
+
+    const slots = await getSpecSlots(
+      { copies: context.copies, appointments: context.appointments, catalog },
+      query,
+    );
+
+    expect(slots.length).toBeGreaterThan(0);
+    expect(
+      slots.every(
+        (slot) => slot.doctorPhotoUrl === 'http://cdn.test/doctor-photos/doc-1.jpg?sig=1',
+      ),
+    ).toBe(true);
+  });
+
+  it('catalog недоступен → слоты без фото, без падения', async () => {
+    const context = makeSchedulingContext();
+    await seedCopy(context);
+    const catalog = {
+      listDoctors: async (): Promise<never[]> => {
+        throw new Error('catalog down');
+      },
+    };
+
+    const slots = await getSpecSlots(
+      { copies: context.copies, appointments: context.appointments, catalog },
+      query,
+    );
+
+    expect(slots.length).toBeGreaterThan(0);
+    expect(slots.every((slot) => slot.doctorPhotoUrl === undefined)).toBe(true);
+  });
 });

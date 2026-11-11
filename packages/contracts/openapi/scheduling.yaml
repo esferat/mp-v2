@@ -894,6 +894,9 @@ components:
             minLength: 1
           available:
             type: boolean
+          doctorPhotoUrl:
+            type: string
+            format: uri
         required:
           - localDate
           - start

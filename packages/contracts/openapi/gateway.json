@@ -3363,6 +3363,10 @@
             },
             "available": {
               "type": "boolean"
+            },
+            "doctorPhotoUrl": {
+              "type": "string",
+              "format": "uri"
             }
           },
           "required": [

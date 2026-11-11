@@ -73,11 +73,26 @@ export async function getSpecSlots(deps: GetSpecSlotsDeps, query: SlotsQuery): P
 
   // Без includeBusy — только свободные (перенос записи, e2e). С параметром —
   // все слоты окон с пометкой available: сетка записи «зелёные/серые» (6/шаг 3).
-  if (!query.includeBusy) {
-    return computeSlots({ ...base, busy }).map((slot) => ({ ...slot, available: true }));
+  const slots = !query.includeBusy
+    ? computeSlots({ ...base, busy }).map((slot) => ({ ...slot, available: true }))
+    : computeSlots({ ...base, busy: new Set() }).map((slot) => ({
+        ...slot,
+        available: !busy.has(busyKey(slot.doctorId, slot.localDate, slot.start)),
+      }));
+
+  if (slots.length === 0 || !deps.catalog) return slots;
+
+  // Аватары врачей в плитках wizard'а: photoUrl — presigned из catalog
+  // (1 HTTP-вызов; поле опционально — без catalog слоты приходят без него)
+  try {
+    const doctors = await deps.catalog.listDoctors();
+    const photoByDoctor = new Map(doctors.map((doctor) => [doctor.id, doctor.photoUrl] as const));
+    return slots.map((slot) => {
+      const photoUrl = photoByDoctor.get(slot.doctorId);
+      return photoUrl ? { ...slot, doctorPhotoUrl: photoUrl } : slot;
+    });
+  } catch {
+    // каталог недоступен — показываем инициалы, слоты не теряем
+    return slots;
   }
-  return computeSlots({ ...base, busy: new Set() }).map((slot) => ({
-    ...slot,
-    available: !busy.has(busyKey(slot.doctorId, slot.localDate, slot.start)),
-  }));
 }

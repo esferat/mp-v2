@@ -104,24 +104,30 @@ function formatWorkDays(workDays: readonly number[]): string {
   return unique.length > 0 ? unique.join(', ') : '—';
 }
 
-/** Врачи в порядке появления в ответе слотов, со счётчиками. */
+/** Врачи в порядке появления в ответе слотов, со счётчиками и фото. */
 function groupByDoctor(slots: SlotList): {
   doctor: SelectedDoctor;
+  photoUrl?: string;
   available: number;
   total: number;
 }[] {
-  const map = new Map<string, { doctor: SelectedDoctor; available: number; total: number }>();
+  const map = new Map<
+    string,
+    { doctor: SelectedDoctor; photoUrl?: string; available: number; total: number }
+  >();
   for (const slot of slots) {
     const group = map.get(slot.doctorId);
     if (!group) {
       map.set(slot.doctorId, {
         doctor: { doctorId: slot.doctorId, doctorName: slot.doctorName },
+        ...(slot.doctorPhotoUrl ? { photoUrl: slot.doctorPhotoUrl } : {}),
         available: slot.available ? 1 : 0,
         total: 1,
       });
     } else {
       group.total += 1;
       if (slot.available) group.available += 1;
+      if (!group.photoUrl && slot.doctorPhotoUrl) group.photoUrl = slot.doctorPhotoUrl;
     }
   }
   return [...map.values()];
@@ -377,6 +383,7 @@ export function BookingWizard({
                         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
                           <MpAvatar
                             name={group.doctor.doctorName}
+                            {...(group.photoUrl ? { src: group.photoUrl } : {})}
                             sx={{ width: 56, height: 56, fontSize: 22 }}
                           />
                           <Box sx={{ minWidth: 0 }}>

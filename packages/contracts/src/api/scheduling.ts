@@ -34,6 +34,11 @@ export const slotListSchema = z.array(
     doctorName: z.string().min(1),
     /** false — слот занят (сетка записи: зелёные доступные / серые занятые). */
     available: z.boolean(),
+    /**
+     * presigned-аватар врача (TTL 5 мин) — плитка выбора врача показывает
+     * фото; нет фото или catalog недоступен — поле отсутствует (инициалы).
+     */
+    doctorPhotoUrl: z.url().optional(),
   }),
 );
 export type SlotList = z.infer<typeof slotListSchema>;
