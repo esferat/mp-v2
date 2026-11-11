@@ -102,7 +102,26 @@ export function createMpTheme(config: MpThemeConfig = {}): Theme {
     // Брейкпоинты — по макетам design/*: ≥1280 desktop, 960–1279 tablet, <960 mobile.
     breakpoints: { values: { xs: 0, sm: 600, md: 960, lg: 1280, xl: 1536 } },
     shadows: buildShadows(mode),
+    // Глобальная плавность переходов 0.5 с (кит компонентов): длительности
+    // MUI-переходов (Fade/Dialog/Collapse и др., theme.transitions.create)
+    transitions: {
+      duration: { standard: 500, short: 500 },
+    },
     components: {
+      // ——— Глобальные стили (CssBaseline) ———
+      MuiCssBaseline: {
+        styleOverrides: {
+          // Глобальный transition 0.5 с: элементы без явного перехода в своём
+          // классе плавно меняют любые свойства (hover, цвета, рамки) за 0.5 с.
+          // Явные transitions стилей компонентов перебивают правило по
+          // специфичности (класс > универсальный селектор).
+          '*': {
+            transitionDuration: '0.5s',
+            transitionTimingFunction: 'ease',
+          },
+        },
+      },
+
       // ——— Типографика ———
       MuiTypography: {
         variants: [
