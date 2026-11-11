@@ -79,7 +79,10 @@ export default async function ProfilePage(): Promise<ReactNode> {
       </Box>
     );
   } catch (error) {
-    const apiError = error instanceof ApiError ? error : null;
+    // Не-API ошибки (в т.ч. NEXT_REDIRECT «на вход» после неудачного
+    // refresh токена) — наружу: catch не должен поглощать редирект
+    if (!(error instanceof ApiError)) throw error;
+    const apiError = error;
     return (
       <Alert severity="error" role="alert">
         Не удалось загрузить профиль: {apiError?.message ?? 'Неизвестная ошибка'}

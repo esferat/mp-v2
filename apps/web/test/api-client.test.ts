@@ -166,3 +166,116 @@ describe('браузерная инстанс (2.3 AC: только /api/bff)', 
     expect(typeof browserApi.catalog.getDoctors).toBe('function');
   });
 });
+
+describe('401 → тихое обновление токена (серверный путь, «Токен просрочен»)', () => {
+  const expired = () => serverError({ code: 'TOKEN_EXPIRED', message: 'Токен просрочен' }, 401);
+
+  it('onUnauthorized вернул новый токен → запрос повторяется с ним, ошибка не видна', async () => {
+    const { impl, calls } = makeFetch([expired(), ok({ profile: true })]);
+    const client = createApiClient({
+      baseUrl: 'http://gateway/api',
+      fetchImpl: impl,
+      headers: () => ({ authorization: 'Bearer expired' }),
+      onUnauthorized: async () => 'fresh',
+    });
+
+    await expect(client.get('/patient/me')).resolves.toEqual({ profile: true });
+
+    expect(calls).toHaveLength(2);
+    const first = calls[0]?.init?.headers as Record<string, string>;
+    const second = calls[1]?.init?.headers as Record<string, string>;
+    expect(first.authorization).toBe('Bearer expired');
+    expect(second.authorization).toBe('Bearer fresh');
+  });
+
+  it('refresh выполняется один раз на клиента — последующие запросы со свежим токеном', async () => {
+    const { impl, calls } = makeFetch([expired(), ok({ page: 1 }), ok({ page: 2 })]);
+    let refreshCalls = 0;
+    const client = createApiClient({
+      baseUrl: 'http://gateway/api',
+      fetchImpl: impl,
+      headers: () => ({ authorization: 'Bearer expired' }),
+      onUnauthorized: async () => {
+        refreshCalls += 1;
+        return 'fresh';
+      },
+    });
+
+    await client.get('/a');
+    await client.get('/b');
+
+    expect(refreshCalls).toBe(1);
+    // 1-й запрос: 401 + повтор (2 вызова), 2-й запрос: сразу со свежим (1 вызов)
+    expect(calls).toHaveLength(3);
+    const second = calls[1]?.init?.headers as Record<string, string>;
+    const third = calls[2]?.init?.headers as Record<string, string>;
+    expect(second.authorization).toBe('Bearer fresh');
+    expect(third.authorization).toBe('Bearer fresh');
+  });
+
+  it('параллельные 401 (Promise.all) делят один refresh', async () => {
+    const calls: { url: string; init?: RequestInit }[] = [];
+    let refreshCalls = 0;
+    // первый запрос каждого пути — 401; повтор с Bearer fresh — 200
+    const impl: FetchLike = async (input, init) => {
+      calls.push({ url: String(input), init });
+      const headers = (init?.headers ?? {}) as Record<string, string>;
+      if (headers.authorization !== 'Bearer fresh') {
+        return expired();
+      }
+      return ok(String(input).endsWith('/a') ? { a: 1 } : { b: 2 });
+    };
+    const client = createApiClient({
+      baseUrl: 'http://gateway/api',
+      fetchImpl: impl,
+      onUnauthorized: async () => {
+        refreshCalls += 1;
+        return 'fresh';
+      },
+    });
+
+    const [first, second] = await Promise.all([client.get('/a'), client.get('/b')]);
+
+    expect(first).toEqual({ a: 1 });
+    expect(second).toEqual({ b: 2 });
+    expect(refreshCalls).toBe(1);
+    // 4 вызова: два исходных 401 (без токена) + два повтора со свежим
+    expect(calls).toHaveLength(4);
+    const retries = calls.filter(
+      (call) =>
+        ((call.init?.headers ?? {}) as Record<string, string>).authorization === 'Bearer fresh',
+    );
+    expect(retries).toHaveLength(2);
+  });
+
+  it('onUnauthorized вернул null → исходная ошибка 401 пробрасывается', async () => {
+    const { impl, calls } = makeFetch([expired()]);
+    const client = createApiClient({
+      baseUrl: 'http://gateway/api',
+      fetchImpl: impl,
+      onUnauthorized: async () => null,
+    });
+
+    await expect(client.get('/patient/me')).rejects.toMatchObject({
+      status: 401,
+      code: 'TOKEN_EXPIRED',
+    });
+    expect(calls).toHaveLength(1);
+  });
+
+  it('onUnauthorized бросил redirect (refresh невозможен) → исключение всплывает без перехвата', async () => {
+    const redirectError = Object.assign(new Error('NEXT_REDIRECT'), {
+      digest: 'NEXT_REDIRECT;/auth/login;303;',
+    });
+    const { impl } = makeFetch([expired()]);
+    const client = createApiClient({
+      baseUrl: 'http://gateway/api',
+      fetchImpl: impl,
+      onUnauthorized: async () => {
+        throw redirectError;
+      },
+    });
+
+    await expect(client.get('/patient/me')).rejects.toBe(redirectError);
+  });
+});

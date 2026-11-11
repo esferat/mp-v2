@@ -21,15 +21,14 @@ async function loadDoctor(id: string): Promise<LoadResult<DoctorListItem>> {
     );
     return { value };
   } catch (error) {
-    // 404 — страница not-found (макет: «Врач не найден»)
-    if (error instanceof ApiError && error.status === 404) return null;
-    if (error instanceof ApiError) {
-      return {
-        error: error.message,
-        ...(error.requestId ? { requestId: error.requestId } : {}),
-      };
-    }
-    return { error: error instanceof Error ? error.message : 'Неизвестная ошибка' };
+    // Не-API ошибки (в т.ч. NEXT_REDIRECT «на вход» после неудачного
+    // refresh токена) — наружу: catch не должен поглощать редирект
+    if (!(error instanceof ApiError)) throw error;
+    if (error.status === 404) return null;
+    return {
+      error: error.message,
+      ...(error.requestId ? { requestId: error.requestId } : {}),
+    };
   }
 }
 

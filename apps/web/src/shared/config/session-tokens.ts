@@ -15,6 +15,8 @@ const SESSION_COOKIE = 'authjs.session-token';
 export interface SessionTokens {
   accessToken?: string;
   idToken?: string;
+  /** Refresh token из сессии — для тихого обновления истёкшего access (SSR). */
+  refreshToken?: string;
 }
 
 /** Токены текущей сессии или пустой объект, если сессии нет. */
@@ -36,6 +38,7 @@ export async function getSessionTokens(): Promise<SessionTokens> {
   return {
     ...(typeof decoded?.accessToken === 'string' ? { accessToken: decoded.accessToken } : {}),
     ...(typeof decoded?.idToken === 'string' ? { idToken: decoded.idToken } : {}),
+    ...(typeof decoded?.refreshToken === 'string' ? { refreshToken: decoded.refreshToken } : {}),
   };
 }
 

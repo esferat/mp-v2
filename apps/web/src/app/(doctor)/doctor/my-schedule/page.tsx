@@ -33,7 +33,10 @@ export default async function MySchedulePage(): Promise<ReactNode> {
       </Box>
     );
   } catch (error) {
-    const apiError = error instanceof ApiError ? error : null;
+    // Не-API ошибки (в т.ч. NEXT_REDIRECT «на вход» после неудачного
+    // refresh токена) — наружу: catch не должен поглощать редирект
+    if (!(error instanceof ApiError)) throw error;
+    const apiError = error;
     if (apiError?.status === 404) {
       return (
         <Alert severity="warning">

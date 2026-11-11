@@ -12,6 +12,14 @@ export interface ApiClientOptions {
   fetchImpl?: FetchLike;
   /** Дополнительные заголовки (например, Authorization на сервере). */
   headers?: () => Record<string, string>;
+  /**
+   * 401 «Токен просрочен» (серверный путь): обновить access токен и
+   * вернуть его — запрос повторяется незаметно для пользователя;
+   * вернуть null — обновить не удалось (клиент бросит исходную 401);
+   * бросить исключение (redirect на /auth/login) — обновить невозможно,
+   * пользователь уходит на авторизацию.
+   */
+  onUnauthorized?: () => Promise<string | null>;
 }
 
 export interface RequestOptions extends Omit<RequestInit, 'headers'> {
@@ -51,7 +59,17 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     retryOnServerError = 2,
     fetchImpl = fetch,
     headers: extraHeaders,
+    onUnauthorized,
   } = options;
+
+  /**
+   * Свежий access после refresh (серверный путь): заменяет истёкший токен
+   * и для повтора, и для последующих запросов этого клиента — один refresh
+   * на createServerApi вместо каждого запроса.
+   */
+  let refreshedAccessToken: string | null = null;
+  /** Параллельные 401 (Promise.all на странице) делят ОДИН refresh. */
+  let refreshInFlight: Promise<string | null> | null = null;
 
   async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
     const method = (init.method ?? 'GET').toUpperCase();
@@ -69,14 +87,30 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
       } catch (error) {
         const apiError = toApiErrorInternal(error);
         lastError = apiError;
-        // Истёкший access token: первый запрос после TTL падает 401, но
-        // Auth.js обновляет куку через GET /api/auth/session (jwt → refresh) —
-        // повторяем ОДИН раз уже с новой кукой. Выполнение запроса на 401 не
+        // Истёкший access token: первый запрос после TTL падает 401 —
+        // обновляем токен и повторяем ОДИН раз; выполнение запроса на 401 не
         // начиналось, поэтому это безопасно и для мутаций (в отличие от ретрая 5xx).
-        if (apiError.status === 401 && !retriedAfterRefresh && baseUrl.startsWith('/')) {
+        if (apiError.status === 401 && !retriedAfterRefresh) {
           retriedAfterRefresh = true;
-          await refreshSessionCookie();
-          continue; // повтор той же попытки с обновлённой кукой
+          if (onUnauthorized) {
+            // Серверный путь: refresh сам; может бросить redirect('/auth/login'),
+            // если обновить невозможно — NEXT_REDIRECT всплывает наружу без
+            // перехвата (пользователь уходит на авторизацию вместо ошибки).
+            // Параллельные запросы (Promise.all) разделяют один refresh.
+            refreshInFlight ??= onUnauthorized().finally(() => {
+              refreshInFlight = null;
+            });
+            const fresh = await refreshInFlight;
+            if (fresh) {
+              refreshedAccessToken = fresh;
+              continue; // повтор с обновлённым токеном
+            }
+            throw apiError;
+          }
+          if (baseUrl.startsWith('/')) {
+            await refreshSessionCookie();
+            continue; // повтор той же попытки с обновлённой кукой
+          }
         }
         const retryable = apiError.isNetworkError || apiError.isServerError;
         if (!retryable || attempt === attempts - 1) throw apiError;
@@ -105,6 +139,8 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
             ? { 'content-type': 'application/json' }
             : {}),
           ...extraHeaders?.(),
+          // Свежий токен после refresh перебивает истёкший из headers()
+          ...(refreshedAccessToken ? { authorization: `Bearer ${refreshedAccessToken}` } : {}),
           ...init.headers,
         },
         signal: init.signal ?? controller.signal,

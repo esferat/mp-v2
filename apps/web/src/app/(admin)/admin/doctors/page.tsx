@@ -31,13 +31,13 @@ async function loadDoctors(): Promise<
     ]);
     return { list, specializations };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return {
-        error: error.message,
-        ...(error.requestId ? { requestId: error.requestId } : {}),
-      };
-    }
-    return { error: error instanceof Error ? error.message : 'Неизвестная ошибка' };
+    // Не-API ошибки (в т.ч. NEXT_REDIRECT «на вход» после неудачного
+    // refresh токена) — наружу: catch не должен поглощать редирект
+    if (!(error instanceof ApiError)) throw error;
+    return {
+      error: error.message,
+      ...(error.requestId ? { requestId: error.requestId } : {}),
+    };
   }
 }
 
