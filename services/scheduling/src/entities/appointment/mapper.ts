@@ -14,6 +14,7 @@ export function toApiAppointment(appointment: Appointment): ContractAppointment 
     patientName: appointment.patientName,
     doctorId: appointment.doctorId,
     doctorName: appointment.doctorName,
+    specializationId: appointment.specializationId,
     specializationName: appointment.specializationName,
     slot: {
       localDate: appointment.localDate,

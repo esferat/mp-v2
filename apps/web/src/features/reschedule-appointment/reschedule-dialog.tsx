@@ -67,6 +67,11 @@ function fmtDay(date: Date): string {
  * в списке) + недельный вид слотов по шаблону [дата] → [время]:
  * старт — неделя от текущей даты, ‹/› листает, вперёд максимум 4 недели;
  * доступные слоты — зелёные, занятые/нерабочие/прошедшие — серые (недоступные).
+ *
+ * Переносить можно только в пределах той же специализации (10.3):
+ * список врачей фильтруется по `appointment.specializationId` — слоты
+ * и валидация брони рассчитываются от специализации.
+ *
  * `PUT /api/scheduling/appointments/:id/reschedule` — только ADMIN
  * (проверяется и на gateway, и в сервисе); статус записи не меняется.
  */
@@ -97,8 +102,14 @@ export function RescheduleDialog({
   const [saving, setSaving] = useState(false);
   const [reason, setReason] = useState('');
 
-  const doctor = doctors.find((item) => item.id === doctorId);
-  const specId = doctor?.specializationId;
+  // Слоты считаем от СПЕЦИАЛИЗАЦИИ ЗАПИСИ — она же ограничивает выбор
+  // врачей (10.3); выбор врача не меняет специализацию
+  const specId = appointment.specializationId;
+  // Перенос только в пределах специализации записи (10.3): чужие врачи
+  // не участвуют в выборе (слоты считаются от специализации)
+  const availableDoctors = doctors.filter(
+    (item) => item.specializationId === appointment.specializationId,
+  );
   // Примитивы в deps эффекта: объект Date пересоздаётся каждый рендер —
   // иначе fetch-slots зацикливается («Загрузка слотов…» не исчезает)
   const weekStartIso = toIso(weekStart);
@@ -221,10 +232,10 @@ export function RescheduleDialog({
           <MpAutocomplete
             label="Врач"
             placeholder="Поиск по ФИО"
-            options={doctors}
+            options={availableDoctors}
             getOptionLabel={(item) => item.name}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            value={doctors.find((item) => item.id === doctorId) ?? null}
+            value={availableDoctors.find((item) => item.id === doctorId) ?? null}
             onChange={(_, value) => {
               setDoctorId(value?.id ?? appointment.doctorId);
               setSelected(null);

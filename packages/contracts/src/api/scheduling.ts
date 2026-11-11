@@ -62,6 +62,7 @@ export const appointmentSchema = z.object({
   patientName: z.string().min(1),
   doctorId: z.string().min(1),
   doctorName: z.string().min(1),
+  specializationId: z.string().min(1),
   specializationName: z.string().min(1),
   slot: slotSchema,
   declineReason: z.string().min(1).optional(),
