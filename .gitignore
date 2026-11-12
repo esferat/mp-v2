@@ -24,9 +24,11 @@ coverage/
 .env.*.local
 !.env.example
 
-# Локальные сертификаты TLS
+# Локальные сертификаты TLS (см. infra/nginx/tls/README.md)
 infra/nginx/tls/*.pem
 infra/nginx/tls/*.key
+infra/nginx/tls/*.cer
+infra/nginx/tls/*.srl
 
 # Логи и редакторы
 *.log

@@ -1,0 +1,15 @@
+# CA configuration: local dev root for *.mp-kit.local (nginx TLS).
+[req]
+distinguished_name = dn
+prompt = no
+x509_extensions = v3_ca
+
+[dn]
+CN = mp-kit.local Dev CA
+O = mp-v2
+C = RU
+
+[v3_ca]
+basicConstraints = critical, CA:true
+keyUsage = critical, keyCertSign, cRLSign
+subjectKeyIdentifier = hash

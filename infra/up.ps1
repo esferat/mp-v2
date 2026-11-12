@@ -40,6 +40,14 @@ if (-not (Test-Path $envFile)) {
 }
 if (-not (Test-Path $composeFile)) { throw "не найден $composeFile" }
 
+# --- TLS: на свежем клоне сертификатов *.mp-kit.local нет (в .gitignore) ----
+$tlsFull = Join-Path $infraDir 'nginx\tls\fullchain.pem'
+if (-not (Test-Path $tlsFull)) {
+    Write-Host '[up] TLS-сертификатов нет — генерирую dev CA (*.mp-kit.local)…' -ForegroundColor Yellow
+    & (Join-Path $infraDir 'nginx\tls\generate.ps1')
+    Write-Host '[up] браузеру ещё нужно доверие CA: nginx\tls\generate.ps1 -InstallTrust (см. nginx\tls\README.md)' -ForegroundColor Yellow
+}
+
 function Invoke-DockerCompose {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Rest)
     & docker compose --env-file $envFile -f $composeFile @Rest

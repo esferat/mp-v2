@@ -37,6 +37,12 @@ done
 
 compose() { docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"; }
 
+# --- TLS: на свежем клоне сертификатов *.mp-kit.local нет (в .gitignore) ----
+if [ ! -f "$INFRA_DIR/nginx/tls/fullchain.pem" ]; then
+  echo "[up] TLS-сертификатов нет — генерирую dev CA (*.mp-kit.local)…"
+  bash "$INFRA_DIR/nginx/tls/generate.sh"
+fi
+
 echo "[up] 1/3 — валидация compose-конфига (config -q)…"
 compose config -q
 

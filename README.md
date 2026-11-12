@@ -131,18 +131,18 @@ docker compose --env-file .env.example -f infra/docker-compose.yml down -v      
 
 ### Порты (дефолты, переопределяются в `.env`)
 
-| Сервис                 | Порт         | Назначение                                                                                               |
-| ---------------------- | ------------ | -------------------------------------------------------------------------------------------------------- |
-| nginx                  | 80 / 8080    | единая точка входа: домены `*.mp-kit.local` (80), `localhost:8080`                                       |
-| web                    | 3000         | Next.js напрямую (минуя nginx)                                                                           |
-| gateway                | 4000         | API-gateway напрямую (минуя nginx)                                                                       |
-| Keycloak               | 8180         | issuer токенов и страницы входа (**зафиксирован, не менять** — ломает проверку токенов во всех сервисах) |
-| MinIO                  | 9000 / 9001  | S3 API / Console                                                                                         |
-| PostgreSQL             | 5432         | по одной БД на сервис (`db_*`)                                                                           |
-| RabbitMQ               | 5672 / 15672 | AMQP / Management                                                                                        |
-| Elasticsearch / Kibana | 9200 / 5601  | логи pino → Filebeat → Kibana                                                                            |
-| Prometheus             | 9090         | scrape `/metrics` всех сервисов: `outbox_lag_seconds`, метрики процесса                                  |
-| Mailpit                | 8025 / 1025  | dev-почта: UI / SMTP                                                                                     |
+| Сервис                 | Порт            | Назначение                                                                                                                                                               |
+| ---------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| nginx                  | 80 / 8080 / 443 | единая точка входа: домены `*.mp-kit.local` (`80` → `301` HTTPS, контент на `443`), `localhost:8080` (HTTP)                                                              |
+| web                    | 3000            | Next.js напрямую (минуя nginx)                                                                                                                                           |
+| gateway                | 4000            | API-gateway напрямую (минуя nginx)                                                                                                                                       |
+| Keycloak               | 8180            | issuer токенов (`KEYCLOAK_HOSTNAME` = `https://auth.mp-kit.local`, **зафиксирован, не менять** — ломает проверку токенов во всех сервисах); страницы входа — через nginx |
+| MinIO                  | 9000 / 9001     | S3 API / Console                                                                                                                                                         |
+| PostgreSQL             | 5432            | по одной БД на сервис (`db_*`)                                                                                                                                           |
+| RabbitMQ               | 5672 / 15672    | AMQP / Management                                                                                                                                                        |
+| Elasticsearch / Kibana | 9200 / 5601     | логи pino → Filebeat → Kibana                                                                                                                                            |
+| Prometheus             | 9090            | scrape `/metrics` всех сервисов: `outbox_lag_seconds`, метрики процесса                                                                                                  |
+| Mailpit                | 8025 / 1025     | dev-почта: UI / SMTP                                                                                                                                                     |
 
 ### Проверка после запуска
 
@@ -155,22 +155,25 @@ node scripts/e2e-stage2.mjs                 # e2e-сценарии против 
 
 Журналы и метрики: `kibana.mp-kit.local` (dev без аутентификации), MinIO-файлы — `minio.mp-kit.local`.
 
-## Домены UI (`*.mp-kit.local`)
+## Домены UI (`*.mp-kit.local`, HTTPS)
 
-Консоли и портал доступны по доменам на **порт80** (nginx, `NGINX_HTTP_PORT`):
+Консоли и портал доступны по доменам: `:80` отвечает `301` на **HTTPS (`:443`)**,
+сертификаты — самоподписанный dev CA в [`infra/nginx/tls`](infra/nginx/tls/README.md)
+(генерация `generate.ps1 -InstallTrust` — CA в доверенные текущего пользователя):
 
-| Домен                                  | Сервис                 |
-| -------------------------------------- | ---------------------- |
-| `portal.mp-kit.local` / `mp-kit.local` | портал (web)           |
-| `kibana.mp-kit.local`                  | Kibana (логи/дашборды) |
-| `minio.mp-kit.local`                   | MinIO Console (файлы)  |
-| `mailpit.mp-kit.local`                 | Mailpit (dev-почта)    |
-| `rabbitmq.mp-kit.local`                | RabbitMQ Management    |
+| Домен                                  | Сервис                          |
+| -------------------------------------- | ------------------------------- |
+| `portal.mp-kit.local` / `mp-kit.local` | портал (web)                    |
+| `auth.mp-kit.local`                    | Keycloak (страницы входа, OIDC) |
+| `kibana.mp-kit.local`                  | Kibana (логи/дашборды)          |
+| `minio.mp-kit.local`                   | MinIO Console (файлы)           |
+| `mailpit.mp-kit.local`                 | Mailpit (dev-почта)             |
+| `rabbitmq.mp-kit.local`                | RabbitMQ Management             |
 
 Запись в `C:\Windows\System32\drivers\etc\hosts` (от администратора):
 
 ```hosts
-127.0.0.1 mp-kit.local portal.mp-kit.local kibana.mp-kit.local minio.mp-kit.local mailpit.mp-kit.local rabbitmq.mp-kit.local
+127.0.0.1 mp-kit.local portal.mp-kit.local auth.mp-kit.local kibana.mp-kit.local minio.mp-kit.local mailpit.mp-kit.local rabbitmq.mp-kit.local
 ```
 
 Примечания:
@@ -181,8 +184,10 @@ node scripts/e2e-stage2.mjs                 # e2e-сценарии против 
   standalone строит `request.url` из `HOSTNAME` контейнера).
 - Домены портал/апекс прописаны в `redirectUris` клиента `next-web` (манифест
   `infra/keycloak/realm-medical-portal.json`; в живой реалм — через Admin API, импорт не перезаписывает).
-- **Keycloak сознательно без домена**: `KC_HOSTNAME` зафиксирован на `http://localhost:8180` — issuer в токенах должен
-  быть стабильным для проверки всеми сервисами; страницы логина доступны на `http://localhost:8180`.
+- **Keycloak — `https://auth.mp-kit.local`**: `KEYCLOAK_HOSTNAME` (`.env`) задаёт и issuer в токенах, и страницы
+  входа — он зафиксирован и общ для всех сервисов (`KEYCLOAK_PUBLIC_URL` в compose), иначе проверка токенов
+  ломается; смена issuer разлогинивает существующие сессии (один повторный вход). Порт `8180` остаётся
+  опубликованным для отладки и серверных вызовов внутри compose (`keycloak:8080`).
 - Доступ без hosts сохраняется: `http://localhost:8080` (nginx) и `http://localhost:3000` (web напрямую).
 
 ## Тестовые аккаунты (dev)

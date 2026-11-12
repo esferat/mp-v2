@@ -249,8 +249,8 @@ flowchart LR
 
 | Элемент      | Значение                                                                                                                                                                         |
 |--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Порты (dev)  | nginx `8080`/`80`, web `3000`, gateway `4000`, Keycloak `8180`, MinIO `9000`/`9001`, RabbitMQ `5672`/`15672`, Elasticsearch `9200`, Kibana `5601`, Mailpit `8025`/`1025`         |
-| Домены (dev) | `portal.mp-kit.local`, `kibana.mp-kit.local`, `minio.mp-kit.local`, `mailpit.mp-kit.local`, `rabbitmq.mp-kit.local` (запись в hosts — см. [README репозитория](../../README.md)) |
+| Порты (dev)  | nginx `8080`/`80`/`443`, web `3000`, gateway `4000`, Keycloak `8180`, MinIO `9000`/`9001`, RabbitMQ `5672`/`15672`, Elasticsearch `9200`, Kibana `5601`, Mailpit `8025`/`1025`      |
+| Домены (dev) | `portal.mp-kit.local`, `auth.mp-kit.local` (Keycloak), `kibana.mp-kit.local`, `minio.mp-kit.local`, `mailpit.mp-kit.local`, `rabbitmq.mp-kit.local` — HTTPS, сертификаты `infra/nginx/tls` (запись в hosts — см. [README репозитория](../../README.md)) |
 | Токены       | наружу — JWT Keycloak (realm roles); внутри — тот же JWT или client-credentials; проверка локально по публичному ключу реалма                                                    |
 | Контракты    | OpenAPI + Zod в `packages/contracts` → генерация TS-типов для `web` и `gateway`                                                                                                  |
 | Логи         | pino (stdout, JSON) → Filebeat → Elasticsearch → Kibana; поиск по `traceId` = `x-request-id`                                                                                     |

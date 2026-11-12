@@ -347,8 +347,10 @@ routing key.
 - `/api/*` → `gateway:4000` (без кэша, таймауты, `proxy_set_header x-request-id`); страницы `web` используют только
   `/api/bff/*`;
 - `/media/*` → MinIO (только presigned-пути);
-- **TLS-терминация и HSTS — требование прода**; в dev-стенде nginx работает на HTTP (порт 80, публикация —
-  `NGINX_HTTP_PORT`/`NGINX_PORT`, см. `mp-v2/.env.example`), сертификаты не выпускаются;
+- **TLS-терминация и HSTS — требование прода**; в dev-стенде nginx уже терминирует TLS: `*.mp-kit.local`
+  на `:443` с самоподписанным dev CA (`infra/nginx/tls`, см. README: генерация + доверие браузера),
+  HTTP (`:80`, публикация `NGINX_HTTP_PORT`) отвечает `301` на HTTPS; публикация TLS — `NGINX_HTTPS_PORT`;
+  `localhost:8080` (`NGINX_PORT`) остаётся чистым HTTP;
 - сжатие, `limit_req` на auth-эндпоинты, `/healthz` (агрегированный).
 
 ### Docker Compose (стек)
